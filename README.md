@@ -6,52 +6,45 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 ## Usage:
 
+- install as a git submodule
+  `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
+
 - Place WeatherKitty.css before your styles.css so that you can optionally over-ride it.
-  ```
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="stylesheet" href="style.css" />
-      <link rel="stylesheet" href="WeatherKitty/WeatherKitty.css" />
-    </head>
-  ```
-- Place the WeatherKitty.hnml block where you want it, with the optional spacer.
+- Place the WeatherKitty.html block where you want it, with/without the optional spacer.
+- Place WeatherKitty.js before your script.js
+- Call `WeatherKitty();` in your script.js.
+
+  - Default path is "WeatherKitty"
+  - Modify the path if needed. Ex: `WeatherKitty("SomePath")`
+
+  &nbsp;
+  index.html
 
   ```
-        <div id="WeatherKittySpacer">&nbsp</div>
-        <!-- Weather Kitty  -->
-        <div id="WeatherKittyWidget">
-          <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
-            <img
-              class="WeatherKittyBackgroundImg"
-              src="WeatherKitty/img/WeatherKittyE7.jpeg"
-            />
-            <div class="WeatherKittyWeatherText">Current Weather</div>
-          </div>
-          <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
-            <img
-              class="WeatherKittyBackgroundImg"
-              src="WeatherKitty/img/WeatherKittyC.jpeg"
-            />
-            <div class="WeatherKittyWeatherText">Weather Forecast</div>
-          </div>
-          <div id="WeatherKittyToolTip">Toop Tip</div>
-        </div>
-        <!-- /Weather Kitty -->
+  <link rel="stylesheet" href="WeatherKitty/WeatherKitty.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <div id="WeatherKittySpacer">&nbsp</div>
+  <!-- Weather Kitty  -->
+  <div id="WeatherKittyWidget"></div>
+  <!-- /Weather Kitty -->
+
+  <script src="./WeatherKitty/WeatherKitty.js"></script>
+  <script src="./script.js"></script>
   ```
 
-- Place WeatherKitty.js after your last script.js
+  &nbsp;
+  script.js
 
   ```
-      <footer>
-        <p>&copy; 2023 My Website. All rights reserved.</p>
-      </footer>
-
-      <script src="./script.js"></script>
-      <script src="./WeatherKitty/WeatherKitty.js"></script>
-    </body>
-
+  WeatherKitty();
   ```
+
+- #WeatherKittyWidget is the primary container, use this to control size and placement
+- .WeatherKittyDisplay are the Image and Text Containers. Use these to control test size etc.
+- #WeatherKittyToopTip is the pop-up tool-tip Forecast. Use this to modify it's size, postion, behavior, etc.
+- DEMO MODE ONLY:
+  - WeatherKittyIsLocal() in a script.js after loading WeatherKitty.js to make the local demo page
 
 ## To-Do
 

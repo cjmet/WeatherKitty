@@ -1,21 +1,96 @@
 // WeatherKitty.js Version 240829.15
+let WeatherKittyDebug = false;
 
-// stict mode
-"use strict";
+// strict mode
+("use strict");
+
 let locCacheTime = 60000 * 5; // 5? minutes just in case we are in a car and chasing a tornado?
 let shortCacheTime = 60000 * 6; // 7 (-1) minutes so we can catch weather alerts
 let longCacheTime = 60000 * 60 * 24; // 24 hours
+let WeatherKittyDefaultPath = "WeatherKitty";
+let WeatherKittyObsImage = "img/WeatherKittyE8.jpeg";
+let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
 
 //
 // **************************************************************************
-// Script
+// Static Status Variables
 // **************************************************************************
 //
 
-console.log("Loading Weather Kitty");
-setTimeout(WeatherWidget, 3000); // cjm
-setInterval(WeatherWidget, shortCacheTime);
+let WeatherKittyIsInit = false;
+let WeatherKittyHasRun = false;
+
+//
+// **************************************************************************
+// Function Weather Kitty
+// **************************************************************************
+//
+
+function WeatherKitty(path) {
+  if (WeatherKittyDebug) console.log("Weather Kitty Debug Mode");
+  else console.log("Weather Kitty Loading");
+
+  if (WeatherKittyDebug) console.log(`[WeatherKitty] Path: ${path}`);
+
+  if (path === undefined) {
+    console.log(
+      `[WeatherKitty] Using Default Path: ${WeatherKittyDefaultPath}`
+    );
+    path = WeatherKittyDefaultPath;
+  }
+
+  if (path === null || path === "")
+    console.log(`[WeatherKitty] Using Null/Local Path`);
+
+  if (path !== undefined && path !== null && path !== "") {
+    WeatherKittyObsImage = path + "/" + WeatherKittyObsImage;
+    WeatherKittyForeImage = path + "/" + WeatherKittyForeImage;
+  }
+
+  if (WeatherKittyDebug) {
+    console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
+    console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
+  }
+
+  // Weather Kitty Widget
+  if (WeatherKittyDebug) {
+    setTimeout(WeatherWidgetInit, 3000);
+    setTimeout(WeatherWidget, 6000);
+  } else {
+    setTimeout(WeatherWidgetInit, 5);
+    setTimeout(WeatherWidget, 10);
+  }
+
+  setInterval(WeatherWidget, shortCacheTime);
+}
+
 // /Weather Kitty Widget
+
+//
+// **************************************************************************
+// Function Weather Widget Initialization
+// **************************************************************************
+//
+
+function WeatherWidgetInit() {
+  WeatherKittyIsInit = true;
+  let widget = document.getElementById("WeatherKittyWidget");
+  widget.innerHTML = `        <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
+              <img
+                class="WeatherKittyBackgroundImg"
+                src=${WeatherKittyObsImage}
+              />
+              <div class="WeatherKittyWeatherText">Current</div>
+            </div>
+            <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
+              <img
+                class="WeatherKittyBackgroundImg"
+                src=${WeatherKittyForeImage}
+              />
+              <div class="WeatherKittyWeatherText">Forecast</div>
+            </div>
+            <div id="WeatherKittyToolTip">Toop Tip</div>`;
+}
 
 //
 // **************************************************************************
@@ -24,6 +99,7 @@ setInterval(WeatherWidget, shortCacheTime);
 //
 
 function WeatherWidget() {
+  WeatherKittyHasRun = true;
   getWeatherLocationAsync(function (weather) {
     // Obs Text
     {
@@ -33,7 +109,8 @@ function WeatherWidget() {
         weather.observationTemperature +
         weather.observationTemperatureUnit;
       let img = weather.observationIconUrl;
-      WeatherSquare("WeatherKittyCurrent", text, img);
+      let altimg = WeatherKittyObsImage;
+      WeatherSquare("WeatherKittyCurrent", text, img, altimg);
     }
 
     // Forecast Text
@@ -46,7 +123,8 @@ function WeatherWidget() {
         weather.temperature +
         weather.temperatureUnit;
       let img = weather.forecastIconUrl;
-      WeatherSquare("WeatherKittyForecast", text, img);
+      let altimg = WeatherKittyForeImage;
+      WeatherSquare("WeatherKittyForecast", text, img, altimg);
     }
 
     // Long Forecast
@@ -71,7 +149,7 @@ function WeatherWidget() {
     // + "<br>" + weather.forecastStartTime;
     document
       .getElementById("WeatherKittyWidget")
-      .setAttribute("tooltip", forecast); // cjm
+      .setAttribute("tooltip", forecast);
     document.getElementById("WeatherKittyToolTip").innerHTML = forecast;
   });
 }
@@ -82,26 +160,39 @@ function WeatherWidget() {
 // **************************************************************************
 //
 
-function WeatherSquare(elementId, replacementText, replacementImgUrl) {
+function WeatherSquare(
+  elementId,
+  replacementText,
+  replacementImgUrl,
+  alternateImgUrl
+) {
   let element = document.getElementById(elementId);
   let textDiv = element.querySelector(".WeatherKittyWeatherText");
   let weatherImg = element.querySelector(".WeatherKittyBackgroundImg");
 
-  console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
+  if (WeatherKittyDebug)
+    console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
   textDiv.innerHTML = replacementText;
-  console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
+  if (WeatherKittyDebug)
+    console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
 
   // Icon
 
-  console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
+  if (WeatherKittyDebug) console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
   if (
     replacementImgUrl !== null &&
     replacementImgUrl !== "" &&
-    replacementImgUrl.includes("/null") === false
+    replacementImgUrl.includes("/null") === false &&
+    !WeatherKittyDebug
   )
     weatherImg.src = replacementImgUrl;
-  else weatherImg.src = `url("img/WeatherKittyE8.png")`;
-  console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
+  else {
+    if (alternateImgUrl !== null && alternateImgUrl !== "")
+      weatherImg.src = alternateImgUrl;
+    else weatherImg.src = `url("img/WeatherKittyE8.png")`;
+  }
+  if (WeatherKittyDebug)
+    console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
 }
 
 //
