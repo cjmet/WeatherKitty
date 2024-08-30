@@ -4,6 +4,55 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 <br>
 
+## Usage:
+
+- Place WeatherKitty.css before your styles.css so that you can optionally over-ride it.
+  ```
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="style.css" />
+      <link rel="stylesheet" href="WeatherKitty/WeatherKitty.css" />
+    </head>
+  ```
+- Place the WeatherKitty.hnml block where you want it, with the optional spacer.
+
+  ```
+        <div id="WeatherKittySpacer">&nbsp</div>
+        <!-- Weather Kitty  -->
+        <div id="WeatherKittyWidget">
+          <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
+            <img
+              class="WeatherKittyBackgroundImg"
+              src="WeatherKitty/img/WeatherKittyE7.jpeg"
+            />
+            <div class="WeatherKittyWeatherText">Current Weather</div>
+          </div>
+          <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
+            <img
+              class="WeatherKittyBackgroundImg"
+              src="WeatherKitty/img/WeatherKittyC.jpeg"
+            />
+            <div class="WeatherKittyWeatherText">Weather Forecast</div>
+          </div>
+          <div id="WeatherKittyToolTip">Toop Tip</div>
+        </div>
+        <!-- /Weather Kitty -->
+  ```
+
+- Place WeatherKitty.js after your last script.js
+
+  ```
+      <footer>
+        <p>&copy; 2023 My Website. All rights reserved.</p>
+      </footer>
+
+      <script src="./script.js"></script>
+      <script src="./WeatherKitty/WeatherKitty.js"></script>
+    </body>
+
+  ```
+
 ## To-Do
 
 - [ ] Try the :before with a container set to `position: relative`
