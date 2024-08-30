@@ -14,6 +14,29 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 ## Blog
 
+## 24/08/30
+
+- Refactored using concrete images for the transparent background. Both ways can work, but I decided I liked this way better.
+
+  ```
+
+  #Container {
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+  }
+
+  .WeatherKittyBackgroundImg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.8;
+    z-index: -1;
+  }
+  ```
+
 ### 24/08/29
 
 - Refactoring WeatherKitty to be portable

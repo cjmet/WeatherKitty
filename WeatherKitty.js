@@ -13,8 +13,8 @@ let longCacheTime = 60000 * 60 * 24; // 24 hours
 //
 
 console.log("Loading Weather Kitty");
-// setTimeout(WeatherWidget, 3000); // cjm
-// setInterval(WeatherWidget, shortCacheTime);
+setTimeout(WeatherWidget, 3000); // cjm
+setInterval(WeatherWidget, shortCacheTime);
 // /Weather Kitty Widget
 
 //
@@ -26,65 +26,39 @@ console.log("Loading Weather Kitty");
 function WeatherWidget() {
   getWeatherLocationAsync(function (weather) {
     // Obs Text
-    console.log(
-      `[WeatherWidget] obs: ${weather.observationShortText} ${weather.observationTemperature}${weather.observationTemperatureUnit}`
-    );
-    document.getElementById("WeatherKittyCurrent").innerHTML =
-      weather.observationShortText +
-      " " +
-      weather.observationTemperature +
-      weather.observationTemperatureUnit;
-
-    // Obs Image
-
-    // console.log(`[WeatherWidget] Obs Icon: ${weather.observationIconUrl}`);
-    if (
-      weather.observationIconUrl !== null &&
-      weather.observationIconUrl !== "" &&
-      weather.observationIconUrl.includes("/null") === false
-    ) {
-      document.getElementById(
-        "WeatherKittyCurrent"
-      ).style.backgroundImage = `url(${weather.observationIconUrl})`;
-    } else {
-      document.getElementById(
-        "WeatherKittyCurrent"
-      ).style.backgroundImage = `url("img/WeatherKittyE8t.png")`;
+    {
+      let text =
+        weather.observationShortText +
+        " " +
+        weather.observationTemperature +
+        weather.observationTemperatureUnit;
+      let img = weather.observationIconUrl;
+      WeatherSquare("WeatherKittyCurrent", text, img);
     }
 
     // Forecast Text
-    console.log(
-      `[WeatherWidget] forecast: ${weather.shortForecast} ${weather.temperature}${weather.temperatureUnit}`
-    );
-    document.getElementById("WeatherKittyForecast").innerHTML =
-      findWeatherWords(weather.shortForecast) +
-      "<br>" +
-      weather.probabilityOfPrecipitation +
-      "% " +
-      weather.temperature +
-      weather.temperatureUnit; // cjm
-
-    // Forecact Image
-    // console.log(`[WeatherWidget] Forecast Icon: ${weather.forecastIconUrl}`);
-    if (
-      weather.forecastIconUrl !== null &&
-      weather.forecastIconUrl !== "" &&
-      weather.forecastIconUrl.includes("/null") === false
-    ) {
-      document.getElementById(
-        "WeatherKittyForecast"
-      ).style.backgroundImage = `url(${weather.forecastIconUrl})`;
-    } else {
-      document.getElementById(
-        "WeatherKittyForecast"
-      ).style.backgroundImage = `url("img/WeatherKittyCt.png")`;
+    {
+      let text =
+        findWeatherWords(weather.shortForecast) +
+        "<br>" +
+        weather.probabilityOfPrecipitation +
+        "% " +
+        weather.temperature +
+        weather.temperatureUnit;
+      let img = weather.forecastIconUrl;
+      WeatherSquare("WeatherKittyForecast", text, img);
     }
-
-    // *** Add Code Here  *** //
 
     // Long Forecast
     let forecast =
-      "Forecast: <br>" +
+      "<b>Current:</b><br>" +
+      weather.observationShortText +
+      " " +
+      weather.observationTemperature +
+      weather.observationTemperatureUnit +
+      "<br>" +
+      '<div id="weatherspacer"><br> </div>' +
+      "<b>Forecast:</b> <br>" +
       weather.shortForecast +
       " " +
       weather.temperature +
@@ -100,6 +74,34 @@ function WeatherWidget() {
       .setAttribute("tooltip", forecast); // cjm
     document.getElementById("WeatherKittyToolTip").innerHTML = forecast;
   });
+}
+
+//
+// **************************************************************************
+// Function WeatherSquare
+// **************************************************************************
+//
+
+function WeatherSquare(elementId, replacementText, replacementImgUrl) {
+  let element = document.getElementById(elementId);
+  let textDiv = element.querySelector(".WeatherKittyWeatherText");
+  let weatherImg = element.querySelector(".WeatherKittyBackgroundImg");
+
+  console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
+  textDiv.innerHTML = replacementText;
+  console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
+
+  // Icon
+
+  console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
+  if (
+    replacementImgUrl !== null &&
+    replacementImgUrl !== "" &&
+    replacementImgUrl.includes("/null") === false
+  )
+    weatherImg.src = replacementImgUrl;
+  else weatherImg.src = `url("img/WeatherKittyE8.png")`;
+  console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
 }
 
 //
