@@ -38,6 +38,7 @@
   width: 9.5em;
   height: 4.5em;
   display: flex;
+  z-index: 0;
 }
 
 .WeatherKittyDisplay {
