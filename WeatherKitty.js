@@ -581,9 +581,11 @@ function WeatherTemperatureFahrenheit(temperature, temperatureUnit) {
   )
     fahrenheit = Math.round(temperature);
   else fahrenheit = Math.round((temperature * 9) / 5 + 32);
-  console.log(
-    `[WeatherTemperatureFahrenheit] ${temperature} ${temperatureUnit} = ${fahrenheit} °F`
-  );
+  if (WeatherKittyDebug)
+    if (WeatherKittyDebug)
+      console.log(
+        `[WeatherTemperatureFahrenheit] ${temperature} ${temperatureUnit} = ${fahrenheit} °F`
+      );
   return fahrenheit;
 }
 
