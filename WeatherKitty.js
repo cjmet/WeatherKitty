@@ -80,13 +80,18 @@ function WeatherWidgetInit() {
     alert("[WeatherWidgetInit] '#WeatherKittyWidget' Not Found");
     throw new Error("[WeatherWidgetInit] Widget Not Found");
   }
+
   let htmlString = widget?.innerHTML;
   if (
     htmlString != undefined &&
     htmlString != null &&
     htmlString != "" &&
-    htmlString.includes("<") == false
+    htmlString.includes("<")
   ) {
+    if (WeatherKittyDebug)
+      console.log("[WeatherWidgetInit] HTML Detected, Using Custom Widget");
+    console.log(htmlString);
+  } else {
     if (WeatherKittyDebug)
       console.log("[WeatherWidgetInit] Using Default Widget");
 
@@ -107,9 +112,6 @@ function WeatherWidgetInit() {
             </div>
             <div id="WeatherKittyToolTip">Toop Tip</div>
             `;
-  } else {
-    if (WeatherKittyDebug)
-      console.log("[WeatherWidgetInit] HTML Detected, Using Custom Widget");
   }
 }
 
