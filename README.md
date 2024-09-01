@@ -2,6 +2,8 @@
 
 Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
+![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/main/img/DemoImage.jpg)
+
 <br>
 
 ## Usage:
