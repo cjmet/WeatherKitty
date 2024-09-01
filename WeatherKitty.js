@@ -88,9 +88,10 @@ function WeatherWidgetInit() {
     htmlString != "" &&
     htmlString.includes("<")
   ) {
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug) {
       console.log("[WeatherWidgetInit] HTML Detected, Using Custom Widget");
-    console.log(htmlString);
+      console.log(htmlString);
+    }
   } else {
     if (WeatherKittyDebug)
       console.log("[WeatherWidgetInit] Using Default Widget");
