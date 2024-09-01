@@ -12,10 +12,9 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 - Place WeatherKitty.css before your styles.css so that you can optionally over-ride it.
 - Place the WeatherKitty.html block where you want it, with/without the optional spacer.
 - Place WeatherKitty.js before your script.js
-- Call `WeatherKitty();` in your script.js.
+- Call `WeatherKitty([optionalPath]);` in your script.js.
 
   - Default path is "WeatherKitty"
-  - Modify the path if needed. Ex: `WeatherKitty("SomePath")`
 
   &nbsp;
   index.html
@@ -24,10 +23,8 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
   <link rel="stylesheet" href="WeatherKitty/WeatherKitty.css" />
   <link rel="stylesheet" href="style.css" />
 
-  <div id="WeatherKittySpacer">&nbsp</div>
-  <!-- Weather Kitty  -->
   <div id="WeatherKittyWidget"></div>
-  <!-- /Weather Kitty -->
+  <!-- Optional Custom WeatherKitty HTML Block -->
 
   <script src="./WeatherKitty/WeatherKitty.js"></script>
   <script src="./script.js"></script>
@@ -40,21 +37,45 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
   WeatherKitty();
   ```
 
+### Additional Usage Info
+
 - #WeatherKittyWidget is the primary container, use this to control size and placement
 - .WeatherKittyDisplay are the Image and Text Containers. Use these to control test size etc.
 - #WeatherKittyToopTip is the pop-up tool-tip Forecast. Use this to modify it's size, postion, behavior, etc.
+- set `WeatherKittyDebug = true;` for additional more verbose console logging messages
 - DEMO MODE ONLY:
   - WeatherKittyIsLocal() in a script.js after loading WeatherKitty.js to make the local demo page
 
+### Custom Html Block Example
+
+```
+ <!-- Weather Kitty -->
+      <!-- OPTIONAL FULL HTML EXAMPLE -
+       to use the simpler syntax, See "index.html" instead. -->
+      <div id="WeatherKittyWidget">
+        <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
+          <img class="WeatherKittyBackgroundImg" />
+          <div class="WeatherKittyWeatherText">Current</div>
+        </div>
+        <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
+          <img class="WeatherKittyBackgroundImg" />
+          <div class="WeatherKittyWeatherText">Forecast</div>
+        </div>
+        <div id="WeatherKittyToolTip">Toop Tip</div>
+      </div>
+      <!-- Weather Kitty -->
+```
+
 ## To-Do
 
-- [ ] Try the :before with a container set to `position: relative`
-- [ ] If that fails: container->relative, with (img and text_container)->absolute
-- [ ] image type transparency and overlay to emulate transparent background
-- [ ] :before did not work the way I wanted. yet.
-  - set :before transparency if we can, if not use the image version. But I'd prefer the :before background version
+- [ ] ...
 
 ## Blog
+
+## 24/09/01
+
+- VSCode.LiveServer.Https issues. Reinstalling the **_Visual Studio IDE_** API Certificates re-enabled https. So it at least appears the IDE certificate expiring may have been the issue.
+- Added the custom html block option
 
 ## 24/08/30
 
