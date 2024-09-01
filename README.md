@@ -24,7 +24,6 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
   <link rel="stylesheet" href="style.css" />
 
   <div id="WeatherKittyWidget"></div>
-  <!-- Optional Custom WeatherKitty HTML Block -->
 
   <script src="./WeatherKitty/WeatherKitty.js"></script>
   <script src="./script.js"></script>
@@ -48,8 +47,7 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 ```
  <!-- Weather Kitty -->
-      <!-- OPTIONAL FULL HTML EXAMPLE -
-       to use the simpler syntax, See "index.html" instead. -->
+      <!-- OPTIONAL FULL HTML EXAMPLE -->
       <div id="WeatherKittyWidget">
         <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
           <img class="WeatherKittyBackgroundImg" />
