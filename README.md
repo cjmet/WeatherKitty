@@ -10,7 +10,7 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 
 - Place WeatherKitty.css before your styles.css so that you can optionally over-ride it.
-- Place the WeatherKitty.html block where you want it, with/without the optional spacer.
+- Place the `<div id="WeatherKittyWidget"></div>` block where you want it, with/without the optional spacer.
 - Place WeatherKitty.js before your script.js
 - Call `WeatherKitty([optionalPath]);` in your script.js.
 
@@ -40,11 +40,9 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 ### Additional Usage Info
 
 - #WeatherKittyWidget is the primary container, use this to control size and placement
-- .WeatherKittyDisplay are the Image and Text Containers. Use these to control test size etc.
+- .WeatherKittyDisplay are the Image and Text Containers. Use these to control text size etc.
 - #WeatherKittyToopTip is the pop-up tool-tip Forecast. Use this to modify it's size, postion, behavior, etc.
 - set `WeatherKittyDebug = true;` for additional more verbose console logging messages
-- DEMO MODE ONLY:
-  - WeatherKittyIsLocal() in a script.js after loading WeatherKitty.js to make the local demo page
 
 ### Custom Html Block Example
 
