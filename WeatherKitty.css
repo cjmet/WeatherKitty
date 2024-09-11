@@ -1,8 +1,10 @@
 /* WeatherKitty.css Version 240829.15 */
 :root {
-  --weatherKittyDebug: 0px;
+  --weatherKittyDebug: 3px;
   --weatherKittyBackgroundOpacity: 0.75;
 }
+
+/* Page Layout */
 
 #WeatherKittyBody {
   display: grid;
@@ -23,31 +25,42 @@
   padding: 0.5em;
   text-align: left;
   overflow: hidden;
-  z-index: 1000;
 
   display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 #WeatherKittySpacer {
   flex-grow: 1;
 }
 
-#WeatherKittyWidget {
+/* /Page Layout */
+/* ************************************************************************ */
+/*                                                                          */
+/*                                                                          */
+
+weather-kitty {
+  position: relative;
   border: red var(--weatherKittyDebug) solid;
   flex: 0 1 auto;
   width: 9.5em;
   height: 4.5em;
   display: flex;
-  z-index: 0;
+  z-index: 1;
 }
 
-.WeatherKittyDisplay {
-  border: green var(--weatherKittyDebug) solid;
+weather-kitty-current,
+weather-kitty-forecast {
+  border: rgb(0, 125, 255) var(--weatherKittyDebug) solid;
   box-sizing: border-box;
   position: relative;
   display: flex;
-  width: 100%;
-  height: 100%;
+  justify-content: center;
+  align-items: end;
+  width: 4.5em;
+  height: 4.5em;
+  z-index: -10;
 
   padding: 0.1em;
   text-wrap: pretty;
@@ -64,11 +77,8 @@
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
 }
 
-#WeatherKittyCurrent {
-  margin-right: 0.5em;
-}
-
-.WeatherKittyBackgroundImg {
+weather-kitty-current > img,
+weather-kitty-forecast > img {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -85,7 +95,7 @@ null [tooltip]::before {
   position: absolute;
   content: attr(tooltip);
   opacity: 0;
-  z-index: 2000;
+  z-index: 10;
 }
 
 null [tooltip]:hover::before {
@@ -98,15 +108,14 @@ null [tooltip]:hover::before {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-#WeatherKittyToolTip {
+weather-kitty-tooltip {
   position: fixed;
-  top: 0;
-  right: 0;
+
   padding: 0.5em;
   border-radius: 0.5em;
 
   transition: all 0.33s;
-  translate: 100% -100%;
+  translate: 15em -15em;
   width: 15em;
   height: auto;
   overflow: hidden;
@@ -115,28 +124,38 @@ null [tooltip]:hover::before {
   opacity: 0;
 }
 
-#WeatherKittyWidget:hover {
-  #WeatherKittyCurrent,
-  #WeatherKittyForecast {
+weather-kitty:hover,
+weather-kitty-current:hover,
+weather-kitty-forecast:hover {
+  weather-kitty-current,
+  weather-kitty-forecast {
     transition: all 0.33s;
     opacity: 0.5;
   }
-  #WeatherKittyToolTip {
+  weather-kitty-tooltip {
     color: white;
     transition: all 0.33s;
-    translate: 0% 0%;
+    translate: -6.75em 0;
     width: 15em;
     height: auto;
     opacity: 1;
-    /* overflow: visible; */
   }
 }
 
-#weatherspacer {
-  font-size: 1em;
+/* Hide the sub-tooltip when inside a weather-kitty element.  */
+weather-kitty > weather-kitty-current > weather-kitty-tooltip,
+weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
+  display: none;
 }
+
+/*                                                                          */
+/*                                                                          */
+/* ************************************************************************ */
+/* Page Layout */
 
 #WeatherKittyFooter p {
   font-size: small;
   margin: 0;
 }
+
+/* /Page Layout */

@@ -11,9 +11,9 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 - install as a git submodule
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 
-- Place WeatherKitty.css before your styles.css so that you can optionally over-ride it.
+- Place WeatherKitty.css before your styles.css, so that you can optionally over-ride it.
 - Place the `<div id="WeatherKittyWidget"></div>` block where you want it, with/without the optional spacer.
-- Place WeatherKitty.js before your script.js
+- Place WeatherKitty.js before your script.js, again so you can both use and over-ride it.
 - Call `WeatherKitty([optionalPath]);` in your script.js.
 
   - Default path is "WeatherKitty"
@@ -66,7 +66,15 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 ## To-Do
 
-- [ ] ...
+- [ ] over-ride as many classes and ids as possible with custom-elements
+- [ ] make individual tool tips for each display image, that way they can be used separately.
+  - [ ] fix the other tool tip's content
+  - [ ] have weather kitty disable the child tool tips. then we only need one tool-tip type/class?
+  - [ ] remove place holder text from html blocks at the end of the .mjs file.
+- [ ] \<weather-kitty> \</weather-kitty>
+- [ ] \<weather-kitty-current> \</weather-kitty-current>
+- [ ] \<weather-kitty-forecast> \</weather-kitty-forecast>
+- [ ] \<weather-kitty-tooltip> \<weather-kitty-tooltip>
 
 ## Blog
 

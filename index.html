@@ -18,21 +18,22 @@
         height="64"
         style="align-self: center; justify-self: left"
       />
-      <div id="WeatherKittySpacer">&nbsp</div>
       <!-- ... -->
 
       <!-- Weather Kitty -->
-      <div id="WeatherKittyWidget"></div>
+      <weather-kitty-current></weather-kitty-current>
+      <weather-kitty-forecast></weather-kitty-forecast>
+      <weather-kitty></weather-kitty>
       <!-- Weather Kitty -->
 
       <!-- ... -->
     </header>
 
-    <main id="WeatherKittyMain">&nbsp</main>
+    <main id="WeatherKittyMain"></main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
 
-    <script src="./WeatherKitty.js"></script>
-    <script src="./script.js"></script>
+    <script src="./WeatherKitty.mjs" type="module"></script>
+    <script src="./script.js" type="module"></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 // WeatherKitty.js Version 240829.15
-let WeatherKittyDebug = false;
+let WeatherKittyDebug = true;
 
 // strict mode
 ("use strict");
@@ -11,43 +11,39 @@ let WeatherKittyDefaultPath = "WeatherKitty";
 let WeatherKittyObsImage = "img/WeatherKittyE8.jpeg";
 let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
 
-//
-// **************************************************************************
 // Static Status Variables
-// **************************************************************************
-//
 
 let WeatherKittyIsInit = false;
 let WeatherKittyHasRun = false;
+let WeatherKittyPath = null;
 
-//
-// **************************************************************************
 // Function Weather Kitty
-// **************************************************************************
-//
-
-function WeatherKitty(path) {
+export default WeatherKitty;
+export async function WeatherKitty(path) {
+  let results;
   if (WeatherKittyDebug) console.log("Weather Kitty Debug Mode");
   else console.log("Weather Kitty Loading");
 
-  if (WeatherKittyDebug) console.log(`[WeatherKitty] Path: ${path}`);
+  if (WeatherKittyPath === null || WeatherKittyPath === undefined) {
+    if (path !== null && path !== undefined)
+      path = await WeatherKittyCheckPath(path);
+    if (path === null || path === undefined)
+      path = await WeatherKittyCheckPath("");
+    if (path === null || path === undefined)
+      path = await WeatherKittyCheckPath(WeatherKittyDefaultPath);
 
-  if (path === undefined) {
-    console.log(
-      `[WeatherKitty] Using Default Path: ${WeatherKittyDefaultPath}`
-    );
-    path = WeatherKittyDefaultPath;
+    if (path === null || path === undefined) {
+      console.log("[WeatherKitty] *** ERROR ***: No Path Available");
+    }
+    WeatherKittyPath = path !== null ? path : WeatherKittyDefaultPath;
+    console.log(`[WeatherKitty] WeatherKittyPath: ${path}`);
   }
 
-  if (path === null || path === "")
-    console.log(`[WeatherKitty] Using Null/Local Path`);
-
-  if (path !== undefined && path !== null && path !== "") {
-    WeatherKittyObsImage = path + "/" + WeatherKittyObsImage;
-    WeatherKittyForeImage = path + "/" + WeatherKittyForeImage;
-  }
+  WeatherKittyObsImage = WeatherKittyPath + WeatherKittyObsImage;
+  WeatherKittyForeImage = WeatherKittyPath + WeatherKittyForeImage;
 
   if (WeatherKittyDebug) {
+    console.log(`[WeatherKitty] Path: ${path}`);
     console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
     console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
   }
@@ -55,7 +51,7 @@ function WeatherKitty(path) {
   // Weather Kitty Widget
   if (WeatherKittyDebug) {
     setTimeout(WeatherWidgetInit, 3000);
-    setTimeout(WeatherWidget, 6000);
+    setTimeout(WeatherWidget, 6000); // cjm
   } else {
     setTimeout(WeatherWidgetInit, 5);
     setTimeout(WeatherWidget, 10);
@@ -64,64 +60,32 @@ function WeatherKitty(path) {
   setInterval(WeatherWidget, shortCacheTime);
 }
 
-// /Weather Kitty Widget
-
-//
-// **************************************************************************
 // Function Weather Widget Initialization
-// **************************************************************************
-//
-
 function WeatherWidgetInit() {
   WeatherKittyIsInit = true;
-  let widget = document.getElementById("WeatherKittyWidget");
-  if (widget == undefined || widget == null) {
-    console.log("[WeatherWidgetInit] Widget Not Found");
-    alert("[WeatherWidgetInit] '#WeatherKittyWidget' Not Found");
-    throw new Error("[WeatherWidgetInit] Widget Not Found");
-  }
 
-  let htmlString = widget?.innerHTML;
-  if (
-    htmlString != undefined &&
-    htmlString != null &&
-    htmlString != "" &&
-    htmlString.includes("<")
-  ) {
-    if (WeatherKittyDebug) {
-      console.log("[WeatherWidgetInit] HTML Detected, Using Custom Widget");
-      console.log(htmlString);
-    }
-  } else {
-    if (WeatherKittyDebug)
-      console.log("[WeatherWidgetInit] Using Default Widget");
+  let count = 0;
+  count += FindAndReplaceTags("weather-kitty", WeatherKittyWidgetBlock); // Order matters
+  count += FindAndReplaceTags(
+    "weather-kitty-current",
+    WeatherKittyCurrentBlock,
+    "WeatherKittyDisplay"
+  );
+  count += FindAndReplaceTags(
+    "weather-kitty-forecast",
+    WeatherKittyForecastBlock,
+    "WeatherKittyDisplay"
+  );
 
-    widget.innerHTML = `
-          <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
-              <img
-                class="WeatherKittyBackgroundImg"
-                src=${WeatherKittyObsImage}
-              />
-              <div class="WeatherKittyWeatherText">Current</div>
-            </div>
-            <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
-              <img
-                class="WeatherKittyBackgroundImg"
-                src=${WeatherKittyForeImage}
-              />
-              <div class="WeatherKittyWeatherText">Forecast</div>
-            </div>
-            <div id="WeatherKittyToolTip">Toop Tip</div>
-            `;
-  }
+  if (WeatherKittyDebug)
+    console.log(`[WeatherWidgetInit] Weather Kitty Widgets Found: ${count}`);
+  else if (count === 0)
+    console.log(
+      "[WeatherWidgetInit] *** ERROR ***: Weather Kitty Widgets Not Found"
+    );
 }
 
-//
-// **************************************************************************
 // Function Weather Widget
-// **************************************************************************
-//
-
 function WeatherWidget() {
   WeatherKittyHasRun = true;
   getWeatherLocationAsync(function (weather) {
@@ -134,7 +98,7 @@ function WeatherWidget() {
         weather.observationTemperatureUnit;
       let img = weather.observationIconUrl;
       let altimg = WeatherKittyObsImage;
-      WeatherSquare("WeatherKittyCurrent", text, img, altimg);
+      WeatherSquares("weather-kitty-current", text, img, altimg);
     }
 
     // Forecast Text
@@ -148,7 +112,7 @@ function WeatherWidget() {
         weather.temperatureUnit;
       let img = weather.forecastIconUrl;
       let altimg = WeatherKittyForeImage;
-      WeatherSquare("WeatherKittyForecast", text, img, altimg);
+      WeatherSquares("weather-kitty-forecast", text, img, altimg);
     }
 
     // Long Forecast
@@ -171,60 +135,60 @@ function WeatherWidget() {
       '<div id="weatherspacer"><br></div>' +
       weather.detailedForecast;
     // + "<br>" + weather.forecastStartTime;
-    document
-      .getElementById("WeatherKittyWidget")
-      .setAttribute("tooltip", forecast);
-    document.getElementById("WeatherKittyToolTip").innerHTML = forecast;
+    let widgets = document.getElementsByTagName("weather-kitty");
+    for (let widget of widgets) {
+      widget.setAttribute("tooltip", forecast);
+      widget.querySelector("weather-kitty-tooltip").innerHTML = forecast; // cjm
+    }
   });
 }
 
-//
-// **************************************************************************
-// Function WeatherSquare
-// **************************************************************************
-//
-
-function WeatherSquare(
+// Function WeatherSquares
+function WeatherSquares(
   elementId,
   replacementText,
   replacementImgUrl,
   alternateImgUrl
 ) {
-  let element = document.getElementById(elementId);
-  let textDiv = element.querySelector(".WeatherKittyWeatherText");
-  let weatherImg = element.querySelector(".WeatherKittyBackgroundImg");
-
-  if (WeatherKittyDebug)
-    console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
-  textDiv.innerHTML = replacementText;
-  if (WeatherKittyDebug)
-    console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
-
-  // Icon
-
-  if (WeatherKittyDebug) console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
-  if (
-    replacementImgUrl !== null &&
-    replacementImgUrl !== "" &&
-    replacementImgUrl.includes("/null") === false &&
-    !WeatherKittyDebug
-  )
-    weatherImg.src = replacementImgUrl;
-  else {
-    if (alternateImgUrl !== null && alternateImgUrl !== "")
-      weatherImg.src = alternateImgUrl;
-    else weatherImg.src = `url("img/WeatherKittyE8.png")`;
+  let elements = document.getElementsByTagName(elementId);
+  if (elements == undefined || elements == null || elements.length === 0) {
+    console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
+    return;
   }
-  if (WeatherKittyDebug)
-    console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
+  for (let element of elements) {
+    let textDiv = element.querySelector(".WeatherKittyWeatherText");
+    let weatherImg = element.querySelector("weather-kitty-current > img"); // cjm
+    if (weatherImg === null)
+      weatherImg = element.querySelector("weather-kitty-forecast > img"); // cjm
+
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
+    textDiv.innerHTML = replacementText;
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
+
+    // Icon
+
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
+    if (
+      replacementImgUrl !== null &&
+      replacementImgUrl !== "" &&
+      replacementImgUrl.includes("/null") === false &&
+      !WeatherKittyDebug
+    )
+      weatherImg.src = replacementImgUrl;
+    else {
+      if (alternateImgUrl !== null && alternateImgUrl !== "")
+        weatherImg.src = alternateImgUrl;
+      else weatherImg.src = `url("img/WeatherKittyE8.png")`;
+    }
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
+  }
 }
 
-//
-// **************************************************************************
 // Function getWeatherLocationAsync
-// **************************************************************************
-//
-
 async function getWeatherLocationAsync(callBack) {
   let cached = { lat: null, lon: null, timestamp: null };
 
@@ -281,11 +245,7 @@ async function getWeatherLocationAsync(callBack) {
   }
 }
 
-//
-// **************************************************************************
 // Function getWeatherAsync
-// **************************************************************************
-//
 /* 
 // tldr: Pick 6m for alerts or 1 hour for forecasts.
 //
@@ -392,7 +352,7 @@ async function getWeatherAsync(lat, lon, callBack) {
       .then((data) => {
         console.log(data);
 
-        // cjm - this is not the best way to handle this, but it works for now
+        // this is not the best way to handle this, but it works for now
         if (data?.properties === null || data?.properties === undefined) {
           console.log(
             "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
@@ -439,7 +399,7 @@ async function getWeatherAsync(lat, lon, callBack) {
       .then((data) => {
         console.log(data);
 
-        // cjm - this is not the best way to handle this, but it works for now
+        // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
           console.log(
             "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
@@ -484,7 +444,7 @@ async function getWeatherAsync(lat, lon, callBack) {
       .then((data) => {
         console.log(data);
 
-        // cjm - this is not the best way to handle this, but it works for now
+        // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
           console.log(
             "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
@@ -539,7 +499,7 @@ async function getWeatherAsync(lat, lon, callBack) {
       .then((data) => {
         console.log(data);
 
-        // cjm - this is not the best way to handle this, but it works for now
+        // this is not the best way to handle this, but it works for now
         if (
           data?.properties?.periods === null ||
           data?.properties?.periods === undefined
@@ -587,12 +547,7 @@ async function getWeatherAsync(lat, lon, callBack) {
   console.log("[getWeatherAsync] Done.");
 }
 
-//
-// **************************************************************************
 // Function WeatherTemperatureFahrenheit
-// **************************************************************************
-//
-
 function WeatherTemperatureFahrenheit(temperature, temperatureUnit) {
   // ((fahrenheit - 32) * 5 / 9) °F to °C;
   // celcius to fahrenheit: (celsius * 9 / 5) + 32
@@ -613,12 +568,7 @@ function WeatherTemperatureFahrenheit(temperature, temperatureUnit) {
   return fahrenheit;
 }
 
-//
-// **************************************************************************
 // Function Elapsed Time
-// **************************************************************************
-//
-
 function wkElapsedTime(startTime) {
   let endTime = new Date();
   // let elapsed = Math.abs(endTime - startTime);
@@ -637,12 +587,7 @@ function wkElapsedTime(startTime) {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
-//
-// **************************************************************************
 // Function findWeatherWords
-// **************************************************************************
-//
-
 function findWeatherWords(shortForecast) {
   // Weather Phrases sorted by Severity
   let weatherPhrases = [
@@ -702,13 +647,7 @@ function findWeatherWords(shortForecast) {
 
   return "Error";
 }
-
-//
-// **************************************************************************
 // Function BadHyphen
-// **************************************************************************
-//
-
 function BadHyphen(phrase) {
   let split = 7;
   let words = phrase.split(" ");
@@ -719,3 +658,59 @@ function BadHyphen(phrase) {
   }
   return words.join(" ");
 }
+
+// Function WeatherKittyCheckPath
+async function WeatherKittyCheckPath(path) {
+  path = "/" + path;
+  let target = path + WeatherKittyObsImage;
+  let result = await fetch(target);
+  if (WeatherKittyDebug)
+    console.log(
+      `[WeatherKittyCheckPath] Checking Path: [${path}] [${result.ok}]`
+    );
+  if (result.ok) return path;
+  else return null;
+}
+
+// Function FindAndReplaceTags
+function FindAndReplaceTags(tagName, htmlBlock, className) {
+  let widgets = document.getElementsByTagName(tagName);
+  for (let widget of widgets) {
+    let htmlString = widget?.innerHTML;
+    if (
+      htmlString != undefined &&
+      htmlString != null &&
+      htmlString != "" &&
+      htmlString.includes("<")
+    ) {
+      if (WeatherKittyDebug) {
+        console.log("[FindAndReplaceTags] Custom HTML Detected");
+      }
+    } else {
+      if (WeatherKittyDebug)
+        console.log("[FindAndReplaceTags] Using Default CodeBlock");
+      widget.innerHTML = htmlBlock;
+      if (className !== null && className !== undefined && className !== "")
+        widget.className = className;
+    }
+  }
+  return widgets.length;
+}
+
+// HTML Block for Weather Kitty
+let WeatherKittyCurrentBlock = `
+  <img src=${WeatherKittyObsImage} />
+  <div class="WeatherKittyWeatherText">Current</div>
+  <weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+`;
+let WeatherKittyForecastBlock = `
+  <img src=${WeatherKittyForeImage} />
+  <div class="WeatherKittyWeatherText">Forecast</div>
+  <weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+`;
+let WeatherKittyWidgetBlock = `
+<weather-kitty-current class="WeatherKittyDisplay">Current Weather</weather-kitty-current>
+<div style="width: 0.5em;"></div>
+<weather-kitty-forecast class="WeatherKittyDisplay">Weather Forecast</weather-kitty-forecast>
+<weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+`;
