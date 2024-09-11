@@ -14,6 +14,7 @@ let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
 
 let WeatherKittyIsInit = false;
 let WeatherKittyIsLoaded = false;
+let WeatherKittyPath = "";
 
 // Function Weather Kitty
 export default WeatherKitty;
@@ -48,16 +49,15 @@ export async function WeatherKitty() {
     const lastSlashIndex = path.lastIndexOf("/");
     if (lastSlashIndex >= 0) path = path.substring(0, lastSlashIndex + 1); // Include the trailing slash
     console.log("[WeatherKitty] Path: ", path);
+    WeatherKittyPath = path;
   }
   // /Testing
 
   WeatherKittyObsImage = path + WeatherKittyObsImage;
   WeatherKittyForeImage = path + WeatherKittyForeImage;
 
-  if (WeatherKittyDebug) {
-    console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
-    console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
-  }
+  console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
+  console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
 
   // Weather Kitty Widget
   if (WeatherKittyDebug) {
@@ -82,11 +82,11 @@ function WeatherWidgetInit(path) {
   count += FindAndReplaceTags("weather-kitty", WeatherKittyWidgetBlock); // Order matters
   count += FindAndReplaceTags(
     "weather-kitty-current",
-    WeatherKittyCurrentBlock
+    WeatherKittyCurrentBlock()
   );
   count += FindAndReplaceTags(
     "weather-kitty-forecast",
-    WeatherKittyForecastBlock
+    WeatherKittyForecastBlock()
   );
 
   if (WeatherKittyDebug)
@@ -193,7 +193,7 @@ function WeatherSquares(
     else {
       if (alternateImgUrl !== null && alternateImgUrl !== "")
         weatherImg.src = alternateImgUrl;
-      else weatherImg.src = `url("img/WeatherKittyE8.png")`;
+      else weatherImg.src = `url(WeatherKittyPath + "img/WeatherKittyE8.png")`;
     }
     if (WeatherKittyDebug)
       console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
@@ -727,20 +727,24 @@ function InjectWeatherKittyStyles(path) {
 }
 
 // HTML Block for Weather Kitty
-let WeatherKittyCurrentBlock = `
+// functions instead of variables, so that path updates to the images can take effect
+function WeatherKittyCurrentBlock() {
+  return `
 <weather-kitty-current class="WeatherKittyBlock">  
   <weather-kitty-tooltip></weather-kitty-tooltip>
-  <img src=${WeatherKittyObsImage} class="WeatherKittyImage"/>
+  <img src="${WeatherKittyObsImage}" class="WeatherKittyImage"/>
   <span class="WeatherKittyText">text</span>
-</weather-kitty-current>
-`;
-let WeatherKittyForecastBlock = `
+</weather-kitty-current>`;
+}
+function WeatherKittyForecastBlock() {
+  return `
 <weather-kitty-forecast class="WeatherKittyBlock">
   <weather-kitty-tooltip></weather-kitty-tooltip>
-  <img src=${WeatherKittyForeImage} class="WeatherKittyImage" />
+  <img src="${WeatherKittyForeImage}" class="WeatherKittyImage" />
   <span class="WeatherKittyText">text</span>
 </weather-kitty-forecast>
 `;
+}
 let WeatherKittyWidgetBlock = `
 <weather-kitty class="WeatherKitty">
   <weather-kitty-current></weather-kitty-current>
