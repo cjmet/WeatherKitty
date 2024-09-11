@@ -18,7 +18,7 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 - `<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
 - `<weather-kitty-current></weather-kitty-current>` - Current Conditions
-  = `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
+- `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
 
 ### CSS Classes and Tags
 
