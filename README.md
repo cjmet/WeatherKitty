@@ -30,7 +30,12 @@ For ease of editing and customization
 - `.WeatherKittyText` - Weather Text
 - `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 - Example CSS
+
   ```
+  weather-kitty {
+    font-size: x-small;
+  }
+
   weather-kitty-tooltip {
     justify-self: center; /* Align X: justify-self: left, center, right */
     align-self: center;   /* Align Y: align-self: start, center, end */
