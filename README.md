@@ -16,20 +16,19 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 ### HTML Elements
 
-`<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
-`<weather-kitty-current></weather-kitty-current>` - Current Conditions
-`<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
+- `<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
+- `<weather-kitty-current></weather-kitty-current>` - Current Conditions
+  = `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
 
 ### CSS Classes and Tags
 
 For ease of editing and customization
 
-`.WeatherKitty` - Widget
-`.WeatherKittyBlock` - Current Conditions and Forecast Blocks. Default width: 5.67 em
-`.WeatherKittyImage` - Weather Background Images
-`.WeatherKittyText` - Weather Text
-`weather-kitty-tooltip` - Tooltip tags if you need to style them.
-
+- `.WeatherKitty` - Widget
+- `.WeatherKittyBlock` - Current Conditions and Forecast Blocks. Default width: 5.67 em
+- `.WeatherKittyImage` - Weather Background Images
+- `.WeatherKittyText` - Weather Text
+- `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 - Example CSS
   ```
   weather-kitty-tooltip {
