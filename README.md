@@ -30,6 +30,14 @@ For ease of editing and customization
 `.WeatherKittyText` - Weather Text
 `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 
+- Example CSS
+  ```
+  weather-kitty-tooltip {
+    justify-self: center; /* Align X: justify-self: left, center, right */
+    align-self: center;   /* Align Y: align-self: start, center, end */
+  }
+  ```
+
 ### Options
 
 - Use CSS in your own stylesheet as desired.
@@ -81,14 +89,7 @@ For ease of editing and customization
 
 ## To-Do
 
-- [ ] over-ride as many classes and ids as possible with custom-elements
-- [ ] make individual tool tips for each display image, that way they can be used separately.
-  - [ ] fix the other tool tip's content
-  - [ ] have weather kitty disable the child tool tips. then we only need one tool-tip type/class?
-  - [ ] remove place holder text from html blocks at the end of the .mjs file.
-  - [ ] automatically load weatherkitty
-  - [ ] convert weatherkitty() to a config and reset, but optional
-  - [ ] automatically insert css
+- [ ] convert weatherkitty() to a config and reset, but optional
 
 ## Blog
 

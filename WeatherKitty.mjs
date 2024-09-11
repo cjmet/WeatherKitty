@@ -7,53 +7,64 @@ let WeatherKittyDebug = false;
 let locCacheTime = 60000 * 5; // 5? minutes just in case we are in a car and chasing a tornado?
 let shortCacheTime = 60000 * 6; // 7 (-1) minutes so we can catch weather alerts
 let longCacheTime = 60000 * 60 * 24; // 24 hours
-let WeatherKittyDefaultPath = "WeatherKitty";
 let WeatherKittyObsImage = "img/WeatherKittyE8.jpeg";
 let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
 
 // Static Status Variables
 
 let WeatherKittyIsInit = false;
-let WeatherKittyHasRun = false;
-let WeatherKittyPath = null;
+let WeatherKittyIsLoaded = false;
 
 // Function Weather Kitty
 export default WeatherKitty;
-export async function WeatherKitty(path) {
+export async function WeatherKitty() {
+  if (WeatherKittyIsLoaded) {
+    console.log("[WeatherKitty] Already Loaded");
+    return;
+  }
+  WeatherKittyIsLoaded = true;
+
+  let path = "";
   let results;
   if (WeatherKittyDebug) console.log("Weather Kitty Debug Mode");
-  else console.log("Weather Kitty Loading");
+  else console.log("[WeatherKitty] Loading ...");
 
-  if (WeatherKittyPath === null || WeatherKittyPath === undefined) {
-    if (path !== null && path !== undefined)
-      path = await WeatherKittyCheckPath(path);
-    if (path === null || path === undefined)
-      path = await WeatherKittyCheckPath("");
-    if (path === null || path === undefined)
-      path = await WeatherKittyCheckPath(WeatherKittyDefaultPath);
+  // Testing
 
-    if (path === null || path === undefined) {
-      console.log("[WeatherKitty] *** ERROR ***: No Path Available");
+  let scripts = document.getElementsByTagName("script");
+  let script = null;
+  for (let subScript of scripts) {
+    if (subScript.src.includes("WeatherKitty")) {
+      script = subScript;
+      break;
     }
-    WeatherKittyPath = path !== null ? path : WeatherKittyDefaultPath;
-    console.log(`[WeatherKitty] WeatherKittyPath: ${path}`);
   }
+  if (script === null) {
+    console.log("*** ERROR ***: Unable to find WeatherKitty script path");
+  } else {
+    if (WeatherKittyDebug) console.log("[WeatherKitty] Script: ", script.src);
+    let url = new URL(script.src);
+    path = url.pathname;
+    const lastSlashIndex = path.lastIndexOf("/");
+    if (lastSlashIndex >= 0) path = path.substring(0, lastSlashIndex + 1); // Include the trailing slash
+    console.log("[WeatherKitty] Path: ", path);
+  }
+  // /Testing
 
-  WeatherKittyObsImage = WeatherKittyPath + WeatherKittyObsImage;
-  WeatherKittyForeImage = WeatherKittyPath + WeatherKittyForeImage;
+  WeatherKittyObsImage = path + WeatherKittyObsImage;
+  WeatherKittyForeImage = path + WeatherKittyForeImage;
 
   if (WeatherKittyDebug) {
-    console.log(`[WeatherKitty] Path: ${path}`);
     console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
     console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
   }
 
   // Weather Kitty Widget
   if (WeatherKittyDebug) {
-    setTimeout(WeatherWidgetInit, 3000);
+    setTimeout(WeatherWidgetInit(path), 3000);
     setTimeout(WeatherWidget, 6000);
   } else {
-    setTimeout(WeatherWidgetInit, 5);
+    setTimeout(WeatherWidgetInit(path), 5);
     setTimeout(WeatherWidget, 10);
   }
 
@@ -61,11 +72,11 @@ export async function WeatherKitty(path) {
 }
 
 // Function Weather Widget Initialization
-function WeatherWidgetInit() {
+function WeatherWidgetInit(path) {
   if (WeatherKittyIsInit) return;
   WeatherKittyIsInit = true;
 
-  InjectWeatherKittyStyles();
+  InjectWeatherKittyStyles(path);
 
   let count = 0;
   count += FindAndReplaceTags("weather-kitty", WeatherKittyWidgetBlock); // Order matters
@@ -88,7 +99,6 @@ function WeatherWidgetInit() {
 
 // Function Weather Widget
 function WeatherWidget() {
-  WeatherKittyHasRun = true;
   getWeatherLocationAsync(function (weather) {
     // Obs Text
     {
@@ -136,10 +146,10 @@ function WeatherWidget() {
       '<div id="weatherspacer"><br></div>' +
       weather.detailedForecast;
     // + "<br>" + weather.forecastStartTime;
-    let widgets = document.getElementsByTagName("weather-kitty");
+    let widgets = document.getElementsByTagName("weather-kitty-tooltip");
     for (let widget of widgets) {
-      widget.setAttribute("tooltip", forecast);
-      widget.querySelector("weather-kitty-tooltip").innerHTML = forecast; // cjm
+      // widget.setAttribute("tooltip", forecast);
+      widget.innerHTML = forecast; // cjm
     }
   });
 }
@@ -158,10 +168,10 @@ function WeatherSquares(
   }
   for (let element of elements) {
     let weatherImg = element.querySelector("weather-kitty-current > img");
-    let textDiv = element.querySelector("weather-kitty-current > div");
+    let textDiv = element.querySelector("weather-kitty-current > span");
     if (weatherImg === null) {
       weatherImg = element.querySelector("weather-kitty-forecast > img");
-      textDiv = element.querySelector("weather-kitty-forecast > div");
+      textDiv = element.querySelector("weather-kitty-forecast > span");
     }
 
     if (WeatherKittyDebug)
@@ -706,8 +716,8 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
 }
 
 // Function InjectWeatherKittyStyles
-function InjectWeatherKittyStyles() {
-  let file = WeatherKittyPath + "WeatherKitty.css";
+function InjectWeatherKittyStyles(path) {
+  let file = path + "WeatherKitty.css";
   if (WeatherKittyDebug) console.log("[InjectWeatherKittyStyles] ", file);
 
   let link = document.createElement("link");
@@ -719,16 +729,16 @@ function InjectWeatherKittyStyles() {
 // HTML Block for Weather Kitty
 let WeatherKittyCurrentBlock = `
 <weather-kitty-current class="WeatherKittyBlock">  
-<img src=${WeatherKittyObsImage} class="WeatherKittyImage"/>
-  <div class="WeatherKittyText"></div>
   <weather-kitty-tooltip></weather-kitty-tooltip>
+  <img src=${WeatherKittyObsImage} class="WeatherKittyImage"/>
+  <span class="WeatherKittyText">text</span>
 </weather-kitty-current>
 `;
 let WeatherKittyForecastBlock = `
 <weather-kitty-forecast class="WeatherKittyBlock">
-  <img src=${WeatherKittyForeImage} class="WeatherKittyImage" />
-  <div class="WeatherKittyText"></div>
   <weather-kitty-tooltip></weather-kitty-tooltip>
+  <img src=${WeatherKittyForeImage} class="WeatherKittyImage" />
+  <span class="WeatherKittyText">text</span>
 </weather-kitty-forecast>
 `;
 let WeatherKittyWidgetBlock = `
@@ -736,7 +746,6 @@ let WeatherKittyWidgetBlock = `
   <weather-kitty-current></weather-kitty-current>
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>
-  <weather-kitty-tooltip></weather-kitty-tooltip>
 </weather-kitty>
 `;
 

@@ -5,6 +5,7 @@
 weather-kitty {
   flex: 0 1 auto;
   display: flex;
+  position: relative;
 }
 
 weather-kitty-current,
@@ -13,8 +14,7 @@ weather-kitty-forecast {
   position: relative;
   width: 5.67em;
   aspect-ratio: 1 / 1;
-  display: flex;
-  z-index: -10;
+  display: grid; /* Grid (1x1) is working better for this use case than flex  */
 
   padding: 0.1em;
   text-wrap: pretty;
@@ -64,40 +64,49 @@ null [tooltip]:hover::before {
 
 weather-kitty-tooltip {
   position: fixed;
+  justify-self: center;
+  align-self: start;
 
+  text-align: left;
   padding: 0.5em;
   border-radius: 0.5em;
 
   transition: all 0.33s;
-  translate: 15em -15em;
+  translate: 100vw -100vh;
   width: 15em;
   height: auto;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.75);
   border: black 3px solid;
   opacity: 0;
+
+  /* For Debugging: */
+  /* translate: 0 0;
+  width: 10px;
+  height: 10px;
+  opacity: 1; */
 }
 
 weather-kitty:hover,
 weather-kitty-current:hover,
 weather-kitty-forecast:hover {
-  weather-kitty-current,
-  weather-kitty-forecast {
+  img,
+  span {
     transition: all 0.33s;
     opacity: 0.5;
   }
   weather-kitty-tooltip {
     color: white;
     transition: all 0.33s;
-    translate: -6.75em 0;
+    translate: 0 0;
     width: 15em;
     height: auto;
     opacity: 1;
+    z-index: 1;
   }
 }
 
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
-weather-kitty > weather-kitty-current > weather-kitty-tooltip,
 weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
   display: none;
 }
