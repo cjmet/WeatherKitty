@@ -90,6 +90,7 @@ For ease of editing and customization
 ## To-Do
 
 - [ ] convert weatherkitty() to a config and reset, but optional
+- [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
 
 ## Blog
 
