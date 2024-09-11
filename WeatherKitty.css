@@ -1,65 +1,19 @@
-/* WeatherKitty.css Version 240829.15 */
 :root {
-  --weatherKittyDebug: 3px;
   --weatherKittyBackgroundOpacity: 0.75;
 }
 
-/* Page Layout */
-
-#WeatherKittyBody {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: min-content 1fr auto;
-  grid-template-areas:
-    "header header"
-    "nav main"
-    "footer footer";
-}
-
-#WeatherKittyHeader {
-  grid-area: header;
-  position: sticky;
-  top: 0;
-  background-color: #333;
-  color: white;
-  padding: 0.5em;
-  text-align: left;
-  overflow: hidden;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#WeatherKittySpacer {
-  flex-grow: 1;
-}
-
-/* /Page Layout */
-/* ************************************************************************ */
-/*                                                                          */
-/*                                                                          */
-
 weather-kitty {
-  position: relative;
-  border: red var(--weatherKittyDebug) solid;
   flex: 0 1 auto;
-  width: 9.5em;
-  height: 4.5em;
   display: flex;
-  z-index: 1;
 }
 
 weather-kitty-current,
 weather-kitty-forecast {
-  border: rgb(0, 125, 255) var(--weatherKittyDebug) solid;
   box-sizing: border-box;
   position: relative;
+  width: 5.67em;
+  aspect-ratio: 1 / 1;
   display: flex;
-  justify-content: center;
-  align-items: end;
-  width: 4.5em;
-  height: 4.5em;
   z-index: -10;
 
   padding: 0.1em;
@@ -80,15 +34,15 @@ weather-kitty-forecast {
 weather-kitty-current > img,
 weather-kitty-forecast > img {
   position: absolute;
+  z-index: -1;
+
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   object-position: center;
   opacity: var(--weatherKittyBackgroundOpacity);
-  z-index: -1;
 }
 
-/* cjm */
 null [tooltip]::before {
   display: none;
 
@@ -147,15 +101,3 @@ weather-kitty > weather-kitty-current > weather-kitty-tooltip,
 weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
   display: none;
 }
-
-/*                                                                          */
-/*                                                                          */
-/* ************************************************************************ */
-/* Page Layout */
-
-#WeatherKittyFooter p {
-  font-size: small;
-  margin: 0;
-}
-
-/* /Page Layout */

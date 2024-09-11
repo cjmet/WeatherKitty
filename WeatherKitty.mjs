@@ -1,5 +1,5 @@
 // WeatherKitty.js Version 240829.15
-let WeatherKittyDebug = true;
+let WeatherKittyDebug = false;
 
 // strict mode
 ("use strict");
@@ -51,7 +51,7 @@ export async function WeatherKitty(path) {
   // Weather Kitty Widget
   if (WeatherKittyDebug) {
     setTimeout(WeatherWidgetInit, 3000);
-    setTimeout(WeatherWidget, 6000); // cjm
+    setTimeout(WeatherWidget, 6000);
   } else {
     setTimeout(WeatherWidgetInit, 5);
     setTimeout(WeatherWidget, 10);
@@ -62,19 +62,20 @@ export async function WeatherKitty(path) {
 
 // Function Weather Widget Initialization
 function WeatherWidgetInit() {
+  if (WeatherKittyIsInit) return;
   WeatherKittyIsInit = true;
+
+  InjectWeatherKittyStyles();
 
   let count = 0;
   count += FindAndReplaceTags("weather-kitty", WeatherKittyWidgetBlock); // Order matters
   count += FindAndReplaceTags(
     "weather-kitty-current",
-    WeatherKittyCurrentBlock,
-    "WeatherKittyDisplay"
+    WeatherKittyCurrentBlock
   );
   count += FindAndReplaceTags(
     "weather-kitty-forecast",
-    WeatherKittyForecastBlock,
-    "WeatherKittyDisplay"
+    WeatherKittyForecastBlock
   );
 
   if (WeatherKittyDebug)
@@ -156,10 +157,12 @@ function WeatherSquares(
     return;
   }
   for (let element of elements) {
-    let textDiv = element.querySelector(".WeatherKittyWeatherText");
-    let weatherImg = element.querySelector("weather-kitty-current > img"); // cjm
-    if (weatherImg === null)
-      weatherImg = element.querySelector("weather-kitty-forecast > img"); // cjm
+    let weatherImg = element.querySelector("weather-kitty-current > img");
+    let textDiv = element.querySelector("weather-kitty-current > div");
+    if (weatherImg === null) {
+      weatherImg = element.querySelector("weather-kitty-forecast > img");
+      textDiv = element.querySelector("weather-kitty-forecast > div");
+    }
 
     if (WeatherKittyDebug)
       console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
@@ -174,8 +177,7 @@ function WeatherSquares(
     if (
       replacementImgUrl !== null &&
       replacementImgUrl !== "" &&
-      replacementImgUrl.includes("/null") === false &&
-      !WeatherKittyDebug
+      replacementImgUrl.includes("/null") === false
     )
       weatherImg.src = replacementImgUrl;
     else {
@@ -204,13 +206,14 @@ async function getWeatherLocationAsync(callBack) {
     cached?.timestamp != null &&
     cached?.timestamp > Date.now() - locCacheTime
   ) {
-    console.log(
-      `[getLocationAsync] Using cached location: ${cached.lat}, ${
-        cached.lon
-      }, ${cached.timestamp}, [${wkElapsedTime(
-        cached.timestamp + locCacheTime
-      )}]`
-    );
+    if (WeatherKittyDebug)
+      console.log(
+        `[getLocationAsync] Using cached location: ${cached.lat}, ${
+          cached.lon
+        }, ${cached.timestamp}, [${wkElapsedTime(
+          cached.timestamp + locCacheTime
+        )}]`
+      );
     getWeatherAsync(cached.lat, cached.lon, callBack);
   } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -218,7 +221,8 @@ async function getWeatherLocationAsync(callBack) {
         // console.log(position);
         let lon = position.coords.longitude;
         let lat = position.coords.latitude;
-        console.log(`[getLocationAsync] Latitude: ${lat}, Longitude: ${lon}`);
+        if (WeatherKittyDebug)
+          console.log(`[getLocationAsync] Latitude: ${lat}, Longitude: ${lon}`);
         localStorage.setItem(
           "location",
           JSON.stringify({
@@ -231,17 +235,19 @@ async function getWeatherLocationAsync(callBack) {
       },
 
       (error) => {
-        console.log(`[getLocationAsync] Error: ${error.message}`);
+        if (WeatherKittyDebug)
+          console.log(`[getLocationAsync] Error: ${error.message}`);
         if (cached?.lat != null && cached?.lon != null) {
-          console.log(
-            `[getLocationAsync] Using cached location: ${cached.lat}, ${cached.lon}, ${cached.timestamp}`
-          );
+          if (WeatherKittyDebug)
+            console.log(
+              `[getLocationAsync] Using cached location: ${cached.lat}, ${cached.lon}, ${cached.timestamp}`
+            );
           getWeatherAsync(cached.lat, cached.lon, callBack);
         }
       }
     );
   } else {
-    console.log("Geolocation data is not available.");
+    console.log("*** ERROR ***: Geolocation data is not available.");
   }
 }
 
@@ -306,7 +312,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         cached.forecastTimeStamp + shortCacheTime
       )}]`
     );
-    console.log(cached);
+    if (WeatherKittyDebug) console.log(cached);
   }
 
   // Deal with Cache-ing of Weather Data
@@ -350,7 +356,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        if (WeatherKittyDebug) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.properties === null || data?.properties === undefined) {
@@ -397,7 +403,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        if (WeatherKittyDebug) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
@@ -442,7 +448,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        if (WeatherKittyDebug) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
@@ -497,7 +503,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        if (WeatherKittyDebug) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (
@@ -676,7 +682,9 @@ async function WeatherKittyCheckPath(path) {
 function FindAndReplaceTags(tagName, htmlBlock, className) {
   let widgets = document.getElementsByTagName(tagName);
   for (let widget of widgets) {
-    let htmlString = widget?.innerHTML;
+    let htmlString = widget?.innerHTML; // check the inner so we can detect custom html
+    if (WeatherKittyDebug)
+      console.log("[FindAndReplaceTags] innerHTML: ", htmlString);
     if (
       htmlString != undefined &&
       htmlString != null &&
@@ -688,8 +696,8 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
       }
     } else {
       if (WeatherKittyDebug)
-        console.log("[FindAndReplaceTags] Using Default CodeBlock");
-      widget.innerHTML = htmlBlock;
+        console.log("[FindAndReplaceTags] Using Default CodeBlock", htmlBlock);
+      widget.outerHTML = htmlBlock; // set the outer so we can include any classes or tags.
       if (className !== null && className !== undefined && className !== "")
         widget.className = className;
     }
@@ -697,20 +705,40 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
   return widgets.length;
 }
 
+// Function InjectWeatherKittyStyles
+function InjectWeatherKittyStyles() {
+  let file = WeatherKittyPath + "WeatherKitty.css";
+  if (WeatherKittyDebug) console.log("[InjectWeatherKittyStyles] ", file);
+
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = file;
+  document.head.insertBefore(link, document.head.firstChild);
+}
+
 // HTML Block for Weather Kitty
 let WeatherKittyCurrentBlock = `
-  <img src=${WeatherKittyObsImage} />
-  <div class="WeatherKittyWeatherText">Current</div>
-  <weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+<weather-kitty-current class="WeatherKittyBlock">  
+<img src=${WeatherKittyObsImage} class="WeatherKittyImage"/>
+  <div class="WeatherKittyText"></div>
+  <weather-kitty-tooltip></weather-kitty-tooltip>
+</weather-kitty-current>
 `;
 let WeatherKittyForecastBlock = `
-  <img src=${WeatherKittyForeImage} />
-  <div class="WeatherKittyWeatherText">Forecast</div>
-  <weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+<weather-kitty-forecast class="WeatherKittyBlock">
+  <img src=${WeatherKittyForeImage} class="WeatherKittyImage" />
+  <div class="WeatherKittyText"></div>
+  <weather-kitty-tooltip></weather-kitty-tooltip>
+</weather-kitty-forecast>
 `;
 let WeatherKittyWidgetBlock = `
-<weather-kitty-current class="WeatherKittyDisplay">Current Weather</weather-kitty-current>
-<div style="width: 0.5em;"></div>
-<weather-kitty-forecast class="WeatherKittyDisplay">Weather Forecast</weather-kitty-forecast>
-<weather-kitty-tooltip>Tool Tip</weather-kitty-tooltip>
+<weather-kitty class="WeatherKitty">
+  <weather-kitty-current></weather-kitty-current>
+  <div style="width: 0.5em;"></div>
+  <weather-kitty-forecast></weather-kitty-forecast>
+  <weather-kitty-tooltip></weather-kitty-tooltip>
+</weather-kitty>
 `;
+
+// Run Weather Kitty
+WeatherKitty();

@@ -6,62 +6,77 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
 
 <br>
 
-## Usage:
+## Usage
 
-- install as a git submodule
+- Install as a git submodule
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
+- Add WeatherKitty.mjs to your scripts in your html file
+- Insert one of the weather-kitty html elements into your html.
+  - Note: You must use both opening and closing tags.
 
-- Place WeatherKitty.css before your styles.css, so that you can optionally over-ride it.
-- Place the `<div id="WeatherKittyWidget"></div>` block where you want it, with/without the optional spacer.
-- Place WeatherKitty.js before your script.js, again so you can both use and over-ride it.
-- Call `WeatherKitty([optionalPath]);` in your script.js.
+### HTML Elements
 
-  - Default path is "WeatherKitty"
+`<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
+`<weather-kitty-current></weather-kitty-current>` - Current Conditions
+`<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
 
-  &nbsp;
-  index.html
+### CSS Classes and Tags
 
-  ```
-  <link rel="stylesheet" href="WeatherKitty/WeatherKitty.css" />
-  <link rel="stylesheet" href="style.css" />
+For ease of editing and customization
 
-  <div id="WeatherKittyWidget"></div>
+`.WeatherKitty` - Widget
+`.WeatherKittyBlock` - Current Conditions and Forecast Blocks. Default width: 5.67 em
+`.WeatherKittyImage` - Weather Background Images
+`.WeatherKittyText` - Weather Text
+`weather-kitty-tooltip` - Tooltip tags if you need to style them.
 
-  <script src="./WeatherKitty/WeatherKitty.js"></script>
-  <script src="./script.js"></script>
-  ```
+### Options
 
-  &nbsp;
-  script.js
+- Use CSS in your own stylesheet as desired.
+- Import and use the WeatherKitty() function for configuration;
+- Custom HTML Code Blocks
 
-  ```
-  WeatherKitty();
-  ```
-
-### Additional Usage Info
-
-- #WeatherKittyWidget is the primary container, use this to control size and placement
-- .WeatherKittyDisplay are the Image and Text Containers. Use these to control text size etc.
-- #WeatherKittyToopTip is the pop-up tool-tip Forecast. Use this to modify it's size, postion, behavior, etc.
-- set `WeatherKittyDebug = true;` for additional more verbose console logging messages
-
-### Custom Html Block Example
+### index.html Code Example
 
 ```
- <!-- Weather Kitty -->
-      <!-- OPTIONAL FULL HTML EXAMPLE -->
-      <div id="WeatherKittyWidget">
-        <div id="WeatherKittyCurrent" class="WeatherKittyDisplay">
-          <img class="WeatherKittyBackgroundImg" />
-          <div class="WeatherKittyWeatherText">Current</div>
-        </div>
-        <div id="WeatherKittyForecast" class="WeatherKittyDisplay">
-          <img class="WeatherKittyBackgroundImg" />
-          <div class="WeatherKittyWeatherText">Forecast</div>
-        </div>
-        <div id="WeatherKittyToolTip">Toop Tip</div>
-      </div>
-      <!-- Weather Kitty -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header>
+      <weather-kitty></weather-kitty>
+    </header>
+
+    <script src="./WeatherKitty.mjs" type="module"></script>
+  </body>
+</html>
+```
+
+### Custom HTML Code Block Example
+
+```
+<weather-kitty class="WeatherKitty">
+  <weather-kitty-current class="WeatherKittyBlock">
+    <img src="https://default-image.jpg" class="WeatherKittyImage" />
+    <div class="WeatherKittyText"></div>
+    <weather-kitty-tooltip></weather-kitty-tooltip>
+  </weather-kitty-current>
+
+  <div style="width: 0.5em"></div>
+
+  <weather-kitty-forecast class="WeatherKittyBlock">
+    <img src="https://default-image.jpg" class="WeatherKittyImage" />
+    <div class="WeatherKittyText"></div>
+    <weather-kitty-tooltip></weather-kitty-tooltip>
+  </weather-kitty-forecast>
+
+  <weather-kitty-tooltip></weather-kitty-tooltip>
+</weather-kitty>
 ```
 
 ## To-Do
@@ -71,12 +86,19 @@ Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
   - [ ] fix the other tool tip's content
   - [ ] have weather kitty disable the child tool tips. then we only need one tool-tip type/class?
   - [ ] remove place holder text from html blocks at the end of the .mjs file.
-- [ ] \<weather-kitty> \</weather-kitty>
-- [ ] \<weather-kitty-current> \</weather-kitty-current>
-- [ ] \<weather-kitty-forecast> \</weather-kitty-forecast>
-- [ ] \<weather-kitty-tooltip> \<weather-kitty-tooltip>
+  - [ ] automatically load weatherkitty
+  - [ ] convert weatherkitty() to a config and reset, but optional
+  - [ ] automatically insert css
 
 ## Blog
+
+## 24/09/11
+
+- Converting to module and html elements and trying to make everything more portable, usable, and compatible.
+
+## 24/09/10
+
+- Converting to module and html elements and trying to make everything more portable, usable, and compatible.
 
 ## 24/09/01
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header>
+      <weather-kitty class="WeatherKitty">
+        <weather-kitty-current class="WeatherKittyBlock">
+          <img src="https://default-image.jpg" class="WeatherKittyImage" />
+          <div class="WeatherKittyText"></div>
+          <weather-kitty-tooltip></weather-kitty-tooltip>
+        </weather-kitty-current>
+
+        <div style="width: 5.66em">Custom HTML Code Block Example</div>
+
+        <weather-kitty-forecast class="WeatherKittyBlock">
+          <img src="https://default-image.jpg" class="WeatherKittyImage" />
+          <div class="WeatherKittyText"></div>
+          <weather-kitty-tooltip></weather-kitty-tooltip>
+        </weather-kitty-forecast>
+
+        <weather-kitty-tooltip></weather-kitty-tooltip>
+      </weather-kitty>
+    </header>
+
+    <script src="./WeatherKitty.mjs" type="module"></script>
+  </body>
+</html>

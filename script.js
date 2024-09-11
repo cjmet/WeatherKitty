@@ -4,5 +4,5 @@
 // import { WeatherKitty } from "./WeatherKitty.mjs";
 // WeatherKitty();
 
-import WeatherKitty from "./WeatherKitty.mjs";
-WeatherKitty();
+// import WeatherKitty from "./WeatherKitty.mjs";
+// WeatherKitty();
