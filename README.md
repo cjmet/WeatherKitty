@@ -103,6 +103,7 @@ For ease of editing and customization
 - [ ] Project - To-Do List
   - [ ] Auth / OAuth API
   - [ ] AWS, Lambda, Hosting, Etc, ...
+  - [ ] Look into Vue
 
 ## Project Requirements
 
