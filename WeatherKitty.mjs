@@ -1,5 +1,11 @@
 // WeatherKitty.js Version 240829.15
 let WeatherKittyDebug = false;
+// await import("./node_modules/chart.js/dist/chart.umd.js");
+import "./node_modules/chart.js/dist/chart.umd.js";
+
+// cjm
+// Chart.js Test
+let TestChart = null;
 
 // strict mode
 ("use strict");
@@ -7,6 +13,13 @@ let WeatherKittyDebug = false;
 let locCacheTime = 60000 * 5; // 5? minutes just in case we are in a car and chasing a tornado?
 let shortCacheTime = 60000 * 6; // 7 (-1) minutes so we can catch weather alerts
 let longCacheTime = 60000 * 60 * 24; // 24 hours
+let timeFormat = {
+  month: "short",
+  day: "2-digit",
+  hour: "numeric",
+  hour12: true, // Delete for 24-hour format
+  minute: "2-digit",
+};
 let WeatherKittyObsImage = "img/WeatherKittyE8.jpeg";
 let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
 
@@ -56,8 +69,10 @@ export async function WeatherKitty() {
   WeatherKittyObsImage = path + WeatherKittyObsImage;
   WeatherKittyForeImage = path + WeatherKittyForeImage;
 
-  console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
-  console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
+  if (WeatherKittyDebug) {
+    console.log(`[WeatherKitty] Obs : ${WeatherKittyObsImage}`);
+    console.log(`[WeatherKitty] Fore: ${WeatherKittyForeImage}`);
+  }
 
   // Weather Kitty Widget
   if (WeatherKittyDebug) {
@@ -79,21 +94,26 @@ function WeatherWidgetInit(path) {
   InjectWeatherKittyStyles(path);
 
   let count = 0;
-  count += FindAndReplaceTags("weather-kitty", WeatherKittyWidgetBlock); // Order matters
+  count += FindAndReplaceTags(
+    "weather-kitty",
+    WeatherKittyWidgetBlock,
+    "WeatherKitty"
+  ); // Order matters
   count += FindAndReplaceTags(
     "weather-kitty-current",
-    WeatherKittyCurrentBlock()
+    WeatherKittyCurrentBlock(),
+    "WeatherKittyBlock"
   );
   count += FindAndReplaceTags(
     "weather-kitty-forecast",
-    WeatherKittyForecastBlock()
+    WeatherKittyForecastBlock(),
+    "WeatherKittyBlock"
   );
 
-  if (WeatherKittyDebug)
-    console.log(`[WeatherWidgetInit] Weather Kitty Widgets Found: ${count}`);
-  else if (count === 0)
+  if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
+  else
     console.log(
-      "[WeatherWidgetInit] *** ERROR ***: Weather Kitty Widgets Not Found"
+      "[WeatherWidgetInit] *** ERROR ***: Weather Kitty Elements Not Found"
     );
 }
 
@@ -149,8 +169,71 @@ function WeatherWidget() {
     let widgets = document.getElementsByTagName("weather-kitty-tooltip");
     for (let widget of widgets) {
       // widget.setAttribute("tooltip", forecast);
-      widget.innerHTML = forecast; // cjm
+      widget.innerHTML = forecast;
     }
+
+    // cjm testing charting
+
+    let times = []; // cjm
+    let labels = [];
+    let data = [];
+    if (weather.observationData.length > 0) {
+      for (let i = 0; i < weather.observationData.length; i++) {
+        let date = new Date(weather.observationData[i].properties.timestamp);
+        times.push(date); // cjm
+        let label = date.toLocaleString(undefined, timeFormat);
+        label = label.replace(/AM/, "am").replace(/PM/, "pm");
+        labels.push(label);
+        data.push(
+          Fahrenheit(
+            weather.observationData[i].properties.temperature.value,
+            weather.observationData[i].properties.temperature.unitCode.replace(
+              /wmoUnit\:deg/i,
+              ""
+            )
+          )
+        );
+      }
+    }
+
+    let date = new Date(labels[0]);
+    console.log("[Obs Chart Data] ", date.toLocaleString());
+    console.log(
+      "[Obs Chart Times] ",
+      times.sort().reverse().slice(0, 10).toLocaleString()
+    );
+
+    labels = labels.reverse();
+    data = data.reverse();
+
+    if (TestChart == null) {
+      let test = document.getElementById("test");
+      let TestChart = new Chart(test, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Temperature",
+              data: data,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    } else {
+      TestChart.data.labels = labels;
+      TestChart.data.datasets[0].data = data;
+      TestChart.update();
+    }
+
+    // cjm /testing charting
   });
 }
 
@@ -314,6 +397,9 @@ async function getWeatherAsync(lat, lon, callBack) {
       observationIconUrl: "",
       observationTemperature: "",
       observationTemperatureUnit: "",
+
+      // Data Structures for more complex usage
+      observationData: [],
     };
     // localStorage.setItem("weather", JSON.stringify(cached));
   } else {
@@ -487,12 +573,16 @@ async function getWeatherAsync(lat, lon, callBack) {
           cached.observationTemperatureUnit = String(
             data.features[0].properties.temperature.unitCode
           ).replace(/wmoUnit\:deg/i, "");
-          cached.observationTemperature = WeatherTemperatureFahrenheit(
+          cached.observationTemperature = Fahrenheit(
             cached.observationTemperature,
             cached.observationTemperatureUnit
           );
           cached.observationTemperatureUnit = "°f";
         }
+
+        // cjm
+        // Intercept Historical Observation Data for Charting
+        cached.observationData = data.features;
 
         localStorage.setItem("weather", JSON.stringify(cached));
       });
@@ -534,7 +624,7 @@ async function getWeatherAsync(lat, lon, callBack) {
           cached.temperatureUnit = String(
             data.properties.periods[0].temperatureUnit
           );
-          cached.temperature = WeatherTemperatureFahrenheit(
+          cached.temperature = Fahrenheit(
             cached.temperature,
             cached.temperatureUnit
           );
@@ -558,24 +648,29 @@ async function getWeatherAsync(lat, lon, callBack) {
     console.log(`[getWeatherAsync] No weatherForecastUrl available`);
   }
 
-  // Call the callback function
+  // Call the callback function:
   callBack(cached);
   console.log("[getWeatherAsync] Done.");
 }
 
 // Function WeatherTemperatureFahrenheit
-function WeatherTemperatureFahrenheit(temperature, temperatureUnit) {
+// .replace(/wmoUnit\:deg/i, "")
+function Fahrenheit(temperature, temperatureUnit) {
   // ((fahrenheit - 32) * 5 / 9) °F to °C;
+  if (temperature === null || temperature === undefined || temperature === "")
+    return NaN;
   // celcius to fahrenheit: (celsius * 9 / 5) + 32
   let fahrenheit = -999;
-  if (
-    temperatureUnit == "F" ||
-    temperatureUnit == "f" ||
-    temperatureUnit == "°F" ||
-    temperatureUnit == "°f"
-  )
+  temperatureUnit = temperatureUnit.toLowerCase();
+  if (temperatureUnit === "f" || temperatureUnit === "°f")
     fahrenheit = Math.round(temperature);
-  else fahrenheit = Math.round((temperature * 9) / 5 + 32);
+  else if (temperatureUnit == "c" || temperatureUnit === "°c")
+    fahrenheit = Math.round((temperature * 9) / 5 + 32);
+  else
+    console.log(
+      `*** WARNING ***: Invalid Temperature Unit: ${temperatureUnit}`
+    );
+
   if (WeatherKittyDebug)
     if (WeatherKittyDebug)
       console.log(
@@ -701,13 +796,13 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
       htmlString != "" &&
       htmlString.includes("<")
     ) {
-      if (WeatherKittyDebug) {
+      if (WeatherKittyDebug)
         console.log("[FindAndReplaceTags] Custom HTML Detected");
-      }
     } else {
       if (WeatherKittyDebug)
-        console.log("[FindAndReplaceTags] Using Default CodeBlock", htmlBlock);
-      widget.outerHTML = htmlBlock; // set the outer so we can include any classes or tags.
+        console.log("[FindAndReplaceTags] Using Default CodeBlock");
+      if (WeatherKittyDebug) console.log(htmlBlock);
+      widget.innerHTML = htmlBlock; // set the outer so we can include any classes or tags.
       if (className !== null && className !== undefined && className !== "")
         widget.className = className;
     }
@@ -729,29 +824,22 @@ function InjectWeatherKittyStyles(path) {
 // HTML Block for Weather Kitty
 // functions instead of variables, so that path updates to the images can take effect
 function WeatherKittyCurrentBlock() {
-  return `
-<weather-kitty-current class="WeatherKittyBlock">  
-  <weather-kitty-tooltip></weather-kitty-tooltip>
+  let results = `  <weather-kitty-tooltip></weather-kitty-tooltip>
   <img src="${WeatherKittyObsImage}" class="WeatherKittyImage"/>
-  <span class="WeatherKittyText">text</span>
-</weather-kitty-current>`;
+  <span class="WeatherKittyText">Loading . . .</span>`;
+  return results;
 }
+
 function WeatherKittyForecastBlock() {
-  return `
-<weather-kitty-forecast class="WeatherKittyBlock">
-  <weather-kitty-tooltip></weather-kitty-tooltip>
+  let results = `  <weather-kitty-tooltip></weather-kitty-tooltip>
   <img src="${WeatherKittyForeImage}" class="WeatherKittyImage" />
-  <span class="WeatherKittyText">text</span>
-</weather-kitty-forecast>
-`;
+  <span class="WeatherKittyText">Loading . . .</span>`;
+  return results;
 }
-let WeatherKittyWidgetBlock = `
-<weather-kitty class="WeatherKitty">
-  <weather-kitty-current></weather-kitty-current>
+
+let WeatherKittyWidgetBlock = ` <weather-kitty-current></weather-kitty-current>
   <div style="width: 0.5em;"></div>
-  <weather-kitty-forecast></weather-kitty-forecast>
-</weather-kitty>
-`;
+  <weather-kitty-forecast></weather-kitty-forecast>`;
 
 // Run Weather Kitty
 WeatherKitty();

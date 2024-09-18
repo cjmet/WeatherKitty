@@ -140,6 +140,20 @@ For ease of editing and customization
 
 ## Blog
 
+## 24/09/18
+
+- Refactored to use innerHTML in the custom elements so html properties can be used
+- nvm, npm, Node.js via WSL Ubuntu
+  - https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows
+  - wsl --install
+  - Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true
+  - /mnt/c/users/...
+- chart.js via npm
+  - The documentation is lacking in describing how to use the package as a vanilla es6 module.
+    - **`import "./node_modules/chart.js/dist/chart.umd.js";`**
+- DateTime is ... interesting
+  - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
+
 ## 24/09/11
 
 - Converting to module and html elements and trying to make everything more portable, usable, and compatible.
