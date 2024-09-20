@@ -33,16 +33,20 @@ body {
 }
 
 #WeatherKittyNav {
-  border: black 1px solid;
+  border: green 3px solid;
+  margin: 3px;
   box-sizing: border-box;
   grid-area: nav;
   width: auto;
 }
 
 #WeatherKittyMain {
-  border: black 1px solid;
+  border: black 3px solid;
+  margin: 3px;
   box-sizing: border-box;
-  grid-area: nav main;
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
 }
 
 #WeatherKittySpacer {

@@ -35,9 +35,16 @@
       <!-- <weather-kitty-current></weather-kitty-current>
       <weather-kitty-forecast></weather-kitty-forecast> -->
 
-      <weather-kitty-observations-chart>
-        <div><canvas id="test"></canvas></div>
-      </weather-kitty-observations-chart>
+      <!-- <weather-kitty-observations-chart> -->
+      <!-- Requires min-width 0px; min-height 0px;
+        Or Requires wrapping in a div with position absolute;  This might be the best answer for a portable element. -->
+      <div
+        style="flex: 1 1 auto; box-sizing: border-box"
+        style="width: 100%; height: 100%"
+      >
+        <canvas id="test" style="position: absolute"></canvas>
+      </div>
+      <!-- </weather-kitty-observations-chart> -->
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>

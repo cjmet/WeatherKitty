@@ -206,9 +206,11 @@ function WeatherWidget() {
     labels = labels.reverse();
     data = data.reverse();
 
+    // cjm
+    // CHART
     if (TestChart == null) {
       let test = document.getElementById("test");
-      let TestChart = new Chart(test, {
+      TestChart = new Chart(test, {
         type: "line",
         data: {
           labels: labels,
@@ -220,11 +222,12 @@ function WeatherWidget() {
           ],
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
+          maintainAspectRatio: false,
+          // scales: {
+          //   y: {
+          //     beginAtZero: false,
+          //   },
+          // },
         },
       });
     } else {
@@ -233,6 +236,8 @@ function WeatherWidget() {
       TestChart.update();
     }
 
+    // TestChart.options.scales.y.beginAtZero = false;
+    // let yMin = Math.min(...data.filter((value) => !Number.isNaN(value))) - 5;
     // cjm /testing charting
   });
 }
