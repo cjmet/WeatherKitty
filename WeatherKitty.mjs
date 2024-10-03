@@ -3,10 +3,6 @@ let WeatherKittyDebug = false;
 // await import("./node_modules/chart.js/dist/chart.umd.js");
 import "./node_modules/chart.js/dist/chart.umd.js";
 
-// cjm
-// Chart.js Test
-let TestChart = null;
-
 // strict mode
 ("use strict");
 
@@ -172,14 +168,14 @@ function WeatherWidget() {
       widget.innerHTML = forecast;
     }
 
-    // cjm testing charting
+    // testing charting
     // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
     ObservationCharts(weather.observationData);
   });
 }
 
 function ObservationCharts(data) {
-  console.log("[Obs Chart Data] ", data[0]);
+  if (WeatherKittyDebug) console.log("[Obs Chart Data] ", data[0]);
 
   let obsArray = [
     "timestamp",
@@ -204,12 +200,13 @@ function ObservationCharts(data) {
 
   if (data.length > 0) {
     for (let observation of obsArray) {
-      console.log(
-        "[Obs Chart Data Collect] ",
-        observation,
-        " : ",
-        data[0].properties[observation]
-      );
+      if (WeatherKittyDebug)
+        console.log(
+          "[Obs Chart Data Collect] ",
+          observation,
+          " : ",
+          data[0].properties[observation]
+        );
 
       for (let i = 0; i < data.length; i++) {
         if (
@@ -223,117 +220,53 @@ function ObservationCharts(data) {
         }
       }
     }
+    if (!WeatherKittyDebug)
+      console.log("[Obs Chart Data] ", obsArray.join(", "));
   }
 
-  CreateChart(
-    "temperature",
-    chartData.get("temperature"),
-    chartData.get("timestamp")
-  );
-  return;
-
-  for (let [key, value] of chartData) {
-    console.log(key, value[0]); // cjm
-    CreateChart(key, value, data["timestamp"]);
+  for (let Key of obsArray) {
+    if (Key === "timestamp") continue;
+    CreateChart(Key, chartData.get(Key), chartData.get("timestamp"));
   }
-
   return;
-
-  // let date = new Date(data[i].properties.timestamp);
-  // times.push(date); // cjm
-  // let label = date.toLocaleString(undefined, timeFormat);
-  // label = label.replace(/AM/, "am").replace(/PM/, "pm");
-  // labels.push(label);
-  // data.push(
-  //   Fahrenheit(
-  //     weather.observationData[i].properties.temperature.value,
-  //     weather.observationData[i].properties.temperature.unitCode.replace(
-  //       /wmoUnit\:deg/i,
-  //       ""
-  //     )
-  //   )
-
-  // let date = new Date(labels[0]);
-  // console.log("[Obs Chart Data] ", date.toLocaleString());
-  // console.log(
-  //   "[Obs Chart Times] ",
-  //   times.sort().reverse().slice(0, 10).toLocaleString()
-  // );
-
-  // labels = labels.reverse();
-  // data = data.reverse();
-
-  // // cjm
-  // // CHART
-  // if (TestChart == null) {
-  //   let test = document.getElementById("test");
-  //   TestChart = new Chart(test, {
-  //     type: "line",
-  //     data: {
-  //       labels: labels,
-  //       datasets: [
-  //         {
-  //           label: "Temperature",
-  //           data: data,
-  //           pointStyle: false,
-  //           pointStyle: "circle",
-  //           pointRadius: 1,
-  //           borderWidth: 2, // line width, default 3
-  //         },
-  //       ],
-  //     },
-  //     options: {
-  //       maintainAspectRatio: false,
-  //       // scales: {
-  //       //   y: {
-  //       //     beginAtZero: false,
-  //       //   },
-  //       // },
-  //     },
-  //   });
-  // } else {
-  //   TestChart.data.labels = labels;
-  //   TestChart.data.datasets[0].data = data;
-  //   TestChart.update();
-  // }
-
-  // TestChart.options.scales.y.beginAtZero = false;
-  // let yMin = Math.min(...data.filter((value) => !Number.isNaN(value))) - 5;
-  // cjm /testing charting
 }
 
 function CreateChart(key, values, timestamps) {
   if (values.length === 0 || values[0].value === undefined) {
-    console.log("Barp!", key);
+    console.log(`[CreateChart] Barp! on ${key}`);
     return;
   }
   if (key === "timestamp") return;
   let parent = document.getElementById("chartContainer");
   if (parent === null || parent === undefined || parent.length === 0) {
-    throw new Error(
-      "[weather-kitty-observations-chart] \n\tCharts Parent Element not found"
-    );
+    console.log("[CreateChart] *** ERROR *** Charts Parent Element not found");
+    throw new Error("[CreateChart] \n\tCharts Parent Element not found");
   }
 
-  console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
-
-  // cjm2
-  // let date = new Date(data[i].properties.timestamp);
-  // times.push(date); // cjm
-  // let label = date.toLocaleString(undefined, timeFormat);
-  // label = label.replace(/AM/, "am").replace(/PM/, "pm");
-  // labels.push(label);
+  if (WeatherKittyDebug)
+    console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
 
   let data = [];
   let time = [];
   for (let i = 0; i < values.length; i++) {
     data.push(values[i].value);
-    time.push(new Date(timestamps[i]));
+    let date = new Date(timestamps[i]);
+    let label = date.toLocaleString(undefined, timeFormat);
+    label = label.replace(/AM/, "am").replace(/PM/, "pm");
+    time.push(label);
   }
+  data = data.reverse();
+  time = time.reverse();
 
+  let div = document.createElement("div");
+  div.id = "key" + "Container";
+  div.style.border = "1px solid black";
+  div.style.borderRadius = "1em";
+  div.style.margin = "1em";
   let canvas = document.createElement("canvas");
   canvas.id = key;
-  parent.append(canvas);
+  div.append(canvas);
+  parent.append(div);
 
   let newChart = new Chart(canvas, {
     type: "line",
@@ -696,7 +629,6 @@ async function getWeatherAsync(lat, lon, callBack) {
           cached.observationTemperatureUnit = "°f";
         }
 
-        // cjm
         // Intercept Historical Observation Data for Charting
         cached.observationData = data.features;
         console.log(data);
