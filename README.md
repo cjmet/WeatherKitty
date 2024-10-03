@@ -1,9 +1,9 @@
 # WeatherKitty
 
-Implementing a Weather Widget using the NWS/NOAA **_FREE_** Weather API <br>
+Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/main/img/DemoImage.jpg)
-
+<span style="font-size: xx-small;">Github Copilot was used during the development of this project.</span>
 <br>
 
 ## Usage
@@ -95,9 +95,9 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] refactor the globals for cleaner code.
+  - [ ] add \<weather-kitty-chart type="">
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
-  - [ ] convert weatherkitty() to a config and reset, but optional
+  - [ ] refactor the globals for cleaner code.
   - [ ] manual geolocation by zipcode if geolocation is not available.
 
 - [ ] Project - To-Do List
@@ -105,34 +105,43 @@ For ease of editing and customization
   - [ ] AWS, Lambda, Hosting, Etc, ...
   - [ ] Look into Vue
 
-## Project Requirements
+## CodeKy Project Requirements
 
 - [ ] Required
-  - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
-  - [ ] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 5 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
   - [ ] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
-  - [ ] Identify 3+ features from the provided list that you've integrated. Add any special instructions for the reviewer to run your project.
+  - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+  - [ ] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
+  - [ ] 3+ features from the provided list that you've integrated. Add any special instructions for the reviewer to run your project.
   - [ ] Add a 4th feature
-  - [x] Integrate a third-party API into your project.
-        &nbsp;
-- [ ] Features (Choose 2)
+  - [x] API: Integrate a third-party API into your project.
+    - [x] Read API
+    - [ ] Write API
+
+&nbsp;
+
+- [x] Features (Choose 2)
+  - [x] Use Arrays, Objects, Sets, or Maps
   - [x] Analyze data that is stored in arrays, objects, sets or maps and display information about it in your app.
   - [ ] Use a regular expression to validate user input optionally inform the user about it.
   - [x] Analyze text and display useful information about it. (e.g. word/character count in an input field)
   - [x] Create a function that accepts two or more input parameters and returns a value that is calculated or determined by the inputs. Basic math functions don’t count (e.g. addition, etc).
-  - [ ] Visualize data in a user friendly way. (e.g. graph, chart, etc)
+  - [x] Visualize data in a user friendly way. (e.g. graph, chart, etc)
   - [ ] Create 3 or more unit tests for your application (and document how to run them)
   - [x] Convert user input between two formats and display the result. (e.g. Fahrenheit to Celcius, kilograms to pounds, etc)
   - [ ] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
-        &nbsp;
-- [ ] Advanced Features (Choose 1)
+
+&nbsp;
+
+- [x] Advanced Features (Choose 1)
   - [x] Retrieve data from a third-party API and use it to display something within your app.
   - [ ] Create a form and store the submitted values using an external API (e.g. a contact form, survey, etc).
   - [ ] Persist data to an external API and make the stored data accessible in your app (including after reload/refresh).
-        &nbsp;
-- [ ] Addditional Features (Swap with Section 1)
+
+&nbsp;
+
+- [ ] Optional Features (Swap with Section 1)
   - [ ] Create a node.js web server using a modern framework such as Express.js or Fastify. Serve at least one route that your app uses (must serve more than just the index.html file).
   - [ ] Interact with a database to store and retrieve information (e.g. MySQL, MongoDB, etc).
   - [ ] Implement modern interactive UI features (e.g. table/data sorting, autocomplete, drag-and-drop, calendar-date-picker, etc).
@@ -142,7 +151,7 @@ For ease of editing and customization
 
 ## 24/10/03
 
-- I've been adding charts over the last couple of weeks.
+- Adding more charts.
 
 ## 24/09/26
 
