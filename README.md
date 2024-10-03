@@ -140,6 +140,14 @@ For ease of editing and customization
 
 ## Blog
 
+## 24/10/03
+
+- I've been adding charts over the last couple of weeks.
+
+## 24/09/26
+
+- Added the first Test Chart
+
 ## 24/09/18
 
 - Refactored to use innerHTML in the custom elements so html properties can be used
