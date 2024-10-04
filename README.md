@@ -32,6 +32,7 @@ For ease of editing and customization
 - `.WeatherKittyText` - Weather Text
 - `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 - `weather-kitty-chart` - weather chart containers
+- `.WeatherKittyChart` - weather chart containers
 - Example CSS
 
   ```
@@ -98,7 +99,8 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] inner html and class logic for charts
+  - Canvas Reuse
+  - Media Queries in Styles.css
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
   - [ ] refactor the globals for cleaner code.
   - [ ] manual geolocation by zipcode if geolocation is not available.

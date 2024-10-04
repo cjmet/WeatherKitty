@@ -11,37 +11,37 @@
   </head>
 
   <body id="WeatherKittyBody">
-    <header id="WeatherKittyHeader">
+    <div id="Logo">
       <img
-        id="Logo"
+        id="LogoImg"
         src="_Angel Hornet Icon128.png"
         alt="Angle Hornet Logo"
         height="64"
         style="align-self: center; justify-self: left"
       />
+    </div>
 
+    <header id="WeatherKittyHeader">
       <weather-kitty></weather-kitty>
     </header>
 
     <nav id="WeatherKittyNav">Nav Bar</nav>
 
     <main id="WeatherKittyMain">
-      <weather-kitty-chart type="temperature"> </weather-kitty-chart>
-      <weather-kitty-chart type="heatIndex"> </weather-kitty-chart>
-      <weather-kitty-chart type="relativeHumidity"> </weather-kitty-chart>
-      <weather-kitty-chart type="dewpoint"> </weather-kitty-chart>
-      <weather-kitty-chart type="barometricPressure"> </weather-kitty-chart>
+      <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
+      <weather-kitty-chart type="temperature"></weather-kitty-chart>
+      <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
+      <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
+      <weather-kitty-chart type="windChill"></weather-kitty-chart>
 
-      <weather-kitty-chart type="precipitationLastHour"> </weather-kitty-chart>
-      <weather-kitty-chart type="precipitationLast3Hours">
-      </weather-kitty-chart>
-      <weather-kitty-chart type="precipitationLast6Hours">
-      </weather-kitty-chart>
+      <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
 
-      <weather-kitty-chart type="visibility"> </weather-kitty-chart>
-      <weather-kitty-chart type="windChill"> </weather-kitty-chart>
-      <weather-kitty-chart type="windGust"> </weather-kitty-chart>
-      <weather-kitty-chart type="windSpeed"> </weather-kitty-chart>
+      <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
+
+      <weather-kitty-chart type="visibility"></weather-kitty-chart>
+
+      <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
+      <weather-kitty-chart type="windGust"></weather-kitty-chart>
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>

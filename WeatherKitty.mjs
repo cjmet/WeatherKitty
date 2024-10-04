@@ -105,6 +105,11 @@ function WeatherWidgetInit(path) {
     WeatherKittyForecastBlock(),
     "WeatherKittyBlock"
   );
+  count += FindAndReplaceTags(
+    "weather-kitty-chart",
+    WeatherKittyChartBlock,
+    "WeatherKittyChart"
+  );
 
   if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
   else
@@ -177,21 +182,24 @@ function WeatherWidget() {
 function ObservationCharts(data) {
   if (WeatherKittyDebug) console.log("[Obs Chart Data] ", data[0]);
 
-  let obsArray = [
-    "timestamp",
-    "barometricPressure",
-    "dewpoint",
-    "heatIndex",
-    "precipitationLastHour",
-    "precipitationLast3Hours",
-    "precipitationLast6Hours",
-    "relativeHumidity",
-    "temperature",
-    "visibility",
-    "windChill",
-    "windGust",
-    "windSpeed",
-  ];
+  let obsArray = ["timestamp"];
+
+  if (data !== null && data !== undefined && data.length > 0) {
+    let keys = Object.keys(data[1].properties);
+    for (let key of keys) {
+      let unitCode = data[1].properties[key].unitCode;
+      if (
+        unitCode !== null &&
+        unitCode !== undefined &&
+        unitCode !== "" &&
+        obsArray.includes(key) === false
+      )
+        obsArray.push(key);
+    }
+  } else {
+    console.log("[ObservationCharts] *** ERROR ***: No Data Available");
+    return;
+  }
 
   let chartData = new Map();
   for (let i = 0; i < obsArray.length; i++) {
@@ -216,12 +224,33 @@ function ObservationCharts(data) {
         ) {
           chartData.get(observation).push(NaN);
         } else {
+          // Convert to Fahrenheit
+          let value = data[i].properties[observation].value;
+          let unitCode = data[i].properties[observation].unitCode;
+          if (
+            unitCode !== null &&
+            unitCode !== undefined &&
+            unitCode === "wmoUnit:degC"
+          ) {
+            data[i].properties[observation].value = Fahrenheit(value, "°C");
+            data[i].properties[observation].unitCode = "°F";
+          }
+          // /Convert to Fahrenheit
+
           chartData.get(observation).push(data[i].properties[observation]);
         }
       }
     }
-    if (!WeatherKittyDebug)
-      console.log("[Obs Chart Data] ", obsArray.join(", "));
+    if (!WeatherKittyDebug) {
+      let message = "[Observation Chart Types Found] ";
+      for (let key of obsArray) {
+        let unitCode = data[0].properties[key].unitCode;
+        if (unitCode !== null && unitCode !== undefined)
+          unitCode = unitCode.replace("wmoUnit:", "");
+        message += ` ${key}:${unitCode}, `;
+      }
+      console.log(message);
+    }
   }
 
   let containerArray = document.getElementsByTagName("weather-kitty-chart");
@@ -229,17 +258,16 @@ function ObservationCharts(data) {
     let chartType = container.getAttribute("type");
     if (chartType === null || chartType === undefined) {
       console.log("[ObservationCharts] *** ERROR ***: Chart Type Not Defined");
-      throw new Error(
-        "[ObservationCharts] *** ERROR ***: Chart Type Not Defined"
-      );
+      console.log(container);
+      return;
     }
     if (obsArray.includes(chartType) === false) {
       console.log(
         "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
       );
-      throw new Error(
-        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
-      );
+      console.log(container);
+      console.log(obsArray);
+      return;
     }
     CreateChart(
       container,
@@ -251,19 +279,40 @@ function ObservationCharts(data) {
 }
 
 async function CreateChart(chartContainer, key, values, timestamps) {
-  if (values.length === 0 || values[0].value === undefined) {
-    console.log(`[CreateChart] Barp! on ${key}`);
+  if (
+    values === null ||
+    values === undefined ||
+    values.length === 0 ||
+    values[0].value === undefined
+  ) {
+    console.log(
+      `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
+    );
+    console.log(chartContainer, key, values, timestamps);
     return;
   }
-  if (key === "timestamp") return;
+  if (
+    timestamps === null ||
+    timestamps === undefined ||
+    timestamps.length === 0 ||
+    timestamps[0] === undefined
+  ) {
+    console.log(
+      `[CreateChart] *** ERROR *** Barp! on ${key}.  timestamps are empty`
+    );
+    console.log(chartContainer, key, values, timestamps);
+    return;
+  }
   if (
     chartContainer === null ||
     chartContainer === undefined ||
     chartContainer.length === 0
   ) {
-    console.log("[CreateChart] *** ERROR *** Charts Parent Element not found");
-    throw new Error("[CreateChart] \n\tCharts Parent Element not found");
+    console.log("[CreateChart] *** ERROR *** chartContainer is Null! ");
+    console.log(chartContainer, key, values, timestamps);
+    return;
   }
+  if (key === "timestamp") return; // I should just leave that one in for fun.
 
   if (WeatherKittyDebug)
     console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
@@ -297,7 +346,13 @@ async function CreateChart(chartContainer, key, values, timestamps) {
       } = ${chartAspect}`
     );
 
-  let canvas = document.createElement("canvas");
+  let canvas = chartContainer.getElementsByTagName("canvas")[0];
+  if (canvas === null || canvas === undefined) {
+    console.log("[CreateChart] *** ERROR ***: Canvas Element Not Found");
+    console.log(chartContainer);
+    return;
+  }
+
   canvas.id = key;
   chartContainer.append(canvas);
 
@@ -305,13 +360,15 @@ async function CreateChart(chartContainer, key, values, timestamps) {
 
   // ------------------------------------------------------------------
 
+  let labelName = `${key} - ${values[0].unitCode}`;
+  labelName = labelName.replace("wmoUnit:", "");
   let newChart = new Chart(canvas, {
     type: "line",
     data: {
       labels: time,
       datasets: [
         {
-          label: key,
+          label: labelName,
           data: data,
         },
       ],
@@ -950,6 +1007,8 @@ function WeatherKittyForecastBlock() {
 let WeatherKittyWidgetBlock = ` <weather-kitty-current></weather-kitty-current>
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
+
+let WeatherKittyChartBlock = `<canvas></canvas>`;
 
 // Run Weather Kitty
 WeatherKitty();
