@@ -10,7 +10,7 @@ let locCacheTime = 60000 * 5; // 5? minutes just in case we are in a car and cha
 let shortCacheTime = 60000 * 6; // 7 (-1) minutes so we can catch weather alerts
 let longCacheTime = 60000 * 60 * 24; // 24 hours
 let timeFormat = {
-  month: "short",
+  month: "2-digit",
   day: "2-digit",
   hour: "numeric",
   hour12: true, // Delete for 24-hour format
@@ -224,33 +224,43 @@ function ObservationCharts(data) {
       console.log("[Obs Chart Data] ", obsArray.join(", "));
   }
 
-  // CreateChart(
-  //   "Temperature",
-  //   chartData.get("temperature"),
-  //   chartData.get("timestamp")
-  // );
-  // CreateChart(
-  //   "Relative Humidity",
-  //   chartData.get("relativeHumidity"),
-  //   chartData.get("timestamp")
-  // );
-  // return; // cjm
-
-  for (let Key of obsArray) {
-    if (Key === "timestamp") continue;
-    CreateChart(Key, chartData.get(Key), chartData.get("timestamp"));
+  let containerArray = document.getElementsByTagName("weather-kitty-chart");
+  for (let container of containerArray) {
+    let chartType = container.getAttribute("type");
+    if (chartType === null || chartType === undefined) {
+      console.log("[ObservationCharts] *** ERROR ***: Chart Type Not Defined");
+      throw new Error(
+        "[ObservationCharts] *** ERROR ***: Chart Type Not Defined"
+      );
+    }
+    if (obsArray.includes(chartType) === false) {
+      console.log(
+        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
+      );
+      throw new Error(
+        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
+      );
+    }
+    CreateChart(
+      container,
+      chartType,
+      chartData.get(chartType),
+      chartData.get("timestamp")
+    );
   }
-  return;
 }
 
-function CreateChart(key, values, timestamps) {
+async function CreateChart(chartContainer, key, values, timestamps) {
   if (values.length === 0 || values[0].value === undefined) {
     console.log(`[CreateChart] Barp! on ${key}`);
     return;
   }
   if (key === "timestamp") return;
-  let parent = document.getElementById("chartContainer");
-  if (parent === null || parent === undefined || parent.length === 0) {
+  if (
+    chartContainer === null ||
+    chartContainer === undefined ||
+    chartContainer.length === 0
+  ) {
     console.log("[CreateChart] *** ERROR *** Charts Parent Element not found");
     throw new Error("[CreateChart] \n\tCharts Parent Element not found");
   }
@@ -264,47 +274,32 @@ function CreateChart(key, values, timestamps) {
     data.push(values[i].value);
     let date = new Date(timestamps[i]);
     let label = date.toLocaleString(undefined, timeFormat);
-    label = label.replace(/AM/, "am").replace(/PM/, "pm");
+    label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//, "-");
     time.push(label);
   }
   data = data.reverse();
   time = time.reverse();
 
-  // ------------------------------------------------------------------
+  //  6em high labels
+  await new Promise((r) => setTimeout(r, 1)); // give the container time to grow/shrink
+  let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
+  let width = getComputedStyle(chartContainer).width.replace("px", "");
+  let height = getComputedStyle(chartContainer).height.replace("px", "");
+  if (height < oneEm * 18) height = oneEm * 18;
+  let chartAspect = (width - oneEm) / height;
+  if (chartAspect < 1) chartAspect = 1;
+  if (chartAspect > 2.5) chartAspect = 2.5;
 
-  // CHART_METHOD_ONE
-
-  // let canvas = document.createElement("canvas");
-  // canvas.id = key;
-  // canvas.style.minWidth = "0";
-  // canvas.style.minHeight = "0";
-  // canvas.style.position = "absolute";
-
-  // parent.append(canvas);
-
-  // /CHART_METHOD_ONE
-
-  // ------------------------------------------------------------------
-
-  // CHART_METHOD_TWO // cjm
-
-  parent.style =
-    "margin: 1em; border: 1px red solid; border-radius: 1em; flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0;";
-
-  let div = document.createElement("div");
-  div.id = key + "Div";
-  // Aspect Ratio
-  //  16:8 - Full Screen Landscape
-  //  16:7 - Browser Landscape
-  //  16:8 - Portrait
-  div.style =
-    "margin: 1em; border: 1px green solid; border-radius: 1em; flex: 1 1 auto; min-width: 0; min-height: 0;  aspect-ratio: 16 / 8;"; // cjm
-  parent.append(div);
+  if (WeatherKittyDebug)
+    console.log(
+      `[CreateChart] Em = ${oneEm},   Aspect Ratio: ${width / oneEm} / ${
+        height / oneEm
+      } = ${chartAspect}`
+    );
 
   let canvas = document.createElement("canvas");
   canvas.id = key;
-
-  div.append(canvas);
+  chartContainer.append(canvas);
 
   // /CHART_METHOD_TWO
 
@@ -322,7 +317,16 @@ function CreateChart(key, values, timestamps) {
       ],
     },
     options: {
+      aspectRatio: chartAspect,
       maintainAspectRatio: true,
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 90,
+            minRotation: 60,
+          },
+        },
+      },
     },
   });
   newChart.update();
@@ -444,7 +448,6 @@ async function getWeatherLocationAsync(callBack) {
 // it's possible we would want to set this as low as 4 or 5 minutes to
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
-
 async function getWeatherAsync(lat, lon, callBack) {
   console.log(`[getWeatherAsync] Latitude: ${lat}, Longitude: ${lon}`);
   // Get Location and check cached location, ... use, update, etc.
@@ -859,6 +862,22 @@ function BadHyphen(phrase) {
     }
   }
   return words.join(" ");
+}
+
+// Function getWidthInEm
+function getWidthInEm(element) {
+  let fontSize = parseFloat(getComputedStyle(element).fontSize);
+
+  let widthInPixels = getComputedStyle(element).width;
+  widthInPixels = parseFloat(widthInPixels.replace("px", ""));
+
+  let result = widthInPixels / fontSize;
+  // if (WeatherKittyDebug)
+  console.log(
+    `[getWidthInEm] ${widthInPixels}px / ${fontSize}px = ${result}em`
+  );
+
+  return result;
 }
 
 // Function WeatherKittyCheckPath

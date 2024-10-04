@@ -19,6 +19,8 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 - `<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
 - `<weather-kitty-current></weather-kitty-current>` - Current Conditions
 - `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
+- `<weather-kitty-chart type="keyword"></weather-kitty-chart>` - Chart
+  - Type can be: "barometricPressure", "dewpoint", "heatIndex", "precipitationLastHour", "precipitationLast3Hours", "precipitationLast6Hours", "relativeHumidity", "temperature", "visibility", "windChill", "windGust", "windSpeed",
 
 ### CSS Classes and Tags
 
@@ -29,6 +31,7 @@ For ease of editing and customization
 - `.WeatherKittyImage` - Weather Background Images
 - `.WeatherKittyText` - Weather Text
 - `weather-kitty-tooltip` - Tooltip tags if you need to style them.
+- `weather-kitty-chart` - weather chart containers
 - Example CSS
 
   ```
@@ -95,8 +98,7 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] fix max height on charts
-  - [ ] add \<weather-kitty-chart type="">
+  - [ ] inner html and class logic for charts
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
   - [ ] refactor the globals for cleaner code.
   - [ ] manual geolocation by zipcode if geolocation is not available.
@@ -110,7 +112,7 @@ For ease of editing and customization
 
 - [ ] Required
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 5 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
-  - [ ] README File: Include a README file explaining your project.
+  - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
   - [ ] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
@@ -149,6 +151,10 @@ For ease of editing and customization
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
 
 ## Blog
+
+## 24/10/04
+
+- Alpha version of Charts is complete
 
 ## 24/10/03
 

@@ -44,25 +44,6 @@ weather-kitty-forecast > img {
   opacity: var(--weatherKittyBackgroundOpacity);
 }
 
-null [tooltip]::before {
-  display: none;
-
-  position: absolute;
-  content: attr(tooltip);
-  opacity: 0;
-  z-index: 10;
-}
-
-null [tooltip]:hover::before {
-  opacity: 1;
-  background-color: white;
-  color: black;
-  border: 1px solid black;
-  padding: 0.5em;
-  border-radius: 0.5em;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 weather-kitty-tooltip {
   position: fixed;
   justify-self: center;
@@ -80,12 +61,6 @@ weather-kitty-tooltip {
   background-color: rgba(0, 0, 0, 0.75);
   border: black 3px solid;
   opacity: 0;
-
-  /* For Debugging: */
-  /* translate: 0 0;
-  width: 10px;
-  height: 10px;
-  opacity: 1; */
 }
 
 weather-kitty:hover,
@@ -110,4 +85,14 @@ weather-kitty-forecast:hover {
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
 weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
   display: none;
+}
+
+weather-kitty-chart {
+  margin: 1em;
+  border: 1px black solid;
+  border-radius: 1em;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
 }

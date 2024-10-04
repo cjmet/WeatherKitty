@@ -19,45 +19,29 @@
         height="64"
         style="align-self: center; justify-self: left"
       />
-      <!-- ... -->
 
-      <!-- Weather Kitty -->
       <weather-kitty></weather-kitty>
-      <!-- Weather Kitty -->
-
-      <!-- ... -->
     </header>
 
     <nav id="WeatherKittyNav">Nav Bar</nav>
 
     <main id="WeatherKittyMain">
-      <!-- For Testing Purposes -->
-      <!-- <weather-kitty-current></weather-kitty-current>
-      <weather-kitty-forecast></weather-kitty-forecast> -->
+      <weather-kitty-chart type="temperature"> </weather-kitty-chart>
+      <weather-kitty-chart type="heatIndex"> </weather-kitty-chart>
+      <weather-kitty-chart type="relativeHumidity"> </weather-kitty-chart>
+      <weather-kitty-chart type="dewpoint"> </weather-kitty-chart>
+      <weather-kitty-chart type="barometricPressure"> </weather-kitty-chart>
 
-      <!-- ------------------------------------------------------------------- -->
+      <weather-kitty-chart type="precipitationLastHour"> </weather-kitty-chart>
+      <weather-kitty-chart type="precipitationLast3Hours">
+      </weather-kitty-chart>
+      <weather-kitty-chart type="precipitationLast6Hours">
+      </weather-kitty-chart>
 
-      <!-- // CHART_METHOD_ONE - One way of doing this -->
-      <!-- // A div container, with a canvas min-height 0, min-width 0, and position absolute -->
-
-      <!-- <chartContainer
-        id="chartContainer"
-        style="margin: 1em; border: 1px black solid; border-radius: 1em"
-      >
-      </chartContainer> -->
-
-      <!-- // /CHART_METHOD_ONE -->
-
-      <!-- ------------------------------------------------------------------- -->
-
-      <!-- // CHART_METHOD_TWO - Another way of doing this // cjm -->
-      <!-- dynamic divs and charts.  ALL Grids must have minmax(0, 1fr), ALL Flex must have min-width 0 min-height 0 -->
-
-      <chartContainer id="chartContainer"> </chartContainer>
-
-      <!-- // /CHART_METHOD_TWO -->
-
-      <!-- ------------------------------------------------------------------- -->
+      <weather-kitty-chart type="visibility"> </weather-kitty-chart>
+      <weather-kitty-chart type="windChill"> </weather-kitty-chart>
+      <weather-kitty-chart type="windGust"> </weather-kitty-chart>
+      <weather-kitty-chart type="windSpeed"> </weather-kitty-chart>
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
