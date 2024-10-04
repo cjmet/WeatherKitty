@@ -224,6 +224,18 @@ function ObservationCharts(data) {
       console.log("[Obs Chart Data] ", obsArray.join(", "));
   }
 
+  // CreateChart(
+  //   "Temperature",
+  //   chartData.get("temperature"),
+  //   chartData.get("timestamp")
+  // );
+  // CreateChart(
+  //   "Relative Humidity",
+  //   chartData.get("relativeHumidity"),
+  //   chartData.get("timestamp")
+  // );
+  // return; // cjm
+
   for (let Key of obsArray) {
     if (Key === "timestamp") continue;
     CreateChart(Key, chartData.get(Key), chartData.get("timestamp"));
@@ -258,15 +270,45 @@ function CreateChart(key, values, timestamps) {
   data = data.reverse();
   time = time.reverse();
 
+  // ------------------------------------------------------------------
+
+  // CHART_METHOD_ONE
+
+  // let canvas = document.createElement("canvas");
+  // canvas.id = key;
+  // canvas.style.minWidth = "0";
+  // canvas.style.minHeight = "0";
+  // canvas.style.position = "absolute";
+
+  // parent.append(canvas);
+
+  // /CHART_METHOD_ONE
+
+  // ------------------------------------------------------------------
+
+  // CHART_METHOD_TWO // cjm
+
+  parent.style =
+    "margin: 1em; border: 1px red solid; border-radius: 1em; flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0;";
+
   let div = document.createElement("div");
-  div.id = "key" + "Container";
-  div.style.border = "1px solid black";
-  div.style.borderRadius = "1em";
-  div.style.margin = "1em";
+  div.id = key + "Div";
+  // Aspect Ratio
+  //  16:8 - Full Screen Landscape
+  //  16:7 - Browser Landscape
+  //  16:8 - Portrait
+  div.style =
+    "margin: 1em; border: 1px green solid; border-radius: 1em; flex: 1 1 auto; min-width: 0; min-height: 0;  aspect-ratio: 16 / 8;"; // cjm
+  parent.append(div);
+
   let canvas = document.createElement("canvas");
   canvas.id = key;
+
   div.append(canvas);
-  parent.append(div);
+
+  // /CHART_METHOD_TWO
+
+  // ------------------------------------------------------------------
 
   let newChart = new Chart(canvas, {
     type: "line",

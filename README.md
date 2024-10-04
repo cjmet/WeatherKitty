@@ -95,6 +95,7 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] fix max height on charts
   - [ ] add \<weather-kitty-chart type="">
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
   - [ ] refactor the globals for cleaner code.
@@ -113,8 +114,8 @@ For ease of editing and customization
         Describe your project in a paragraph or more.
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
   - [ ] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
-  - [ ] 3+ features from the provided list that you've integrated. Add any special instructions for the reviewer to run your project.
-  - [ ] Add a 4th feature
+  - [x] 3+ features from the provided list that you've integrated. Add any special instructions for the reviewer to run your project.
+  - [x] Add a 4th feature
   - [x] API: Integrate a third-party API into your project.
     - [x] Read API
     - [ ] Write API

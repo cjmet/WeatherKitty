@@ -35,18 +35,29 @@
       <!-- <weather-kitty-current></weather-kitty-current>
       <weather-kitty-forecast></weather-kitty-forecast> -->
 
-      <chartContainer>
-        Insert Charts Here
-        <div id="chartContainer"></div>
-        <!-- Requires min-width 0px; min-height 0px;
-        Or Requires wrapping in a div with position absolute;  This might be the best answer for a portable element. -->
-        <!-- <div
-        style="flex: 1 1 auto; box-sizing: border-box"
-        style="width: 100%; height: 100%"
+      <!-- ------------------------------------------------------------------- -->
+
+      <!-- // CHART_METHOD_ONE - One way of doing this -->
+      <!-- // A div container, with a canvas min-height 0, min-width 0, and position absolute -->
+
+      <!-- <chartContainer
+        id="chartContainer"
+        style="margin: 1em; border: 1px black solid; border-radius: 1em"
       >
-        <canvas id="test" style="position: absolute"></canvas>
-      </div> -->
-      </chartContainer>
+      </chartContainer> -->
+
+      <!-- // /CHART_METHOD_ONE -->
+
+      <!-- ------------------------------------------------------------------- -->
+
+      <!-- // CHART_METHOD_TWO - Another way of doing this // cjm -->
+      <!-- dynamic divs and charts.  ALL Grids must have minmax(0, 1fr), ALL Flex must have min-width 0 min-height 0 -->
+
+      <chartContainer id="chartContainer"> </chartContainer>
+
+      <!-- // /CHART_METHOD_TWO -->
+
+      <!-- ------------------------------------------------------------------- -->
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
