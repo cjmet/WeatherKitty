@@ -1,6 +1,7 @@
 // WeatherKitty.js Version 240829.15
+
+// Really need to implement log levels, this is effectively trace level or info level with no subtlety.
 let WeatherKittyDebug = false;
-// await import("./node_modules/chart.js/dist/chart.umd.js");
 import "./node_modules/chart.js/dist/chart.umd.js";
 
 // strict mode
@@ -354,39 +355,57 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   }
 
   canvas.id = key;
-  chartContainer.append(canvas);
-
-  // /CHART_METHOD_TWO
 
   // ------------------------------------------------------------------
+  let chart = Chart.getChart(canvas);
 
-  let labelName = `${key} - ${values[0].unitCode}`;
-  labelName = labelName.replace("wmoUnit:", "");
-  let newChart = new Chart(canvas, {
-    type: "line",
-    data: {
-      labels: time,
-      datasets: [
-        {
-          label: labelName,
-          data: data,
-        },
-      ],
-    },
-    options: {
-      aspectRatio: chartAspect,
-      maintainAspectRatio: true,
-      scales: {
-        x: {
-          ticks: {
-            maxRotation: 90,
-            minRotation: 60,
+  if (chart === null || chart === undefined) {
+    if (WeatherKittyDebug)
+      console.log(
+        `[CreateChart New] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
+      );
+    let labelName = `${key} - ${values[0].unitCode}`;
+    labelName = labelName.replace("wmoUnit:", "");
+    let newChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: time,
+        datasets: [
+          {
+            label: labelName,
+            data: data,
+          },
+        ],
+      },
+      options: {
+        aspectRatio: chartAspect,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 90,
+              minRotation: 60,
+            },
           },
         },
       },
-    },
-  });
-  newChart.update();
+    });
+    newChart.update();
+  } else {
+    if (WeatherKittyDebug)
+      console.log(
+        `[CreateChart Update] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
+      );
+    let labelName = `${key} - ${values[0].unitCode}`;
+    chart.data.labels = time;
+    chart.data.datasets = [
+      {
+        label: labelName,
+        data: data,
+      },
+    ];
+  }
+  // ------------------------------------------------------------------
 }
 
 // Function WeatherSquares
