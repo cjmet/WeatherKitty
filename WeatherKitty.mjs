@@ -19,6 +19,7 @@ let timeFormat = {
 };
 let WeatherKittyObsImage = "img/WeatherKittyE8.jpeg";
 let WeatherKittyForeImage = "img/WeatherKittyC.jpeg";
+let WeatherKittyLocationText = "Catopia, Usa";
 
 // Static Status Variables
 
@@ -110,6 +111,11 @@ function WeatherWidgetInit(path) {
     "weather-kitty-chart",
     WeatherKittyChartBlock,
     "WeatherKittyChart"
+  );
+  count += FindAndReplaceTags(
+    "weather-kitty-location",
+    WeatherKittyLocationBlock(),
+    "WeatherKittyLocation"
   );
 
   if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
@@ -243,7 +249,7 @@ function ObservationCharts(data) {
       }
     }
     if (!WeatherKittyDebug) {
-      let message = "[Observation Chart Types Found] ";
+      let message = "[Observation Chart-able Types Found] ";
       for (let key of obsArray) {
         let unitCode = data[0].properties[key].unitCode;
         if (unitCode !== null && unitCode !== undefined)
@@ -466,8 +472,10 @@ async function getWeatherLocationAsync(callBack) {
 
   if (
     cached?.lat != null &&
+    cached?.lat != "undefined" &&
     cached?.lon != null &&
-    cached?.timestamp != null &&
+    cached?.lon != "undefined" &&
+    cached?.timestamp !== null &&
     cached?.timestamp > Date.now() - locCacheTime
   ) {
     if (WeatherKittyDebug)
@@ -499,20 +507,72 @@ async function getWeatherLocationAsync(callBack) {
       },
 
       (error) => {
-        if (WeatherKittyDebug)
-          console.log(`[getLocationAsync] Error: ${error.message}`);
-        if (cached?.lat != null && cached?.lon != null) {
-          if (WeatherKittyDebug)
-            console.log(
-              `[getLocationAsync] Using cached location: ${cached.lat}, ${cached.lon}, ${cached.timestamp}`
-            );
+        console.log(`[getLocationAsync] Error: ${error.message}`);
+        if (
+          cached?.lat != null &&
+          cached?.lon != null &&
+          cached?.lat != "undefined" &&
+          cached?.lon != "undefined"
+        ) {
+          console.log(
+            `[getLocationAsync] Using cached location: ${cached.lat}, ${cached.lon}, ${cached.timestamp}`
+          );
           getWeatherAsync(cached.lat, cached.lon, callBack);
+        } else {
+          getWeatherLocationByIPAsync(callBack);
         }
       }
     );
   } else {
-    console.log("*** ERROR ***: Geolocation data is not available.");
+    console.log("[getLocationAsync] Error: Geolocation data is not available.");
+    getWeatherLocationByIPAsync(callBack);
   }
+}
+
+// Function getWeatherLocationByIPAsync {
+async function getWeatherLocationByIPAsync(callBack) {
+  let cached = { lat: null, lon: null, timestamp: null };
+
+  cached = JSON.parse(localStorage.getItem("location"));
+  console.log(`[getLocationByIP] Checking IP Location Data`);
+
+  // n/c - non-commercial use only
+  // Site             Limits    Limit/Mth Limit/Day Limit/Min
+  // ip-api.com/json  http n/c  75000     2500      45
+  // ipapi.com                  100       ---       ---
+  // ipapi.co/json              30000     967       0.5
+  let locationUrl = "http://ipapi.co/json/";
+  await fetch(locationUrl)
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      if (WeatherKittyDebug) console.log(data);
+      let lon = data.longitude ? data.longitude : data.lon;
+      let lat = data.latitude ? data.latitude : data.lat;
+      if (WeatherKittyDebug)
+        console.log(`[getLocationByIP] Latitude: ${lat}, Longitude: ${lon}`);
+      if (
+        lat === null ||
+        lat === undefined ||
+        lon === null ||
+        lon === undefined
+      ) {
+        console.log(
+          "[getLocationByIP] *** ABORT *** : No Location Data Available"
+        );
+        return;
+      }
+      localStorage.setItem(
+        "location",
+        JSON.stringify({
+          lat: String(lat),
+          lon: String(lon),
+          timestamp: Date.now(),
+        })
+      );
+      getWeatherAsync(lat, lon, callBack);
+    });
 }
 
 // Function getWeatherAsync
@@ -525,7 +585,13 @@ async function getWeatherLocationAsync(callBack) {
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
 async function getWeatherAsync(lat, lon, callBack) {
-  console.log(`[getWeatherAsync] Latitude: ${lat}, Longitude: ${lon}`);
+  if (WeatherKittyDebug)
+    console.log(`[getWeatherAsync] Latitude: ${lat}, Longitude: ${lon}`);
+  if (lat == null || lon == null) {
+    console.log("[getWeatherAsync] *** ABORT ***: No Location Data Available");
+    return;
+  }
+
   // Get Location and check cached location, ... use, update, etc.
   // check the cached forecasturl, cwa, gridId, gridX, gridY ... use, update, etc.
   // ...
@@ -543,7 +609,7 @@ async function getWeatherAsync(lat, lon, callBack) {
 
   // Read Local Storage, if note available, create it
   let cached = JSON.parse(localStorage.getItem("weather"));
-  if (cached === null) {
+  if (cached == null) {
     console.log("[getWeatherAsync] No Cached Weather Data");
     cached = {
       forecastUrl: "",
@@ -632,15 +698,17 @@ async function getWeatherAsync(lat, lon, callBack) {
           return;
         }
 
-        console.log(
-          `[stationLocation] cwa: ${data.properties.cwa} GridID: ${data.properties.gridId}, GridX: ${data.properties.gridX}, GridY: ${data.properties.gridY} `
-        );
-        console.log(
-          `[stationLocation] Relative Location: ${data.properties.relativeLocation.properties.city}, ${data.properties.relativeLocation.properties.state}`
-        );
-        console.log(
-          `[stationLocation] Forecast URL: ${data.properties.forecast}`
-        );
+        if (WeatherKittyDebug) {
+          console.log(
+            `[stationLocation] cwa: ${data.properties.cwa} GridID: ${data.properties.gridId}, GridX: ${data.properties.gridX}, GridY: ${data.properties.gridY} `
+          );
+          console.log(
+            `[stationLocation] Relative Location: ${data.properties.relativeLocation.properties.city}, ${data.properties.relativeLocation.properties.state}`
+          );
+          console.log(
+            `[stationLocation] Forecast URL: ${data.properties.forecast}`
+          );
+        }
         weatherForecastUrl = String(data.properties.forecast);
         cached.forecastUrl = String(weatherForecastUrl);
         cached.observationStationsUrl = String(
@@ -679,12 +747,14 @@ async function getWeatherAsync(lat, lon, callBack) {
           return;
         }
 
-        console.log(
-          `[ObservationStations] Station ID: ${data.features[0].properties.stationIdentifier}`
-        );
-        console.log(
-          `[ObservationStations] Station Name: ${data.features[0].properties.name}`
-        );
+        if (WeatherKittyDebug) {
+          console.log(
+            `[ObservationStations] Station ID: ${data.features[0].properties.stationIdentifier}`
+          );
+          console.log(
+            `[ObservationStations] Station Name: ${data.features[0].properties.name}`
+          );
+        }
         cached.observationStationID = String(
           data.features[0].properties.stationIdentifier
         );
@@ -752,7 +822,7 @@ async function getWeatherAsync(lat, lon, callBack) {
 
         // Intercept Historical Observation Data for Charting
         cached.observationData = data.features;
-        console.log(data);
+        if (WeatherKittyDebug) console.log(data);
 
         localStorage.setItem("weather", JSON.stringify(cached));
       });
@@ -948,10 +1018,10 @@ function getWidthInEm(element) {
   widthInPixels = parseFloat(widthInPixels.replace("px", ""));
 
   let result = widthInPixels / fontSize;
-  // if (WeatherKittyDebug)
-  console.log(
-    `[getWidthInEm] ${widthInPixels}px / ${fontSize}px = ${result}em`
-  );
+  if (WeatherKittyDebug)
+    console.log(
+      `[getWidthInEm] ${widthInPixels}px / ${fontSize}px = ${result}em`
+    );
 
   return result;
 }
@@ -1010,24 +1080,30 @@ function InjectWeatherKittyStyles(path) {
 // HTML Block for Weather Kitty
 // functions instead of variables, so that path updates to the images can take effect
 function WeatherKittyCurrentBlock() {
-  let results = `  <weather-kitty-tooltip></weather-kitty-tooltip>
+  let results = `<weather-kitty-tooltip></weather-kitty-tooltip>
   <img src="${WeatherKittyObsImage}" class="WeatherKittyImage"/>
   <span class="WeatherKittyText">Loading . . .</span>`;
   return results;
 }
 
 function WeatherKittyForecastBlock() {
-  let results = `  <weather-kitty-tooltip></weather-kitty-tooltip>
+  let results = `<weather-kitty-tooltip></weather-kitty-tooltip>
   <img src="${WeatherKittyForeImage}" class="WeatherKittyImage" />
   <span class="WeatherKittyText">Loading . . .</span>`;
   return results;
 }
 
-let WeatherKittyWidgetBlock = ` <weather-kitty-current></weather-kitty-current>
+let WeatherKittyWidgetBlock = `<weather-kitty-current></weather-kitty-current>
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
 let WeatherKittyChartBlock = `<canvas></canvas>`;
+
+function WeatherKittyLocationBlock() {
+  let results = `<span >${WeatherKittyLocationText}</span>
+  <span >[Change]</span>`;
+  return results;
+}
 
 // Run Weather Kitty
 WeatherKitty();

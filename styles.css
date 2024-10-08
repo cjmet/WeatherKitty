@@ -1,27 +1,26 @@
 /* Page Layout */
 html,
 body {
-  height: 100%;
   margin: 0;
 }
 
 #WeatherKittyBody {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: min-content 1fr min-content;
+  grid-template-columns: min-content minmax(0, 1fr);
+  grid-template-rows: min-content minmax(0, 1fr) min-content;
   grid-template-areas:
     "logo header"
     "nav main"
     "footer footer";
 }
 
-#LogoBurger {
+#Logo {
+  grid-area: logo;
   position: sticky;
   top: 0;
-  border: black 1px solid;
+  border: black 3px solid;
   border-right: none;
   box-sizing: border-box;
-  grid-area: logo;
   background-color: #333;
   display: flex;
   justify-content: center;
@@ -29,15 +28,49 @@ body {
 }
 
 #Hamburger {
-  display: none;
+  border: red 3px solid;
+  grid-area: nav;
+  box-sizing: border-box;
+  background-color: #333;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-#HamburgerImg {
-  display: none;
+#HamburgerLinks {
+  border: gray 3px solid;
+  border-radius: 1em;
+  box-sizing: border-box;
+  background-color: #333;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  margin: 0 0.5em;
+}
+
+#Hamburger a,
+#Hamburger a:link,
+#Hamburger a:visited {
+  border: black 3px solid;
+  border-radius: 1em;
+  color: white;
+  text-align: center;
+  text-justify: center;
+  text-decoration: none;
+  font-weight: bolder;
+  margin: 0.5em 1em;
+  padding: 1.5em 0.66em;
+}
+
+#Hamburger a:hover {
+  background-color: gray;
 }
 
 #WeatherKittyHeader {
-  border: black 1px solid;
+  border: black 3px solid;
   border-left: none;
   box-sizing: border-box;
   grid-area: header;
@@ -52,42 +85,6 @@ body {
   display: flex;
   justify-content: end;
   align-items: center;
-}
-
-#WeatherKittyNav {
-  border: green 3px solid;
-  margin: 3px;
-  box-sizing: border-box;
-  grid-area: nav;
-  width: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-#WeatherKittyNav h3 {
-  margin: 0 0.5em;
-  text-justify: center;
-  text-align: center;
-  font-weight: bolder;
-}
-
-#WeatherKittyNavMenu {
-  text-decoration: underline;
-}
-
-#WeatherKittyNav a {
-  margin: 0.25em 0.5em;
-  text-decoration: none;
-  font-weight: bolder;
-}
-
-#WeatherKittyNav a:link,
-#WeatherKittyNav a:visited {
-  color: blue;
-}
-
-#WeatherKittyNav a:hover {
-  background-color: lightblue;
 }
 
 #WeatherKittyMain {
@@ -125,73 +122,36 @@ body {
 @media (max-width: 450px), (max-height: 450px) {
   #WeatherKittyBody {
     display: grid;
-    grid-template-columns: 8rem minmax(0, 1fr);
-    grid-template-rows: 4rem 1fr min-content;
+    grid-template-columns: 4em 4em minmax(0, 1fr);
+    grid-template-rows: 4em 1fr min-content;
     grid-template-areas:
-      "logo header"
-      "main main"
-      "footer footer";
+      "logo nav header"
+      "main main main"
+      "footer footer footer";
   }
 
-  #LogoBurger {
-    grid-area: logo;
-    position: relative;
-    height: 4rem;
+  #Hamburger {
+    border: black 3px solid;
+    border-left: none;
+    border-right: none;
   }
 
-  #HamburgerImg {
-    display: block;
+  #HamburgerLinks {
+    position: absolute;
+    top: 2.35em;
+    left: 4.7em;
+    width: 0;
+    height: 0;
+    z-index: 1;
   }
 
-  #LogoBurger:hover {
-    #Hamburger {
+  #Hamburger:hover {
+    #HamburgerLinks {
       transition: width 0.15s, height 0.66s;
       width: 7em;
       height: 17em;
       opacity: 1;
     }
-  }
-
-  #Hamburger {
-    border: gray 3px solid;
-    border-radius: 1em;
-    box-sizing: border-box;
-    background-color: #333;
-    position: absolute;
-    top: 45%;
-    left: 62%;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-    overflow: hidden;
-    width: 0;
-    height: 0;
-    opacity: 1;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* TRBL */
-  #Hamburger a,
-  #Hamburger a:link,
-  #Hamburger a:visited {
-    border: black 3px solid;
-    border-radius: 1em;
-    color: white;
-    text-align: center;
-    text-justify: center;
-    text-decoration: none;
-    font-weight: bolder;
-    margin: 0.5em 1em;
-    padding: 1.5em 0.66em;
-    /* padding: 1.25em 0.5em 0 0.5em; */
-  }
-
-  #Hamburger a:hover {
-    background-color: gray;
   }
 
   #WeatherKittyMain {
@@ -204,10 +164,10 @@ body {
 
   #WeatherKittyHeader {
     grid-area: header;
-    height: 4rem;
+    height: 4em;
   }
 
   weather-kitty {
-    height: 4rem;
+    height: 4em;
   }
 }

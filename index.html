@@ -5,13 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
-    <title>Hello World! (title)</title>
+    <title>Weather Kitty Demo</title>
     <!-- <link rel="stylesheet" href="WeatherKitty.css" /> -->
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body id="WeatherKittyBody">
-    <div id="LogoBurger">
+    <div id="Logo">
       <img
         id="LogoImg"
         src="_Angel Hornet Icon128.png"
@@ -19,6 +19,9 @@
         height="64"
         style="align-self: center; justify-self: left"
       />
+    </div>
+
+    <div id="Hamburger">
       <img
         id="HamburgerImg"
         src="img/CatBurger.png"
@@ -26,7 +29,7 @@
         height="64"
         style="align-self: center; justify-self: left"
       />
-      <nav id="Hamburger">
+      <nav id="HamburgerLinks">
         <a href="#">Link 1</a>
         <a href="#">Link 2</a>
         <a href="#">Link 3</a>
@@ -34,16 +37,21 @@
     </div>
 
     <header id="WeatherKittyHeader">
-      <weather-kitty></weather-kitty>
+      <div>
+        <weather-kitty></weather-kitty>
+        <weather-kitty-location
+          location="manual"
+          style="
+            text-align: right;
+            text-justify: right;
+            margin-top: 0.25em;
+            font-size: small;
+          "
+        >
+          [Location Placeholder]
+        </weather-kitty-location>
+      </div>
     </header>
-
-    <nav id="WeatherKittyNav">
-      <h3>Nav</h3>
-      <h3 id="WeatherKittyNavMenu">Menu</h3>
-      <a href="#">Link 1</a>
-      <a href="#">Link 2</a>
-      <a href="#">Link 3</a>
-    </nav>
 
     <main id="WeatherKittyMain">
       <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>

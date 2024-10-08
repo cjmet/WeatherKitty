@@ -32,6 +32,14 @@ weather-kitty-forecast {
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
 }
 
+weather-kitty-location {
+  font-family: Arial, Helvetica, sans-serif;
+  color: white;
+  text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
+    -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
+    -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
+}
+
 weather-kitty-current > img,
 weather-kitty-forecast > img {
   position: absolute;

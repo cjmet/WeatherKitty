@@ -8,11 +8,18 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 ## Usage
 
+- Secure https and Location are **Required**.
+  - location can be provided by browser permissions, or GeoIP.
 - Install as a git submodule
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 - Add WeatherKitty.mjs to your scripts in your html file
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
+
+### API Usage
+
+- api.weather.gov - limit 1 per second
+- ipapi.co - limit 35 per hour
 
 ### HTML Elements
 
@@ -49,7 +56,7 @@ For ease of editing and customization
 ### Options
 
 - Use CSS in your own stylesheet as desired.
-- Import and use the WeatherKitty() function for configuration;
+- ~~Import and use the WeatherKitty() function for configuration;~~
 - Custom HTML Code Blocks
 
 ### index.html Code Example
@@ -99,9 +106,22 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] manual geolocation by zipcode if geolocation is not available.
+  - [ ] geolocation
+
+    - [x] by geo ip
+    - [ ] by zipcode / Census
+    - [ ] \<weather-kitty-location location="manual"></weather-kitty-location>
+    - [ ] \<element location=""/>
+      - "" or "none" - does not display
+      - "fallback - only displays when all else fails, then allows change
+      - "display" - only displays, does not allow change
+      - "manual" - always displays and always allows change
+
+  - [ ] Better Charts
+    - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
   - [ ] refactor the globals for cleaner code.
+  - [ ] How can we transition a media query
 
 - [ ] Project - To-Do List
   - [ ] Auth / OAuth API
@@ -150,6 +170,10 @@ For ease of editing and customization
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
 
 ## Blog
+
+## 24/10/08
+
+- Hamburger, GeoIP, and Manual Location, ...
 
 ## 24/10/04
 
