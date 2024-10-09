@@ -124,6 +124,8 @@ For ease of editing and customization
   - [ ] How can we transition a media query
 
 - [ ] Project - To-Do List
+  - [ ] React
+  - [ ] Vite or ~~WebPack~~
   - [ ] Auth / OAuth API
   - [ ] AWS, Lambda, Hosting, Etc, ...
   - [ ] Look into Vue
