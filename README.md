@@ -108,7 +108,6 @@ For ease of editing and customization
 
   - [ ] geolocation
 
-    - [x] by geo ip
     - [ ] by zipcode / Census
     - [ ] \<weather-kitty-location location="manual"></weather-kitty-location>
     - [ ] \<element location=""/>
@@ -172,6 +171,33 @@ For ease of editing and customization
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
 
 ## Blog
+
+## 24/10/09
+
+- config block
+- Census Geocoder and CORS
+
+  - https://geocoding.geo.census.gov/geocoder/locations/address?street=100%20Main%20St&city=Lexington&state=Ky&benchmark=Public_AR_Current&format=json
+  - https://wiki.openstreetmap.org/wiki/Geocoding
+    - https://nominatim.openstreetmap.org/search?q=lexington%20ky&format=json
+
+  ```
+  AI Answer
+
+  The Census Geocoding API currently doesn't support CORS requests, which means you can't directly call it from a web browser due to security restrictions.
+
+  Here are a couple of ways to work around this:
+
+  1. Use a Proxy Server:
+  Set up a proxy server on your own domain.
+  Your JavaScript code sends requests to the proxy server.
+  The proxy server then forwards the requests to the Census Geocoding API and sends the responses back to your JavaScript code.
+
+  2. Use a Server-Side Language:
+  Use a server-side language like Node.js, Python, or PHP to make the API call.
+  Your JavaScript code sends a request to your server.
+  The server makes the request to the Census Geocoding API, and sends the response back to your JavaScript code.
+  ```
 
 ## 24/10/08
 

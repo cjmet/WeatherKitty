@@ -32,12 +32,19 @@ weather-kitty-forecast {
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
 }
 
-weather-kitty-location {
+weather-kitty-geolocation span {
   font-family: Arial, Helvetica, sans-serif;
   color: white;
+  margin: 0.25em;
   text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
     -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
+}
+
+weather-kitty-geolocation button {
+  margin: 0;
+  padding: 0 0.15em;
+  font-size: smaller;
 }
 
 weather-kitty-current > img,
