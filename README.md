@@ -190,6 +190,7 @@ For ease of editing and customization
 - Styling issues
 - Weather and location updates
 - More Media Queries
+- Removed Node
 
 ### 24/10/09
 
