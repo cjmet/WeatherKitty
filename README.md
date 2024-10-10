@@ -9,7 +9,7 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 ## Usage
 
 - Secure https and Location are **Required**.
-  - location can be provided by browser permissions, or GeoIP.
+  - location can be provided by browser permissions, GeoIP, or opt-in GeoAddress.
 - Install as a git submodule
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 - Add WeatherKitty.mjs to your scripts in your html file
@@ -20,6 +20,8 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 - api.weather.gov - limit 1 per second
 - ipapi.co - limit 35 per hour
+- corsproxy.io/census.gov - INSECURE. YOU ARE TRUSTING corsproxy.io not to exploit Data or XSS in both directions.
+- nominatim.openstreetmap.org - DEMO ONLY, NON-COMMERCIAL USE, VERY LIMITED USE, MUST CACHE RESULTS.
 
 ### HTML Elements
 
@@ -33,13 +35,13 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 For ease of editing and customization
 
+- `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 - `.WeatherKitty` - Widget
 - `.WeatherKittyBlock` - Current Conditions and Forecast Blocks. Default width: 5.67 em
 - `.WeatherKittyImage` - Weather Background Images
 - `.WeatherKittyText` - Weather Text
-- `weather-kitty-tooltip` - Tooltip tags if you need to style them.
-- `weather-kitty-chart` - weather chart containers
 - `.WeatherKittyChart` - weather chart containers
+- `.WeatherKittyGeoAddress` - manual location input container
 - Example CSS
 
   ```
@@ -55,9 +57,9 @@ For ease of editing and customization
 
 ### Options
 
-- Use CSS in your own stylesheet as desired.
-- ~~Import and use the WeatherKitty() function for configuration;~~
+- Custom CSS in your own stylesheet as desired.
 - Custom HTML Code Blocks
+- ~~Custom GeoAddress Function~~
 
 ### index.html Code Example
 
@@ -102,6 +104,12 @@ For ease of editing and customization
 </weather-kitty>
 ```
 
+### Custom GeoAddress Function
+
+- Not Implemented
+
+...
+
 ## To-Do
 
 - [ ] Weather Kitty - To-Do List
@@ -116,6 +124,9 @@ For ease of editing and customization
       - "display" - only displays, does not allow change
       - "manual" - always displays and always allows change
 
+  - [ ] import chart.js from cdn instead of node
+  - [ ] GeoAddress CallBack
+    - `weatherkitty.geoaddress(function);`
   - [ ] Better Charts
     - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
@@ -138,7 +149,8 @@ For ease of editing and customization
         Describe your project in a paragraph or more.
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
-  - [x] 3+ features from the provided list that you've integrated. Add any special instructions for the reviewer to run your project.
+  - [x] 3+ features from the provided list that you've integrated.
+  - [ ] Add any special instructions for the reviewer to run your project.
   - [x] Add a 4th feature
   - [x] API: Integrate a third-party API into your project.
     - [x] Read API **or** Write to an API
@@ -154,7 +166,7 @@ For ease of editing and customization
   - [x] Visualize data in a user friendly way. (e.g. graph, chart, etc)
   - [ ] Create 3 or more unit tests for your application (and document how to run them)
   - [x] Convert ~~user~~ input between two formats and display the result. (e.g. Fahrenheit to Celcius, kilograms to pounds, etc)
-  - [ ] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
+  - [x] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
         &nbsp;
 
 - [x] **Advanced Features (Choose 1)**
@@ -172,7 +184,14 @@ For ease of editing and customization
 
 ## Blog
 
-## 24/10/09
+### 24/10/10
+
+- CORS issue: https://corsproxy.io/?
+- Styling issues
+- Weather and location updates
+- More Media Queries
+
+### 24/10/09
 
 - config block
 - Census Geocoder and CORS
@@ -199,26 +218,26 @@ For ease of editing and customization
   The server makes the request to the Census Geocoding API, and sends the response back to your JavaScript code.
   ```
 
-## 24/10/08
+### 24/10/08
 
 - Hamburger, GeoIP, and Manual Location, ...
 
-## 24/10/04
+### 24/10/04
 
 - Alpha version of Charts is complete
 - Media Queries
 - Canvas Update
 - Nav Bar and Hamburger
 
-## 24/10/03
+### 24/10/03
 
 - Adding more charts.
 
-## 24/09/26
+### 24/09/26
 
 - Added the first Test Chart
 
-## 24/09/18
+### 24/09/18
 
 - Refactored to use innerHTML in the custom elements so html properties can be used
 - nvm, npm, Node.js via WSL Ubuntu
@@ -232,20 +251,20 @@ For ease of editing and customization
 - DateTime is ... interesting
   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
 
-## 24/09/11
+### 24/09/11
 
 - Converting to module and html elements and trying to make everything more portable, usable, and compatible.
 
-## 24/09/10
+### 24/09/10
 
 - Converting to module and html elements and trying to make everything more portable, usable, and compatible.
 
-## 24/09/01
+### 24/09/01
 
 - VSCode.LiveServer.Https issues. Reinstalling the **_Visual Studio IDE_** API Certificates re-enabled https. So it at least appears the IDE certificate expiring may have been the issue.
 - Added the custom html block option
 
-## 24/08/30
+### 24/08/30
 
 - Refactored using concrete images for the transparent background. Both ways can work, but I decided I liked this way better.
 

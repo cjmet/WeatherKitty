@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
     <title>Weather Kitty Demo</title>
-    <!-- <link rel="stylesheet" href="WeatherKitty.css" /> -->
     <link rel="stylesheet" href="styles.css" />
   </head>
 
@@ -16,40 +15,31 @@
         id="LogoImg"
         src="_Angel Hornet Icon128.png"
         alt="Angle Hornet Logo"
-        height="64"
-        style="align-self: center; justify-self: left"
       />
     </div>
 
     <div id="Hamburger">
-      <img
-        id="HamburgerImg"
-        src="img/CatBurger.png"
-        alt="Angle Hornet Logo"
-        height="64"
-        style="align-self: center; justify-self: left"
-      />
-      <nav id="HamburgerLinks">
-        <a href="#">Link 1</a>
-        <a href="#">Link 2</a>
-        <a href="#">Link 3</a>
-      </nav>
+      <div id="HamburgerRelative">
+        <img
+          id="HamburgerImg"
+          src="img/CatBurger.png"
+          alt="Angle Hornet Logo"
+        />
+        <nav id="HamburgerLinks">
+          <a href="#">Link 1</a>
+          <a href="#">Link 2</a>
+          <a href="#">Link 3</a>
+        </nav>
+      </div>
     </div>
 
     <header id="WeatherKittyHeader">
+      <h1>Weather Kitty Demo</h1>
       <div id="WeatherKittyHeaderDiv">
         <weather-kitty></weather-kitty>
-        <weather-kitty-geolocation
-          location="manual"
-          style="
-            text-align: right;
-            text-justify: right;
-            margin-top: 0.25em;
-            font-size: small;
-          "
-        >
+        <weather-kitty-geoaddress location="manual">
           [Location Placeholder]
-        </weather-kitty-geolocation>
+        </weather-kitty-geoaddress>
       </div>
     </header>
 

@@ -6,12 +6,18 @@ body {
 
 #WeatherKittyBody {
   display: grid;
-  grid-template-columns: min-content minmax(0, 1fr);
-  grid-template-rows: min-content minmax(0, 1fr) min-content;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) min-content;
   grid-template-areas:
     "logo header"
     "nav main"
     "footer footer";
+}
+
+#Logo img {
+  height: 6em;
+  align-self: center;
+  justify-self: center;
 }
 
 #Logo {
@@ -25,10 +31,17 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0 0 0 0.25em;
+  z-index: 1;
+}
+
+#Hamburger img {
+  height: 4.5em;
+  align-self: center;
+  justify-self: center;
 }
 
 #Hamburger {
-  border: red 3px solid;
   grid-area: nav;
   box-sizing: border-box;
   background-color: #333;
@@ -38,8 +51,16 @@ body {
   overflow: hidden;
 }
 
+#HamburgerRelative {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 #HamburgerLinks {
-  border: gray 3px solid;
+  grid-area: nav;
+  border: none;
   border-radius: 1em;
   box-sizing: border-box;
   background-color: #333;
@@ -51,21 +72,21 @@ body {
   margin: 0 0.5em;
 }
 
-#Hamburger a,
-#Hamburger a:link,
-#Hamburger a:visited {
-  border: black 3px solid;
+#HamburgerLinks a,
+#HamburgerLinks a:link,
+#HamburgerLinks a:visited {
+  border: gray 3px solid;
   border-radius: 1em;
   color: white;
   text-align: center;
   text-justify: center;
   text-decoration: none;
   font-weight: bolder;
-  margin: 0.5em 1em;
-  padding: 1.5em 0.66em;
+  margin: 0.25em 0;
+  padding: 0.25em 0.5em;
 }
 
-#Hamburger a:hover {
+#HamburgerLinks a:hover {
   background-color: gray;
 }
 
@@ -78,19 +99,36 @@ body {
   top: 0;
   background-color: #333;
   color: white;
-  padding: 0.5em;
+  padding: 0 0.25em;
   text-align: left;
   overflow: hidden;
 
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
   align-items: center;
+}
+
+#WeatherKittyHeader h1 {
+  margin: 0.5em;
+  text-align: center;
+  text-justify: center;
+  font-size: 1.66em;
 }
 
 #WeatherKittyHeaderDiv {
   display: flex;
   flex-direction: column;
   align-items: end;
+  align-content: end;
+  justify-content: end;
+  justify-items: end;
+}
+
+#WeatherKittyHeaderDiv weather-kitty-geoaddress {
+  text-align: right;
+  text-justify: right;
+  margin-top: 0.25em;
+  font-size: small;
 }
 
 #WeatherKittyMain {
@@ -129,35 +167,66 @@ body {
   #WeatherKittyBody {
     display: grid;
     grid-template-columns: 4em 4em minmax(0, 1fr);
-    grid-template-rows: 4em 1fr min-content;
+    grid-template-rows: 5em 1fr min-content;
     grid-template-areas:
       "logo nav header"
       "main main main"
       "footer footer footer";
   }
 
+  #Logo img {
+    height: 4em;
+  }
+
   #Hamburger {
+    position: sticky;
+    top: 0;
     border: black 3px solid;
     border-left: none;
     border-right: none;
   }
 
   #HamburgerLinks {
-    position: absolute;
-    top: 2.35em;
-    left: 4.7em;
+    position: fixed;
+    border: gray 3px solid;
+    top: 2.66em;
+    left: 4.66em;
     width: 0;
     height: 0;
-    z-index: 1;
+    margin: 0 0.5em;
+  }
+
+  #HamburgerLinks a,
+  #HamburgerLinks a:link,
+  #HamburgerLinks a:visited {
+    border: black 3px solid;
+    margin: 0.5em 1em;
+    padding: 1.5em 0.66em;
   }
 
   #Hamburger:hover {
+    padding: 0.25em;
+    #HamburgerImg {
+      margin: -0.25em;
+    }
+    #HamburgerRelative {
+      background-color: gray;
+      border-radius: 1em;
+    }
     #HamburgerLinks {
       transition: width 0.15s, height 0.66s;
       width: 7em;
       height: 17em;
       opacity: 1;
     }
+  }
+
+  #WeatherKittyHeader h1 {
+    font-size: 1.33em;
+  }
+
+  #WeatherKittyHeaderDiv {
+    height: 4.5em;
   }
 
   #WeatherKittyMain {
@@ -170,10 +239,22 @@ body {
 
   #WeatherKittyHeader {
     grid-area: header;
-    height: 4em;
+    z-index: -1;
   }
 
   weather-kitty {
-    height: 4em;
+    font-size: small;
+  }
+}
+
+@media (max-width: 450px) {
+  #WeatherKittyHeader h1 {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 375px) {
+  #WeatherKittyHeader h1 {
+    font-size: 0;
   }
 }

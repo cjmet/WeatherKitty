@@ -2,12 +2,14 @@
 
 // Really need to implement log levels, this is effectively trace level or info level with no subtlety.
 let WeatherKittyDebug = false;
-import "./node_modules/chart.js/dist/chart.umd.js";
+// import "./node_modules/chart.js/dist/chart.umd.js";
+import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
 // strict mode
 ("use strict");
 
 let config = {
+  FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
   longCacheTime: 60000 * 60 * 24, // 24 hours
@@ -114,9 +116,9 @@ function WeatherWidgetInit(path) {
     "WeatherKittyChart"
   );
   count += FindAndReplaceTags(
-    "weather-kitty-geolocation",
+    "weather-kitty-geoaddress",
     WeatherKittyLocationBlock(),
-    "WeatherKittyGeoLocation"
+    "WeatherKittyGeoAddress"
   );
 
   if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
@@ -157,6 +159,7 @@ function WeatherWidget() {
 
     // Long Forecast
     let forecast =
+      `<b>${weather.geoLocationName}</b><br><br>` +
       "<b>Current:</b><br>" +
       weather.observationShortText +
       " " +
@@ -181,298 +184,22 @@ function WeatherWidget() {
       widget.innerHTML = forecast;
     }
 
-    // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA"; // cjm
-    widgets = document.getElementsByTagName("weather-kitty-geolocation");
+    // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
+    widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
       let button = widget.getElementsByTagName("button")[0];
       span.innerHTML = weather.geoLocationName;
       button = RemoveAllEventListeners(button);
-      var result = button.addEventListener("click", () => {
+      button.addEventListener("click", () => {
         getWeatherLocationByAddressAsync(WeatherWidget);
       });
-      console.log("Result: ", result);
     }
 
     // testing charting
     // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
     ObservationCharts(weather.observationData);
   });
-}
-
-function ObservationCharts(data) {
-  if (WeatherKittyDebug) console.log("[Obs Chart Data] ", data[0]);
-
-  let obsArray = ["timestamp"];
-
-  if (data !== null && data !== undefined && data.length > 0) {
-    let keys = Object.keys(data[1].properties);
-    for (let key of keys) {
-      let unitCode = data[1].properties[key].unitCode;
-      if (
-        unitCode !== null &&
-        unitCode !== undefined &&
-        unitCode !== "" &&
-        obsArray.includes(key) === false
-      )
-        obsArray.push(key);
-    }
-  } else {
-    console.log("[ObservationCharts] *** ERROR ***: No Data Available");
-    return;
-  }
-
-  let chartData = new Map();
-  for (let i = 0; i < obsArray.length; i++) {
-    chartData.set(obsArray[i], []);
-  }
-
-  if (data.length > 0) {
-    for (let observation of obsArray) {
-      if (WeatherKittyDebug)
-        console.log(
-          "[Obs Chart Data Collect] ",
-          observation,
-          " : ",
-          data[0].properties[observation]
-        );
-
-      for (let i = 0; i < data.length; i++) {
-        if (
-          data[i].properties[observation] === null ||
-          data[i].properties[observation] === undefined ||
-          data[i].properties[observation] === ""
-        ) {
-          chartData.get(observation).push(NaN);
-        } else {
-          // Convert to Fahrenheit
-          let value = data[i].properties[observation].value;
-          let unitCode = data[i].properties[observation].unitCode;
-          if (
-            unitCode !== null &&
-            unitCode !== undefined &&
-            unitCode === "wmoUnit:degC"
-          ) {
-            data[i].properties[observation].value = Fahrenheit(value, "°C");
-            data[i].properties[observation].unitCode = "°F";
-          }
-          // /Convert to Fahrenheit
-
-          chartData.get(observation).push(data[i].properties[observation]);
-        }
-      }
-    }
-    if (!WeatherKittyDebug) {
-      let message = "[Observation Chart-able Types Found] ";
-      for (let key of obsArray) {
-        let unitCode = data[0].properties[key].unitCode;
-        if (unitCode !== null && unitCode !== undefined)
-          unitCode = unitCode.replace("wmoUnit:", "");
-        message += ` ${key}:${unitCode}, `;
-      }
-      console.log(message);
-    }
-  }
-
-  let containerArray = document.getElementsByTagName("weather-kitty-chart");
-  for (let container of containerArray) {
-    let chartType = container.getAttribute("type");
-    if (chartType === null || chartType === undefined) {
-      console.log("[ObservationCharts] *** ERROR ***: Chart Type Not Defined");
-      console.log(container);
-      return;
-    }
-    if (obsArray.includes(chartType) === false) {
-      console.log(
-        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
-      );
-      console.log(container);
-      console.log(obsArray);
-      return;
-    }
-    CreateChart(
-      container,
-      chartType,
-      chartData.get(chartType),
-      chartData.get("timestamp")
-    );
-  }
-}
-
-async function CreateChart(chartContainer, key, values, timestamps) {
-  if (
-    values === null ||
-    values === undefined ||
-    values.length === 0 ||
-    values[0].value === undefined
-  ) {
-    console.log(
-      `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
-    );
-    console.log(chartContainer, key, values, timestamps);
-    return;
-  }
-  if (
-    timestamps === null ||
-    timestamps === undefined ||
-    timestamps.length === 0 ||
-    timestamps[0] === undefined
-  ) {
-    console.log(
-      `[CreateChart] *** ERROR *** Barp! on ${key}.  timestamps are empty`
-    );
-    console.log(chartContainer, key, values, timestamps);
-    return;
-  }
-  if (
-    chartContainer === null ||
-    chartContainer === undefined ||
-    chartContainer.length === 0
-  ) {
-    console.log("[CreateChart] *** ERROR *** chartContainer is Null! ");
-    console.log(chartContainer, key, values, timestamps);
-    return;
-  }
-  if (key === "timestamp") return; // I should just leave that one in for fun.
-
-  if (WeatherKittyDebug)
-    console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
-
-  let data = [];
-  let time = [];
-  for (let i = 0; i < values.length; i++) {
-    data.push(values[i].value);
-    let date = new Date(timestamps[i]);
-    let label = date.toLocaleString(undefined, config.timeFormat);
-    label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//, "-");
-    time.push(label);
-  }
-  data = data.reverse();
-  time = time.reverse();
-
-  //  6em high labels
-  await new Promise((r) => setTimeout(r, 1)); // give the container time to grow/shrink
-  let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
-  let width = getComputedStyle(chartContainer).width.replace("px", "");
-  let height = getComputedStyle(chartContainer).height.replace("px", "");
-  if (height < oneEm * 18) height = oneEm * 18;
-  let chartAspect = (width - oneEm) / height;
-  if (chartAspect < 1) chartAspect = 1;
-  if (chartAspect > 2.5) chartAspect = 2.5;
-
-  if (WeatherKittyDebug)
-    console.log(
-      `[CreateChart] Em = ${oneEm},   Aspect Ratio: ${width / oneEm} / ${
-        height / oneEm
-      } = ${chartAspect}`
-    );
-
-  let canvas = chartContainer.getElementsByTagName("canvas")[0];
-  if (canvas === null || canvas === undefined) {
-    console.log("[CreateChart] *** ERROR ***: Canvas Element Not Found");
-    console.log(chartContainer);
-    return;
-  }
-
-  canvas.id = key;
-
-  // ------------------------------------------------------------------
-  let chart = Chart.getChart(canvas);
-
-  if (chart === null || chart === undefined) {
-    if (WeatherKittyDebug)
-      console.log(
-        `[CreateChart New] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
-      );
-    let labelName = `${key} - ${values[0].unitCode}`;
-    labelName = labelName.replace("wmoUnit:", "");
-    let newChart = new Chart(canvas, {
-      type: "line",
-      data: {
-        labels: time,
-        datasets: [
-          {
-            label: labelName,
-            data: data,
-          },
-        ],
-      },
-      options: {
-        aspectRatio: chartAspect,
-        maintainAspectRatio: true,
-        scales: {
-          x: {
-            ticks: {
-              maxRotation: 90,
-              minRotation: 60,
-            },
-          },
-        },
-      },
-    });
-    newChart.update();
-  } else {
-    if (WeatherKittyDebug)
-      console.log(
-        `[CreateChart Update] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
-      );
-    let labelName = `${key} - ${values[0].unitCode}`;
-    chart.data.labels = time;
-    chart.data.datasets = [
-      {
-        label: labelName,
-        data: data,
-      },
-    ];
-  }
-  // ------------------------------------------------------------------
-}
-
-// Function WeatherSquares
-function WeatherSquares(
-  elementId,
-  replacementText,
-  replacementImgUrl,
-  alternateImgUrl
-) {
-  let elements = document.getElementsByTagName(elementId);
-  if (elements == undefined || elements == null || elements.length === 0) {
-    console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
-    return;
-  }
-  for (let element of elements) {
-    let weatherImg = element.querySelector("weather-kitty-current > img");
-    let textDiv = element.querySelector("weather-kitty-current > span");
-    if (weatherImg === null) {
-      weatherImg = element.querySelector("weather-kitty-forecast > img");
-      textDiv = element.querySelector("weather-kitty-forecast > span");
-    }
-
-    if (WeatherKittyDebug)
-      console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
-    textDiv.innerHTML = replacementText;
-    if (WeatherKittyDebug)
-      console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
-
-    // Icon
-
-    if (WeatherKittyDebug)
-      console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
-    if (
-      replacementImgUrl !== null &&
-      replacementImgUrl !== "" &&
-      replacementImgUrl.includes("/null") === false
-    )
-      weatherImg.src = replacementImgUrl;
-    else {
-      if (alternateImgUrl !== null && alternateImgUrl !== "")
-        weatherImg.src = alternateImgUrl;
-      else
-        weatherImg.src = `url(config.WeatherKittyPath + "img/WeatherKittyE8.png")`;
-    }
-    if (WeatherKittyDebug)
-      console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
-  }
 }
 
 // Function getWeatherLocationAsync
@@ -483,7 +210,16 @@ async function getWeatherLocationAsync(callBack) {
   // const userData = JSON.parse(localStorage.getItem('user'));
 
   cached = JSON.parse(localStorage.getItem("location"));
-  console.log(`[getLocationAsync] Checking Location Data`);
+  //  console.log(
+  //   `[getWeatherAsync] Cached Weather Data [${wkElapsedTime(
+  //     cached.forecastTimeStamp + config.shortCacheTime
+  //   )}]`
+  // );
+  let elapsed;
+  if (cached?.timestamp == null) elapsed = "n/a";
+  else if (cached?.timestamp >= config.FOREVER) elapsed = "never expires";
+  else elapsed = wkElapsedTime(cached?.timestamp + config.locCacheTime);
+  console.log(`[getLocationAsync] Checking Location Data [${elapsed}]`);
 
   if (
     cached?.lat != null &&
@@ -590,15 +326,22 @@ async function getWeatherLocationByIPAsync(callBack) {
     });
 }
 
-// Function getWeatherLocationByAddressAsync // cjm
+// Function getWeatherLocationByAddressAsync
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
 async function getWeatherLocationByAddressAsync(callBack) {
-  let address = prompt(
-    '"Address, City, State" or "Address, ZipCode"',
-    "100 Main St, Lexington, Ky"
-  );
+  let address = prompt('"Address, City, State" or "Address, ZipCode"');
   if (address === null || address === "") {
-    console.log("[getAddress] Error: No Address");
+    console.log("[getAddress] No Address.");
+    let cached = JSON.parse(localStorage.getItem("location"));
+    // manually set location does not expire, aka config.FOREVER
+    // if it's currently manually set, then clear it.
+    if (cached?.timestamp >= config.FOREVER) {
+      console.log("Clearing Cache and Reloading.");
+      localStorage.removeItem("location");
+      localStorage.removeItem("weather");
+      await new Promise((r) => setTimeout(r, 1000)); // sleep for 1 second
+      getWeatherLocationAsync(callBack);
+    }
     return;
   }
   console.log(`[getAddress] "${address}"`);
@@ -630,7 +373,7 @@ async function getWeatherLocationByAddressAsync(callBack) {
       return;
   }
 
-  let locationUrl = `https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
+  let locationUrl = `https://corsproxy.io/?https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
   if (city !== "") locationUrl += `&city=${city}`;
   if (state !== "") locationUrl += `&state=${state}`;
   if (zip !== "") locationUrl += `&zip=${zip}`;
@@ -638,7 +381,7 @@ async function getWeatherLocationByAddressAsync(callBack) {
 
   await fetch(
     locationUrl
-    // { mode: "cors" }  // 'cors', 'no-cors', 'same-origin', 'navigate'. 'no-cors' means we can't access it in javascript, so we have to fix this. // cjm
+    // { mode: "cors" }  // 'cors', 'no-cors', 'same-origin', 'navigate'. 'no-cors' means we can't access it in javascript, so we have to fix this.
   )
     .then(
       (response) => {
@@ -652,11 +395,39 @@ async function getWeatherLocationByAddressAsync(callBack) {
     )
     .then((data) => {
       console.log("[getAddress] ", data);
+      if (data.result.addressMatches.length <= 0) {
+        console.log("[getAddress] Error: No Address Matches");
+        return;
+      }
       let lat = data.result.addressMatches[0].coordinates.y;
       let lon = data.result.addressMatches[0].coordinates.x;
-      console.log(`[getAddress] Latitude: ${lat}, Longitude: ${lon}`);
-      // ...
-      // getWeatherAsync(lat, lon, callBack);
+      let location = data.result.addressMatches[0].matchedAddress;
+      console.log(
+        `[getAddress] Location: ${location}', 'Latitude: ${lat}, Longitude: ${lon}`
+      );
+      if (
+        lat === null ||
+        lat === undefined ||
+        lon === null ||
+        lon === undefined
+      ) {
+        console.log("[getAddress] Error: No Lat/Lon Data Available");
+        return;
+      } else {
+        console.log("[getAddress] Attempting to get weather data");
+        // Force Expire the Cache
+        // Disable Location Expire
+        localStorage.setItem(
+          "location",
+          JSON.stringify({
+            lat: lat,
+            lon: lon,
+            timestamp: config.FOREVER,
+          })
+        );
+        localStorage.removeItem("weather");
+        getWeatherAsync(lat, lon, callBack);
+      }
     });
 }
 
@@ -985,6 +756,283 @@ async function getWeatherAsync(lat, lon, callBack) {
   // Call the callback function:
   callBack(cached);
   console.log("[getWeatherAsync] Done.");
+}
+
+function ObservationCharts(data) {
+  if (WeatherKittyDebug) console.log("[Obs Chart Data] ", data[0]);
+
+  let obsArray = ["timestamp"];
+
+  if (data !== null && data !== undefined && data.length > 0) {
+    let keys = Object.keys(data[1].properties);
+    for (let key of keys) {
+      let unitCode = data[1].properties[key].unitCode;
+      if (
+        unitCode !== null &&
+        unitCode !== undefined &&
+        unitCode !== "" &&
+        obsArray.includes(key) === false
+      )
+        obsArray.push(key);
+    }
+  } else {
+    console.log("[ObservationCharts] *** ERROR ***: No Data Available");
+    return;
+  }
+
+  let chartData = new Map();
+  for (let i = 0; i < obsArray.length; i++) {
+    chartData.set(obsArray[i], []);
+  }
+
+  if (data.length > 0) {
+    for (let observation of obsArray) {
+      if (WeatherKittyDebug)
+        console.log(
+          "[Obs Chart Data Collect] ",
+          observation,
+          " : ",
+          data[0].properties[observation]
+        );
+
+      for (let i = 0; i < data.length; i++) {
+        if (
+          data[i].properties[observation] === null ||
+          data[i].properties[observation] === undefined ||
+          data[i].properties[observation] === ""
+        ) {
+          chartData.get(observation).push(NaN);
+        } else {
+          // Convert to Fahrenheit
+          let value = data[i].properties[observation].value;
+          let unitCode = data[i].properties[observation].unitCode;
+          if (
+            unitCode !== null &&
+            unitCode !== undefined &&
+            unitCode === "wmoUnit:degC"
+          ) {
+            data[i].properties[observation].value = Fahrenheit(value, "°C");
+            data[i].properties[observation].unitCode = "°F";
+          }
+          // /Convert to Fahrenheit
+
+          chartData.get(observation).push(data[i].properties[observation]);
+        }
+      }
+    }
+    if (!WeatherKittyDebug) {
+      let message = "[Observation Chart-able Types Found] ";
+      for (let key of obsArray) {
+        let unitCode = data[0].properties[key].unitCode;
+        if (unitCode !== null && unitCode !== undefined)
+          unitCode = unitCode.replace("wmoUnit:", "");
+        message += ` ${key}:${unitCode}, `;
+      }
+      console.log(message);
+    }
+  }
+
+  let containerArray = document.getElementsByTagName("weather-kitty-chart");
+  for (let container of containerArray) {
+    let chartType = container.getAttribute("type");
+    if (chartType === null || chartType === undefined) {
+      console.log("[ObservationCharts] *** ERROR ***: Chart Type Not Defined");
+      console.log(container);
+      return;
+    }
+    if (obsArray.includes(chartType) === false) {
+      console.log(
+        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
+      );
+      console.log(container);
+      console.log(obsArray);
+      return;
+    }
+    CreateChart(
+      container,
+      chartType,
+      chartData.get(chartType),
+      chartData.get("timestamp")
+    );
+  }
+}
+
+async function CreateChart(chartContainer, key, values, timestamps) {
+  if (
+    values === null ||
+    values === undefined ||
+    values.length === 0 ||
+    values[0].value === undefined
+  ) {
+    console.log(
+      `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
+    );
+    console.log(chartContainer, key, values, timestamps);
+    return;
+  }
+  if (
+    timestamps === null ||
+    timestamps === undefined ||
+    timestamps.length === 0 ||
+    timestamps[0] === undefined
+  ) {
+    console.log(
+      `[CreateChart] *** ERROR *** Barp! on ${key}.  timestamps are empty`
+    );
+    console.log(chartContainer, key, values, timestamps);
+    return;
+  }
+  if (
+    chartContainer === null ||
+    chartContainer === undefined ||
+    chartContainer.length === 0
+  ) {
+    console.log("[CreateChart] *** ERROR *** chartContainer is Null! ");
+    console.log(chartContainer, key, values, timestamps);
+    return;
+  }
+  if (key === "timestamp") return; // I should just leave that one in for fun.
+
+  if (WeatherKittyDebug)
+    console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
+
+  let data = [];
+  let time = [];
+  for (let i = 0; i < values.length; i++) {
+    data.push(values[i].value);
+    let date = new Date(timestamps[i]);
+    let label = date.toLocaleString(undefined, config.timeFormat);
+    label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//, "-");
+    time.push(label);
+  }
+  data = data.reverse();
+  time = time.reverse();
+
+  //  6em high labels
+  await new Promise((r) => setTimeout(r, 1)); // give the container time to grow/shrink
+  let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
+  let width = getComputedStyle(chartContainer).width.replace("px", "");
+  let height = getComputedStyle(chartContainer).height.replace("px", "");
+  if (height < oneEm * 18) height = oneEm * 18;
+  let chartAspect = (width - oneEm) / height;
+  if (chartAspect < 1) chartAspect = 1;
+  if (chartAspect > 2.5) chartAspect = 2.5;
+
+  if (WeatherKittyDebug)
+    console.log(
+      `[CreateChart] Em = ${oneEm},   Aspect Ratio: ${width / oneEm} / ${
+        height / oneEm
+      } = ${chartAspect}`
+    );
+
+  let canvas = chartContainer.getElementsByTagName("canvas")[0];
+  if (canvas === null || canvas === undefined) {
+    console.log("[CreateChart] *** ERROR ***: Canvas Element Not Found");
+    console.log(chartContainer);
+    return;
+  }
+
+  canvas.id = key;
+
+  // ------------------------------------------------------------------
+  let chart = Chart.getChart(canvas);
+
+  if (chart === null || chart === undefined) {
+    if (WeatherKittyDebug)
+      console.log(
+        `[CreateChart New] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
+      );
+    let labelName = `${key} - ${values[0].unitCode}`;
+    labelName = labelName.replace("wmoUnit:", "");
+    let newChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: time,
+        datasets: [
+          {
+            label: labelName,
+            data: data,
+            // "circle", "cross", "crossRot", "dash", "line", "rect", "rectRounded", "rectRot", "star", "triangle", false
+            pointStyle: false,
+          },
+        ],
+      },
+      options: {
+        aspectRatio: chartAspect,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 90,
+              minRotation: 60,
+            },
+          },
+        },
+      },
+    });
+    newChart.update();
+  } else {
+    if (WeatherKittyDebug)
+      console.log(
+        `[CreateChart Update] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
+      );
+    let labelName = `${key} - ${values[0].unitCode}`;
+    chart.data.labels = time;
+    chart.data.datasets = [
+      {
+        label: labelName,
+        data: data,
+      },
+    ];
+  }
+  // ------------------------------------------------------------------
+}
+
+// Function WeatherSquares
+function WeatherSquares(
+  elementId,
+  replacementText,
+  replacementImgUrl,
+  alternateImgUrl
+) {
+  let elements = document.getElementsByTagName(elementId);
+  if (elements == undefined || elements == null || elements.length === 0) {
+    console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
+    return;
+  }
+  for (let element of elements) {
+    let weatherImg = element.querySelector("weather-kitty-current > img");
+    let textDiv = element.querySelector("weather-kitty-current > span");
+    if (weatherImg === null) {
+      weatherImg = element.querySelector("weather-kitty-forecast > img");
+      textDiv = element.querySelector("weather-kitty-forecast > span");
+    }
+
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
+    textDiv.innerHTML = replacementText;
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
+
+    // Icon
+
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
+    if (
+      replacementImgUrl !== null &&
+      replacementImgUrl !== "" &&
+      replacementImgUrl.includes("/null") === false
+    )
+      weatherImg.src = replacementImgUrl;
+    else {
+      if (alternateImgUrl !== null && alternateImgUrl !== "")
+        weatherImg.src = alternateImgUrl;
+      else
+        weatherImg.src = `url(config.WeatherKittyPath + "img/WeatherKittyE8.png")`;
+    }
+    if (WeatherKittyDebug)
+      console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
+  }
 }
 
 // Function WeatherTemperatureFahrenheit
