@@ -16,20 +16,26 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
 
-### API Usage
+### Credits, License, and Usage Summary
 
-- api.weather.gov - limit 1 per second
-- ipapi.co - limit 35 per hour
-- corsproxy.io/census.gov - INSECURE. YOU ARE TRUSTING corsproxy.io not to exploit Data or XSS in both directions.
-- nominatim.openstreetmap.org - DEMO ONLY, NON-COMMERCIAL USE, VERY LIMITED USE, MUST CACHE RESULTS.
+- **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
+- **Software is Licensed:** LGPL 3.0 or newer
+- **Chart.js:** MIT License
+- **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
+- **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
+  - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
+- **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
+- **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results.
 
 ### HTML Elements
 
 - `<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
 - `<weather-kitty-current></weather-kitty-current>` - Current Conditions
 - `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
+- `<weather-kitty-geoaddress></weather-kitty-geoaddress>` - Manual Location Input, Optional. Currently powered by corsproxy.io
 - `<weather-kitty-chart type="keyword"></weather-kitty-chart>` - Chart
   - Type can be: "barometricPressure", "dewpoint", "heatIndex", "precipitationLastHour", "precipitationLast3Hours", "precipitationLast6Hours", "relativeHumidity", "temperature", "visibility", "windChill", "windGust", "windSpeed",
+  - and possibly more. See the live dev console for more info.
 
 ### CSS Classes and Tags
 
@@ -37,11 +43,11 @@ For ease of editing and customization
 
 - `weather-kitty-tooltip` - Tooltip tags if you need to style them.
 - `.WeatherKitty` - Widget
-- `.WeatherKittyBlock` - Current Conditions and Forecast Blocks. Default width: 5.67 em
+- `.WeatherKittyBlock` - Current Conditions and Forecast Blocks.
 - `.WeatherKittyImage` - Weather Background Images
 - `.WeatherKittyText` - Weather Text
-- `.WeatherKittyChart` - weather chart containers
-- `.WeatherKittyGeoAddress` - manual location input container
+- `.WeatherKittyChart` - Weather chart containers
+- `.WeatherKittyGeoAddress` - Manual location input container
 - Example CSS
 
   ```
@@ -59,54 +65,11 @@ For ease of editing and customization
 
 - Custom CSS in your own stylesheet as desired.
 - Custom HTML Code Blocks
-- ~~Custom GeoAddress Function~~
+- ~~Custom GeoAddress Function~~ - Not Implemented
 
-### index.html Code Example
+### Examples
 
-```
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-
-  <body>
-    <header>
-      <weather-kitty></weather-kitty>
-    </header>
-
-    <script src="./WeatherKitty.mjs" type="module"></script>
-  </body>
-</html>
-```
-
-### Custom HTML Code Block Example
-
-```
-<weather-kitty class="WeatherKitty">
-  <weather-kitty-current class="WeatherKittyBlock">
-    <img src="https://default-image.jpg" class="WeatherKittyImage" />
-    <div class="WeatherKittyText"></div>
-    <weather-kitty-tooltip></weather-kitty-tooltip>
-  </weather-kitty-current>
-
-  <div style="width: 0.5em"></div>
-
-  <weather-kitty-forecast class="WeatherKittyBlock">
-    <img src="https://default-image.jpg" class="WeatherKittyImage" />
-    <div class="WeatherKittyText"></div>
-    <weather-kitty-tooltip></weather-kitty-tooltip>
-  </weather-kitty-forecast>
-
-  <weather-kitty-tooltip></weather-kitty-tooltip>
-</weather-kitty>
-```
-
-### Custom GeoAddress Function
-
-- Not Implemented
+- see example\*.html in the main directory.
 
 ...
 
@@ -114,31 +77,20 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] geolocation
-
-    - [ ] by zipcode / Census
-    - [ ] \<weather-kitty-location location="manual"></weather-kitty-location>
-    - [ ] \<element location=""/>
-      - "" or "none" - does not display
-      - "fallback - only displays when all else fails, then allows change
-      - "display" - only displays, does not allow change
-      - "manual" - always displays and always allows change
-
-  - [ ] import chart.js from cdn instead of node
-  - [ ] GeoAddress CallBack
-    - `weatherkitty.geoaddress(function);`
+  - [ ] Custom modular geolocation function(s);
+  - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
+    - [ ] value = value or null/undefined to delete
+    - [ ] ttl = time to live in (seconds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
   - [ ] Better Charts
     - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
   - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
-  - [ ] refactor the globals for cleaner code.
   - [ ] How can we transition a media query
 
 - [ ] Project - To-Do List
+  - [ ] Vite
   - [ ] React
-  - [ ] Vite or ~~WebPack~~
   - [ ] Auth / OAuth API
   - [ ] AWS, Lambda, Hosting, Etc, ...
-  - [ ] Look into Vue
 
 ## CodeKy Project Requirements
 
@@ -191,6 +143,7 @@ For ease of editing and customization
 - Weather and location updates
 - More Media Queries
 - Removed Node
+- Updated readme, licenses, todo, etc.
 
 ### 24/10/09
 
