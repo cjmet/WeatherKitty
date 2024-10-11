@@ -120,6 +120,21 @@ function WeatherWidgetInit(path) {
     WeatherKittyLocationBlock(),
     "WeatherKittyGeoAddress"
   );
+  count += FindAndReplaceTags(
+    "weather-kitty-map-forecast",
+    WeatherKittyMapForecastBlock,
+    "WeatherKittyMapForecast"
+  );
+  count += FindAndReplaceTags(
+    "weather-kitty-map-radar",
+    WeatherKittyMapRadarBlock,
+    "WeatherKittyMapRadar"
+  );
+  count += FindAndReplaceTags(
+    "weather-kitty-map-alerts",
+    WeatherKittyMapAlertsBlock,
+    "WeatherKittyMapAlerts"
+  );
 
   if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
   else
@@ -196,9 +211,12 @@ function WeatherWidget() {
       });
     }
 
-    // testing charting
+    // Charting
     // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
     ObservationCharts(weather.observationData);
+
+    // Forecast Matrix
+    ForecastMatrix(weather.forecastData);
   });
 }
 
@@ -493,6 +511,7 @@ async function getWeatherAsync(lat, lon, callBack) {
 
       // Data Structures for more complex usage
       observationData: [],
+      forecastData: [],
     };
     // localStorage.setItem("weather", JSON.stringify(cached));
   } else {
@@ -747,6 +766,12 @@ async function getWeatherAsync(lat, lon, callBack) {
         cached.forecastIconUrl = String(data.properties.periods[0].icon);
         cached.forecastStartTime = String(data.properties.periods[0].startTime);
         cached.forecastTimeStamp = Date.now();
+
+        // Intercept forecast data for matrix
+        cached.forecastData = data.properties.periods;
+        console.log("[INTERCEPT] Intercepting forecast Data");
+        console.log(cached.forecastData);
+
         localStorage.setItem("weather", JSON.stringify(cached));
       });
   } else {
@@ -756,6 +781,34 @@ async function getWeatherAsync(lat, lon, callBack) {
   // Call the callback function:
   callBack(cached);
   console.log("[getWeatherAsync] Done.");
+}
+
+function ForecastMatrix(data) {
+  if (data == null || data.length === 0) {
+    console.log("[ForecastMatrix] *** ERROR ***: No Data Available");
+    return;
+  }
+  console.log("[ForecastMatrix] ", data);
+  let text = "";
+  for (let period of data) {
+    text += `<div>`;
+    text += `<div>${period.name}</div>`;
+    text += `<img src=${period.icon} alt="Weather Image"><br>`;
+    text += `<div>`;
+    text += `<span>${
+      period.temperature
+    }<small>${period.temperatureUnit.toLowerCase()}</small></span> - <span>`;
+    text += `${(period.probabilityOfPrecipitation.value ??= 0)}<small>${period.probabilityOfPrecipitation.unitCode.replace(
+      "wmoUnit:percent",
+      "%"
+    )}</small><span>`;
+    text += `</div>`;
+    text += `${BadHyphen(period.shortForecast)}`;
+    text += `</div>`;
+  }
+  let target = document.getElementById("Matrix");
+  if (target != null) target.innerHTML = text;
+  else console.log("[ForecastMatrix] *** ERROR ***: Target Not Found");
 }
 
 function ObservationCharts(data) {
@@ -1247,6 +1300,24 @@ let WeatherKittyWidgetBlock = `<weather-kitty-current></weather-kitty-current>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
 let WeatherKittyChartBlock = `<canvas></canvas>`;
+
+let WeatherKittyMapForecastBlock = `<img
+            src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
+            alt="NOAA Forcast"
+            onclick="AIshowFullscreenImage(this)"
+        />`;
+
+let WeatherKittyMapRadarBlock = `<img
+            src="https://radar.weather.gov/ridge/standard/CONUS-LARGE_loop.gif"
+            alt="NOAA Radar"
+            onclick="AIshowFullscreenImage(this)"
+          />`;
+
+let WeatherKittyMapAlertsBlock = `          <img
+            src="https://www.weather.gov/wwamap/png/US.png"
+            alt="US Weather Alerts Map"
+            onclick="AIshowFullscreenImage(this)"
+          />`;
 
 function WeatherKittyLocationBlock() {
   let results = `<span></span>

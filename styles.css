@@ -161,32 +161,55 @@ body {
   flex-direction: column;
 }
 
+/* ---------------------------------------------------------------------------- */
+/* MapsAlpha */
+
 #MapsAlpha {
-  border: red 10px solid;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
 }
 
-#Map1,
-#Map2 {
-  box-sizing: border-box;
+/* ---------------------------------------------------------------------------- */
+/* Matrix */
+
+#Matrix {
   border-radius: 1em;
-  /* aspect-ratio: 1.38; */
-  width: 100%;
-  padding: 1em;
+  box-sizing: border-box;
+  margin: 1em;
+  text-align: center;
+  text-justify: center;
+  display: flex;
+  justify-content: space-around;
+  overflow-x: scroll;
+  text-wrap: pretty;
+  hyphens: auto;
 }
 
-#MapsAlpha img {
-  border: black 3px solid;
+#Matrix img {
+  margin: 0 0.25em;
+}
+
+#Matrix > div {
+  border: black 1px solid;
   border-radius: 1em;
-  aspect-ratio: 1.38;
-  width: 100%;
-  align-self: center;
-  justify-self: center;
-  object-fit: cover;
-  object-position: center;
+  margin: 0.25em;
+  max-width: 6em;
+}
+
+#Matrix > div > :first-child {
+  height: 2.5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#Matrix > div > :nth-child(4) {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 0.25em;
 }
 
 /* ---------------------------------------------------------------------------- */

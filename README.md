@@ -4,10 +4,10 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/main/img/DemoImage.jpg)
 <span style="font-size: xx-small;">Github Copilot was used during the development of this project.</span>
-<br>
 
 ## Usage
 
+- Valid for locations in the United States Only. The primary API is from the **United States** National Weather Service.
 - Secure https and Location are **Required**.
   - location can be provided by browser permissions, GeoIP, or opt-in GeoAddress.
 - Install as a git submodule
@@ -15,17 +15,6 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 - Add WeatherKitty.mjs to your scripts in your html file
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
-
-### Credits, License, and Usage Summary
-
-- **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
-- **Software is Licensed:** LGPL 3.0 or newer
-- **Chart.js:** MIT License
-- **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
-- **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
-  - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
-- **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
-- **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results.
 
 ### HTML Elements
 
@@ -54,11 +43,6 @@ For ease of editing and customization
   weather-kitty {
     font-size: x-small;
   }
-
-  weather-kitty-tooltip {
-    justify-self: center; /* Align X: justify-self: left, center, right */
-    align-self: center;   /* Align Y: align-self: start, center, end */
-  }
   ```
 
 ### Options
@@ -73,17 +57,29 @@ For ease of editing and customization
 
 ...
 
+## Credits, License, and Usage Summary
+
+- **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
+- **Software is Licensed:** LGPL 3.0 or newer
+- **Chart.js:** MIT License
+- **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
+- **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
+  - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
+- **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
+- **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results.
+
 ## To-Do
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] Zoom issue with Alpha Maps and Flex
+  - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
   - [ ] Alerts, Radar, Products, Weather Maps
     - [ ] Alerts
     - [ ] Radar
     - [ ] Products
     - [ ] Weather Maps
     - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
+  - [ ] corsproxy to cache the images locally?
   - [ ] Custom modular geolocation function(s);
   - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
     - [ ] value = value or null/undefined to delete
@@ -143,6 +139,12 @@ For ease of editing and customization
 
 ## Blog
 
+### 24/10/11
+
+- container query. To get the maps they way I really wanted them, required a container query.
+- <weather-kitty-map-forecast>, <weather-kitty-map-radar>, <weather-kitty-map-alerts>
+- enlarge, pan, and the maps
+
 ### 24/10/10
 
 - CORS issue: https://corsproxy.io/?
@@ -152,11 +154,62 @@ For ease of editing and customization
 - Removed Node
 - Updated readme, licenses, todo, etc.
 - Alpha Forecast Map and Radar Map
+- <details>
+  <summary>Save these code blocks for reference later</summary>
+
+  ```
+  if (false)
+    await fetch(
+      "https://corsproxy.io/?https://geocoding.geo.census.gov/geocoder/locations/address?street=100%20Main%20St&city=Lexington&state=Ky&benchmark=Public_AR_Current&format=json"
+    )
+      .then((response) => {
+        console.log("Census Response:", response);
+        if (!response.ok) {
+          console.log("     HTTP error, status = " + response.status);
+          throw new Error("HTTP status " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Census Data:", data);
+        console.log("Census Name:", data.result.addressMatches[0].matchedAddress);
+        console.log(
+          "Census Latitude:",
+          data.result.addressMatches[0].coordinates.y
+        );
+        console.log(
+          "Census Longitude:",
+          data.result.addressMatches[0].coordinates.x
+        );
+      })
+      .catch((error) => {
+        console.error("Census Error:", error);
+      });
+
+  if (false)
+    await fetch(
+      "https://nominatim.openstreetmap.org/search?q=lexington%20ky&format=json"
+    )
+      .then((response) => {
+        console.log("Nominatim Response:", response);
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Nom Data", data);
+        console.log("Nom Name:", data[0].display_name);
+        console.log("Nom Latitude:", data[0].lat);
+        console.log("Nom Longitude:", data[0].lon);
+      });
+
+  ```
+
+  </details>
 
 ### 24/10/09
 
 - config block
-- Census Geocoder and CORS
+- <details>
+    <summary>Census Geocoder and CORS</summary>
 
   - https://geocoding.geo.census.gov/geocoder/locations/address?street=100%20Main%20St&city=Lexington&state=Ky&benchmark=Public_AR_Current&format=json
   - https://wiki.openstreetmap.org/wiki/Geocoding
@@ -179,6 +232,8 @@ For ease of editing and customization
   Your JavaScript code sends a request to your server.
   The server makes the request to the Census Geocoding API, and sends the response back to your JavaScript code.
   ```
+
+  </details>
 
 ### 24/10/08
 

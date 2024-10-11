@@ -112,3 +112,31 @@ weather-kitty-chart {
   min-width: 0;
   min-height: 0;
 }
+
+/* required use of a container query */
+/* use of padding required, margin still causes issues even with container query */
+weather-kitty-map-forecast,
+weather-kitty-map-radar,
+weather-kitty-map-alerts {
+  container-type: size;
+  container-name: weather-kitty-map;
+  box-sizing: border-box;
+  aspect-ratio: 1.38;
+  width: 100%;
+  padding: 1em;
+}
+
+/* required use of container units */
+weather-kitty-map-forecast img,
+weather-kitty-map-radar img,
+weather-kitty-map-alerts img {
+  border: black 1px solid;
+  box-sizing: border-box;
+  border-radius: 1em;
+  aspect-ratio: 1.38;
+  width: 100cqw;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+  padding: 0;
+}
