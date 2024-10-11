@@ -77,6 +77,13 @@ For ease of editing and customization
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] Zoom issue with Alpha Maps and Flex
+  - [ ] Alerts, Radar, Products, Weather Maps
+    - [ ] Alerts
+    - [ ] Radar
+    - [ ] Products
+    - [ ] Weather Maps
+    - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
   - [ ] Custom modular geolocation function(s);
   - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
     - [ ] value = value or null/undefined to delete
@@ -144,6 +151,7 @@ For ease of editing and customization
 - More Media Queries
 - Removed Node
 - Updated readme, licenses, todo, etc.
+- Alpha Forecast Map and Radar Map
 
 ### 24/10/09
 

@@ -32,7 +32,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 0 0 0 0.25em;
-  z-index: 1;
+  z-index: 2;
 }
 
 #Hamburger img {
@@ -49,6 +49,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 1;
 }
 
 #HamburgerRelative {
@@ -131,15 +132,6 @@ body {
   font-size: small;
 }
 
-#WeatherKittyMain {
-  border: black 3px solid;
-  margin: 3px;
-  box-sizing: border-box;
-  grid-area: main;
-  display: flex;
-  flex-direction: column;
-}
-
 #WeatherKittySpacer {
   flex-grow: 1;
 }
@@ -160,8 +152,51 @@ body {
   margin: 0;
 }
 
+#WeatherKittyMain {
+  border: black 3px solid;
+  margin: 3px;
+  box-sizing: border-box;
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+}
+
+#MapsAlpha {
+  border: red 10px solid;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+#Map1,
+#Map2 {
+  box-sizing: border-box;
+  border-radius: 1em;
+  /* aspect-ratio: 1.38; */
+  width: 100%;
+  padding: 1em;
+}
+
+#MapsAlpha img {
+  border: black 3px solid;
+  border-radius: 1em;
+  aspect-ratio: 1.38;
+  width: 100%;
+  align-self: center;
+  justify-self: center;
+  object-fit: cover;
+  object-position: center;
+}
+
 /* ---------------------------------------------------------------------------- */
 /* media query for width and height of viewport */
+@media (max-width: 1535px) {
+  #MapsAlpha {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
 
 @media (max-width: 450px), (max-height: 450px) {
   #WeatherKittyBody {
@@ -239,7 +274,6 @@ body {
 
   #WeatherKittyHeader {
     grid-area: header;
-    z-index: -1;
   }
 
   weather-kitty {
