@@ -1,6 +1,6 @@
 # WeatherKitty
 
-Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
+Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Weather API <br> The intent is to make this relatively modular and easy to use in any project or page.
 
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/main/img/DemoImage.jpg)
 <span style="font-size: xx-small;">Github Copilot was used during the development of this project.</span>
@@ -9,7 +9,12 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 - Valid for locations in the United States Only. The primary API is from the **United States** National Weather Service.
 - Secure https and Location are **Required**.
-  - location can be provided by browser permissions, GeoIP, or opt-in GeoAddress.
+  <details>
+
+  - location can be provided by browser permissions, GeoIP, or GeoAddress.
+  - GeoIP and GeoAddress have limited API Usage, additional usage may require an API Key, License, or Subscription.
+  </details>
+
 - Install as a git submodule
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 - Add WeatherKitty.mjs to your scripts in your html file
@@ -18,11 +23,15 @@ Implementing Weather Widgets using the NWS/NOAA **_FREE_** Weather API <br>
 
 ### HTML Elements
 
-- `<weather-kitty></weather-kitty>` - Widget, including Current Conditions and Forecast
-- `<weather-kitty-current></weather-kitty-current>` - Current Conditions
-- `<weather-kitty-forecast></weather-kitty-forecast>` - Forecast
-- `<weather-kitty-geoaddress></weather-kitty-geoaddress>` - Manual Location Input, Optional. Currently powered by corsproxy.io
-- `<weather-kitty-chart type="keyword"></weather-kitty-chart>` - Chart
+- <b>`<weather-kitty></weather-kitty>`</b> - Widget, including Current Conditions and Forecast
+- <b>`<weather-kitty-current></weather-kitty-current>`</b> - Current Conditions
+- <b>`<weather-kitty-forecast></weather-kitty-forecast>`</b> - Forecast
+- <b>`<weather-kitty-geoaddress></weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
+- <b>`<weather-kitty-forecast-week></weather-kitty-forecast-week>`</b> - Forecast matrix for the next week.
+- <b>`<weather-kitty-map-forecast></weather-kitty-map-forecast>`</b> - Forecast map link.
+- <b>`<weather-kitty-map-radar></weather-kitty-map-radar>`</b> - Radar map link.
+- <b>`<weather-kitty-map-alerts></weather-kitty-map-alerts>`</b> - Alerts map link.
+- <b>`<weather-kitty-chart type="keyword"></weather-kitty-chart>`</b> - Chart
   - Type can be: "barometricPressure", "dewpoint", "heatIndex", "precipitationLastHour", "precipitationLast3Hours", "precipitationLast6Hours", "relativeHumidity", "temperature", "visibility", "windChill", "windGust", "windSpeed",
   - and possibly more. See the live dev console for more info.
 
@@ -37,23 +46,22 @@ For ease of editing and customization
 - `.WeatherKittyText` - Weather Text
 - `.WeatherKittyChart` - Weather chart containers
 - `.WeatherKittyGeoAddress` - Manual location input container
-- Example CSS
+- and more... See the dev tools inspector for more classes.
 
+### CSS Example
+
+- Custom CSS in your own stylesheet as desired.
+- Example CSS
   ```
   weather-kitty {
     font-size: x-small;
   }
   ```
 
-### Options
+### HTML Examples and Custom Code Block
 
-- Custom CSS in your own stylesheet as desired.
-- Custom HTML Code Blocks
-- ~~Custom GeoAddress Function~~ - Not Implemented
-
-### Examples
-
-- see example\*.html in the main directory.
+- Html code blocks can be customized. Use the dev tools inspector to see what the code block should look like, then copy and edit it into the tags modifying it to your needs.
+- See example\*.html in the main directory.
 
 ...
 
@@ -66,76 +74,7 @@ For ease of editing and customization
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
   - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
-- **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results.
-
-## To-Do
-
-- [ ] Weather Kitty - To-Do List
-
-  - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
-  - [ ] Alerts, Radar, Products, Weather Maps
-    - [ ] Alerts
-    - [ ] Radar
-    - [ ] Products
-    - [ ] Weather Maps
-    - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
-  - [ ] corsproxy to cache the images locally?
-  - [ ] Custom modular geolocation function(s);
-  - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
-    - [ ] value = value or null/undefined to delete
-    - [ ] ttl = time to live in (seconds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
-  - [ ] Better Charts
-    - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
-  - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
-  - [ ] How can we transition a media query
-
-- [ ] Project - To-Do List
-  - [ ] Vite
-  - [ ] React
-  - [ ] Auth / OAuth API
-  - [ ] AWS, Lambda, Hosting, Etc, ...
-
-## CodeKy Project Requirements
-
-- [ ] **Required**
-
-  - [x] GitHub Repository: Upload your project to GitHub with a minimum of 5 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
-  - [x] README File: Include a README file explaining your project.
-        Describe your project in a paragraph or more.
-  - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
-  - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
-  - [x] 3+ features from the provided list that you've integrated.
-  - [ ] Add any special instructions for the reviewer to run your project.
-  - [x] Add a 4th feature
-  - [x] API: Integrate a third-party API into your project.
-    - [x] Read API **or** Write to an API
-          &nbsp;
-
-- [x] **Features (Choose 2)**
-
-  - [x] Use Arrays, Objects, Sets, or Maps
-  - [x] Analyze data that is stored in arrays, objects, sets or maps and display information about it in your app.
-  - [ ] Use a regular expression to validate user input optionally inform the user about it.
-  - [x] Analyze text and display useful information about it. (e.g. word/character count in an input field)
-  - [x] Create a function that accepts two or more input parameters and returns a value that is calculated or determined by the inputs. Basic math functions don’t count (e.g. addition, etc).
-  - [x] Visualize data in a user friendly way. (e.g. graph, chart, etc)
-  - [ ] Create 3 or more unit tests for your application (and document how to run them)
-  - [x] Convert ~~user~~ input between two formats and display the result. (e.g. Fahrenheit to Celcius, kilograms to pounds, etc)
-  - [x] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
-        &nbsp;
-
-- [x] **Advanced Features (Choose 1)**
-
-  - [x] Retrieve data from a third-party API and use it to display something within your app.
-  - [ ] Create a form and store the submitted values using an external API (e.g. a contact form, survey, etc).
-  - [ ] Persist data to an external API and make the stored data accessible in your app (including after reload/refresh).
-        &nbsp;
-
-- [ ] **Optional Features (Swap with Section 1)**
-  - [ ] Create a node.js web server using a modern framework such as **Express.js** or **Fastify**. Serve at least one route that your app uses (must serve more than just the index.html file).
-  - [ ] Interact with a database to store and retrieve information (e.g. MySQL, MongoDB, etc).
-  - [ ] Implement modern interactive UI features (e.g. table/data sorting, autocomplete, drag-and-drop, calendar-date-picker, etc).
-  - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
+<!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
 
 ## Blog
 
