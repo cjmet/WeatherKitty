@@ -1,3 +1,22 @@
+## Project Plan
+
+- Create simple to use fully self contained html elements for weather
+  - add the script to your html or js
+  - add a weather element to your html
+
+### Overview
+
+It sounds so neat and simple, and it so very much isn't.
+
+- Repeat on Interval
+  - Scan for Elements
+  - Render InnerHtml if there is none. This means you can optionally iterate.
+  - Foreach request data
+  - Data requests dependencies, recursive
+  - fetchCache, fetch it, cache it, serve it, if fail serve stale
+  - Process data, sometimes simple, sometimes a complicated mess
+  - Render the Element and Data
+
 ## CodeKy Project Requirements
 
 - [ ] **Required**
