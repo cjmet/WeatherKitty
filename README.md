@@ -2,8 +2,9 @@
 
 Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Weather API <br> The intent is to make this relatively modular and easy to use in any project or page.
 
-![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/main/img/DemoImage.jpg)
-<span style="font-size: xx-small;">Github Copilot was used during the development of this project.</span>
+![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/img/DemoImage.jpg)
+
+<span style="font-size: x-small;"> <br>Github Copilot was used during the development of this project.</span>
 
 ## Usage
 
