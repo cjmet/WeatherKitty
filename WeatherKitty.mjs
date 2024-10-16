@@ -1,13 +1,14 @@
 // WeatherKitty.js Version 240829.15
 
 // Really need to implement log levels, this is effectively trace level or info level with no subtlety.
-let WeatherKittyDebug = false;
+let WeatherKittyDebug = 2; // 10 = off, 0 = trivial, 1 = trace, 2 = info, 3 = warn, 4 = error, 5 = fatal
 // import "./node_modules/chart.js/dist/chart.umd.js";
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
 // strict mode
 ("use strict");
 
+if (WeatherKittyDebug == 0) WeatherKittyDebug = 10;
 let config = {
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
@@ -41,7 +42,7 @@ export async function WeatherKitty() {
 
   let path = "";
   let results;
-  if (WeatherKittyDebug) console.log("Weather Kitty Debug Mode");
+  if (WeatherKittyDebug <= 2) console.log("Weather Kitty Debug Mode");
   else console.log("[WeatherKitty] Loading ...");
 
   // Testing
@@ -57,7 +58,8 @@ export async function WeatherKitty() {
   if (script === null) {
     console.log("*** ERROR ***: Unable to find WeatherKitty script path");
   } else {
-    if (WeatherKittyDebug) console.log("[WeatherKitty] Script: ", script.src);
+    if (WeatherKittyDebug <= 2)
+      console.log("[WeatherKitty] Script: ", script.src);
     let url = new URL(script.src);
     path = url.pathname;
     const lastSlashIndex = path.lastIndexOf("/");
@@ -70,13 +72,13 @@ export async function WeatherKitty() {
   config.WeatherKittyObsImage = path + config.WeatherKittyObsImage;
   config.WeatherKittyForeImage = path + config.WeatherKittyForeImage;
 
-  if (WeatherKittyDebug) {
+  if (WeatherKittyDebug <= 2) {
     console.log(`[WeatherKitty] Obs : ${config.WeatherKittyObsImage}`);
     console.log(`[WeatherKitty] Fore: ${config.WeatherKittyForeImage}`);
   }
 
   // Weather Kitty Widget
-  if (WeatherKittyDebug) {
+  if (WeatherKittyDebug <= 2) {
     setTimeout(WeatherWidgetInit(path), 3000);
     setTimeout(WeatherWidget, 6000);
   } else {
@@ -247,7 +249,7 @@ async function getWeatherLocationAsync(callBack) {
     cached?.timestamp !== null &&
     cached?.timestamp > Date.now() - config.locCacheTime
   ) {
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(
         `[getLocationAsync] Using cached location: ${cached.lat}, ${
           cached.lon
@@ -259,10 +261,10 @@ async function getWeatherLocationAsync(callBack) {
   } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        if (WeatherKittyDebug) console.log(position);
+        if (WeatherKittyDebug <= 2) console.log(position);
         let lon = position.coords.longitude;
         let lat = position.coords.latitude;
-        if (WeatherKittyDebug)
+        if (WeatherKittyDebug <= 2)
           console.log(`[getLocationAsync] Latitude: ${lat}, Longitude: ${lon}`);
         localStorage.setItem(
           "location",
@@ -316,10 +318,10 @@ async function getWeatherLocationByIPAsync(callBack) {
       return response.json();
     })
     .then((data) => {
-      if (WeatherKittyDebug) console.log(data);
+      if (WeatherKittyDebug <= 2) console.log(data);
       let lon = data.longitude ? data.longitude : data.lon;
       let lat = data.latitude ? data.latitude : data.lat;
-      if (WeatherKittyDebug)
+      if (WeatherKittyDebug <= 2)
         console.log(`[getLocationByIP] Latitude: ${lat}, Longitude: ${lon}`);
       if (
         lat === null ||
@@ -459,7 +461,7 @@ async function getWeatherLocationByAddressAsync(callBack) {
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
 async function getWeatherAsync(lat, lon, callBack) {
-  if (WeatherKittyDebug)
+  if (WeatherKittyDebug <= 2)
     console.log(`[getWeatherAsync] Latitude: ${lat}, Longitude: ${lon}`);
   if (lat == null || lon == null) {
     console.log("[getWeatherAsync] *** ABORT ***: No Location Data Available");
@@ -520,7 +522,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         cached.forecastTimeStamp + config.shortCacheTime
       )}]`
     );
-    if (WeatherKittyDebug) console.log(cached);
+    if (WeatherKittyDebug <= 2) console.log(cached);
   }
 
   // Deal with Cache-ing of Weather Data
@@ -564,7 +566,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        if (WeatherKittyDebug) console.log(data);
+        if (WeatherKittyDebug <= 2) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.properties === null || data?.properties === undefined) {
@@ -574,7 +576,7 @@ async function getWeatherAsync(lat, lon, callBack) {
           return;
         }
 
-        if (WeatherKittyDebug) {
+        if (WeatherKittyDebug <= 2) {
           console.log(
             `[stationLocation] cwa: ${data.properties.cwa} GridID: ${data.properties.gridId}, GridX: ${data.properties.gridX}, GridY: ${data.properties.gridY} `
           );
@@ -618,7 +620,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        if (WeatherKittyDebug) console.log(data);
+        if (WeatherKittyDebug <= 2) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
@@ -628,7 +630,7 @@ async function getWeatherAsync(lat, lon, callBack) {
           return;
         }
 
-        if (WeatherKittyDebug) {
+        if (WeatherKittyDebug <= 2) {
           console.log(
             `[ObservationStations] Station ID: ${data.features[0].properties.stationIdentifier}`
           );
@@ -668,7 +670,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        if (WeatherKittyDebug) console.log(data);
+        if (WeatherKittyDebug <= 2) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (data?.features === null || data?.features === undefined) {
@@ -706,7 +708,7 @@ async function getWeatherAsync(lat, lon, callBack) {
 
         // Intercept Historical Observation Data for Charting
         cached.observationData = data.features;
-        if (WeatherKittyDebug) console.log(data);
+        if (WeatherKittyDebug <= 2) console.log(data);
 
         localStorage.setItem("weather", JSON.stringify(cached));
       });
@@ -727,7 +729,7 @@ async function getWeatherAsync(lat, lon, callBack) {
         return response.json();
       })
       .then((data) => {
-        if (WeatherKittyDebug) console.log(data);
+        if (WeatherKittyDebug <= 2) console.log(data);
 
         // this is not the best way to handle this, but it works for now
         if (
@@ -812,18 +814,18 @@ function ForecastMatrix(data) {
 }
 
 function ObservationCharts(data) {
-  if (WeatherKittyDebug) console.log("[Obs Chart Data] ", data[0]);
+  if (WeatherKittyDebug <= 2) console.log("[Obs Chart Data] ", data);
 
   let obsArray = ["timestamp"];
 
   if (data !== null && data !== undefined && data.length > 0) {
-    let keys = Object.keys(data[1].properties);
+    let keys = Object.keys(data[0].properties);
     for (let key of keys) {
-      let unitCode = data[1].properties[key].unitCode;
+      let unitCode = data[0]?.properties[key]?.unitCode;
       if (
-        unitCode !== null &&
-        unitCode !== undefined &&
-        unitCode !== "" &&
+        unitCode != null &&
+        unitCode != undefined &&
+        unitCode != "" &&
         obsArray.includes(key) === false
       )
         obsArray.push(key);
@@ -840,7 +842,7 @@ function ObservationCharts(data) {
 
   if (data.length > 0) {
     for (let observation of obsArray) {
-      if (WeatherKittyDebug)
+      if (WeatherKittyDebug <= 2)
         console.log(
           "[Obs Chart Data Collect] ",
           observation,
@@ -946,7 +948,7 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   }
   if (key === "timestamp") return; // I should just leave that one in for fun.
 
-  if (WeatherKittyDebug)
+  if (WeatherKittyDebug <= 2)
     console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
 
   let data = [];
@@ -971,7 +973,7 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   if (chartAspect < 1) chartAspect = 1;
   if (chartAspect > 2.5) chartAspect = 2.5;
 
-  if (WeatherKittyDebug)
+  if (WeatherKittyDebug <= 2)
     console.log(
       `[CreateChart] Em = ${oneEm},   Aspect Ratio: ${width / oneEm} / ${
         height / oneEm
@@ -991,7 +993,7 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   let chart = Chart.getChart(canvas);
 
   if (chart === null || chart === undefined) {
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(
         `[CreateChart New] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
       );
@@ -1025,7 +1027,7 @@ async function CreateChart(chartContainer, key, values, timestamps) {
     });
     newChart.update();
   } else {
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(
         `[CreateChart Update] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
       );
@@ -1061,15 +1063,15 @@ function WeatherSquares(
       textDiv = element.querySelector("weather-kitty-forecast > span");
     }
 
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
     textDiv.innerHTML = replacementText;
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
 
     // Icon
 
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
     if (
       replacementImgUrl !== null &&
@@ -1083,7 +1085,7 @@ function WeatherSquares(
       else
         weatherImg.src = `url(config.WeatherKittyPath + "img/WeatherKittyE8.png")`;
     }
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log(`[WeatherWidget] Icon => ${weatherImg.src}`);
   }
 }
@@ -1106,11 +1108,10 @@ function Fahrenheit(temperature, temperatureUnit) {
       `*** WARNING ***: Invalid Temperature Unit: ${temperatureUnit}`
     );
 
-  if (WeatherKittyDebug)
-    if (WeatherKittyDebug)
-      console.log(
-        `[WeatherTemperatureFahrenheit] ${temperature} ${temperatureUnit} = ${fahrenheit} °F`
-      );
+  if (WeatherKittyDebug <= 0)
+    console.log(
+      `[WeatherTemperatureFahrenheit] ${temperature} ${temperatureUnit} = ${fahrenheit} °F`
+    );
   return fahrenheit;
 }
 
@@ -1213,7 +1214,7 @@ function getWidthInEm(element) {
   widthInPixels = parseFloat(widthInPixels.replace("px", ""));
 
   let result = widthInPixels / fontSize;
-  if (WeatherKittyDebug)
+  if (WeatherKittyDebug <= 2)
     console.log(
       `[getWidthInEm] ${widthInPixels}px / ${fontSize}px = ${result}em`
     );
@@ -1226,7 +1227,7 @@ async function WeatherKittyCheckPath(path) {
   path = "/" + path;
   let target = path + config.WeatherKittyObsImage;
   let result = await fetch(target);
-  if (WeatherKittyDebug)
+  if (WeatherKittyDebug <= 2)
     console.log(
       `[WeatherKittyCheckPath] Checking Path: [${path}] [${result.ok}]`
     );
@@ -1239,7 +1240,7 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
   let widgets = document.getElementsByTagName(tagName);
   for (let widget of widgets) {
     let htmlString = widget?.innerHTML; // check the inner so we can detect custom html
-    if (WeatherKittyDebug)
+    if (WeatherKittyDebug <= 2)
       console.log("[FindAndReplaceTags] innerHTML: ", htmlString);
     if (
       htmlString != undefined &&
@@ -1247,12 +1248,12 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
       htmlString != "" &&
       htmlString.includes("<")
     ) {
-      if (WeatherKittyDebug)
+      if (WeatherKittyDebug <= 2)
         console.log("[FindAndReplaceTags] Custom HTML Detected");
     } else {
-      if (WeatherKittyDebug)
+      if (WeatherKittyDebug <= 2)
         console.log("[FindAndReplaceTags] Using Default CodeBlock");
-      if (WeatherKittyDebug) console.log(htmlBlock);
+      if (WeatherKittyDebug <= 2) console.log(htmlBlock);
       widget.innerHTML = htmlBlock; // set the outer so we can include any classes or tags.
       if (className !== null && className !== undefined && className !== "")
         widget.className = className;
@@ -1264,7 +1265,7 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
 // Function InjectWeatherKittyStyles
 function InjectWeatherKittyStyles(path) {
   let file = path + "WeatherKitty.css";
-  if (WeatherKittyDebug) console.log("[InjectWeatherKittyStyles] ", file);
+  if (WeatherKittyDebug <= 2) console.log("[InjectWeatherKittyStyles] ", file);
 
   let link = document.createElement("link");
   link.rel = "stylesheet";
