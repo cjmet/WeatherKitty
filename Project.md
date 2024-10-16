@@ -45,6 +45,8 @@
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] Loading Indicator
+  - [ ] Historical Weather API
   - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
   - [ ] Finish maps and Matrix elements
   - [ ] Alerts, Radar, Products, Weather Maps

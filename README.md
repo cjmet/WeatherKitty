@@ -70,14 +70,26 @@ For ease of editing and customization
 
 - **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
 - **Software is Licensed:** LGPL 3.0 or newer
-- **Chart.js:** MIT License
 - **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
+- **Chart.js:** MIT License.
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
   - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
+- fflate - Mit License.
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
 <!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
 
 ## Blog
+
+### 24/10/16
+
+- Alpha pass at the possibility of considering doing historical data
+  - `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz`
+- Gzip catastrophe. The gzip format used/transmitted isn't compatible with the browser DecompressionStream API? It's not compatible with Pako? it's not compatibile with ... but it unzips on the command line if I save the blob so I know it's a good format.
+  - finally get it to unzip with fflate and the streaming versions only. It may be getting transmitted with variable block sizes?
+
+### 24/10/15
+
+- Minor fixes
 
 ### 24/10/11
 
