@@ -1,3 +1,8 @@
+import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
+
+// strict mode
+("use strict");
+
 let LogLevel = {
   Verbose: 0,
   Trace: 1,
@@ -10,11 +15,6 @@ let LogLevel = {
 
 let WeatherKittyDebug = LogLevel.Info;
 
-import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
-
-// strict mode
-("use strict");
-
 let config = {
   FATAL: false,
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
@@ -22,6 +22,16 @@ let config = {
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
   defaultCacheTime: 60000 * 30, // 30 minutes
   longCacheTime: 60000 * 60 * 24, // 24 hours
+
+  CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for none
+
+  ForecastMapUrl: "https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137",
+  ForecastMapCacheTime: 60000 * 60 * 1, // 1 hours
+  RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS-LARGE_loop.gif",
+  RadarMapCacheTime: 60000 * 10, // 10 minutes
+  AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
+  AlertsMapCacheTime: 60000 * 10, // 10 minutes
+
   timeFormat: {
     month: "2-digit",
     day: "2-digit",
@@ -44,10 +54,17 @@ let config = {
   WeatherKittyPath: "",
 };
 
+async function SanityChecks() {
+  if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
+  if (config.longCacheTime < 60000) config.longCacheTime = 60000;
+  if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
+  if (config.locCacheTime < 60000) config.locCacheTime = 60000;
+  if (config.ForecastMapCacheTime < 60000) config.ForecastMapCacheTime = 60000;
+  if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
+  if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
+}
+
 // Logging
-
-if (WeatherKittyDebug == 0) WeatherKittyDebug = 10;
-
 export function WeatherKittySetDebug(level) {
   WeatherKittyDebug = level;
 }
@@ -66,37 +83,32 @@ let LogLevelText = [
   "off",
 ];
 
-function Debug(message, level) {
-  if (level == null) level = LogLevel.Info;
-  if (WeatherKittyDebug <= level)
-    console.log(`${LogLevelText[level]}: ${message}`);
-}
-
-function Verbose(message) {
-  Debug(message, LogLevel.Verbose);
-}
-
-function Trace(message) {
-  Debug(message, LogLevel.Trace);
-}
-
-function Info(message) {
-  Debug(message, LogLevel.Info);
-}
-
-function Warn(message) {
-  Debug(message, LogLevel.Warn);
-}
-
-function Error(message) {
-  Debug(message, LogLevel.Error);
-}
-
+let Log = {
+  Verbose: () => {
+    return LogLevel.Verbose >= WeatherKittyDebug;
+  },
+  Trace: () => {
+    return LogLevel.Trace >= WeatherKittyDebug;
+  },
+  Debug: () => {
+    return LogLevel.Debug >= WeatherKittyDebug;
+  },
+  Info: () => {
+    return LogLevel.Info >= WeatherKittyDebug;
+  },
+  Warn: () => {
+    return LogLevel.Warn >= WeatherKittyDebug;
+  },
+  Error: () => {
+    return LogLevel.Error >= WeatherKittyDebug;
+  },
+};
 // /Logging
 
 // Function Weather Kitty
-export default WeatherKitty;
-export async function WeatherKitty() {
+export default WeatherKittyStart;
+export async function WeatherKittyStart() {
+  await SanityChecks();
   if (config.WeatherKittyIsLoaded) {
     console.log("[WeatherKitty] Already Loaded");
     return;
@@ -146,13 +158,13 @@ export async function WeatherKitty() {
   // Weather Kitty Widget
   if (WeatherKittyDebug <= 2) {
     setTimeout(WeatherWidgetInit(path), 3000);
-    setTimeout(WeatherWidget, 6000);
+    setTimeout(WeatherKitty, 6000);
   } else {
     setTimeout(WeatherWidgetInit(path), 5);
-    setTimeout(WeatherWidget, 10);
+    setTimeout(WeatherKitty, 10);
   }
 
-  setInterval(WeatherWidget, config.shortCacheTime);
+  setInterval(WeatherKitty, config.shortCacheTime);
 }
 
 // Function Weather Widget Initialization
@@ -205,21 +217,24 @@ function WeatherWidgetInit(path) {
   );
 
   if (count > 0) {
-    console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
+    if (Log.Debug())
+      console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
     return true;
   } else {
-    console.log(
-      "[WeatherWidgetInit] WARNING: Weather Kitty Elements Not Found"
-    );
+    if (Log.Warn())
+      console.log(
+        "[WeatherWidgetInit] WARNING: Weather Kitty Elements Not Found"
+      );
     config.FATAL = true;
     return false;
   }
 }
 
 // Function Weather Widget
-function WeatherWidget() {
+function WeatherKitty() {
   if (config.FATAL) return;
-  getWeatherLocationAsync(function (weather) {
+  // cjm
+  getWeatherAsync(function (weather) {
     // Obs Text
     {
       let text =
@@ -281,7 +296,7 @@ function WeatherWidget() {
       span.innerHTML = weather.geoLocationName;
       button = RemoveAllEventListeners(button);
       button.addEventListener("click", () => {
-        getWeatherLocationByAddressAsync(WeatherWidget);
+        getWeatherLocationByAddressAsync(WeatherKitty);
       });
     }
 
@@ -289,95 +304,129 @@ function WeatherWidget() {
     // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
     ObservationCharts(weather.observationData);
 
+    // cjm
+    // fetchCache the Maps
+    WeatherMaps(
+      "weather-kitty-map-forecast",
+      config.ForecastMapUrl,
+      config.ForecastMapCacheTime
+    );
+    WeatherMaps(
+      "weather-kitty-map-radar",
+      config.RadarMapUrl,
+      config.RadarMapCacheTime
+    );
+    WeatherMaps(
+      "weather-kitty-map-alerts",
+      config.AlertsMapUrl,
+      config.AlertsMapCacheTime
+    );
+
     // Forecast Matrix
     ForecastMatrix(weather.forecastData);
   });
 }
 
-// Function getWeatherLocationAsync
-async function getWeatherLocationAsync(callBack) {
-  let cached = { lat: null, lon: null, timestamp: null };
+async function WeatherMaps(elementName, Url, CacheTime) {
+  // cjm
+  if (Log.Debug())
+    console.log(`[WeatherMaps] ${elementName}, ${Url}, ${CacheTime}`);
 
-  // localStorage.setItem('user', JSON.stringify(userArray));
-  // const userData = JSON.parse(localStorage.getItem('user'));
-
-  cached = JSON.parse(localStorage.getItem("location"));
-  //  console.log(
-  //   `[getWeatherAsync] Cached Weather Data [${wkElapsedTime(
-  //     cached.forecastTimeStamp + config.shortCacheTime
-  //   )}]`
-  // );
-  let elapsed;
-  if (cached?.timestamp == null) elapsed = "n/a";
-  else if (cached?.timestamp >= config.FOREVER) elapsed = "never expires";
-  else elapsed = wkElapsedTime(cached?.timestamp + config.locCacheTime);
-  console.log(`[getLocationAsync] Checking Location Data [${elapsed}]`);
-
-  if (
-    cached?.lat != null &&
-    cached?.lat != "undefined" &&
-    cached?.lon != null &&
-    cached?.lon != "undefined" &&
-    cached?.timestamp !== null &&
-    cached?.timestamp > Date.now() - config.locCacheTime
-  ) {
-    if (WeatherKittyDebug <= 2)
-      console.log(
-        `[getLocationAsync] Using cached location: ${cached.lat}, ${
-          cached.lon
-        }, ${cached.timestamp}, [${wkElapsedTime(
-          cached.timestamp + config.locCacheTime
-        )}]`
-      );
-    getWeatherAsync(cached.lat, cached.lon, callBack);
-  } else if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        if (WeatherKittyDebug <= 2) console.log(position);
-        let lon = position.coords.longitude;
-        let lat = position.coords.latitude;
-        if (WeatherKittyDebug <= 2)
-          console.log(`[getLocationAsync] Latitude: ${lat}, Longitude: ${lon}`);
-        localStorage.setItem(
-          "location",
-          JSON.stringify({
-            lat: String(lat),
-            lon: String(lon),
-            timestamp: Date.now(),
-          })
-        );
-        getWeatherAsync(lat, lon, callBack);
-      },
-
-      (error) => {
-        console.log(`[getLocationAsync] Error: ${error.message}`);
-        if (
-          cached?.lat != null &&
-          cached?.lon != null &&
-          cached?.lat != "undefined" &&
-          cached?.lon != "undefined"
-        ) {
-          console.log(
-            `[getLocationAsync] Using cached location: ${cached.lat}, ${cached.lon}, ${cached.timestamp}`
-          );
-          getWeatherAsync(cached.lat, cached.lon, callBack);
-        } else {
-          getWeatherLocationByIPAsync(callBack);
-        }
-      }
-    );
+  let maps = document.getElementsByTagName(elementName);
+  let response = await corsCache(Url, null, CacheTime);
+  if (response != null && response.ok) {
+    let blob = await response.blob();
+    let url = URL.createObjectURL(blob);
+    for (let map of maps) {
+      let img = map.getElementsByTagName("img")[0];
+      img.src = url;
+    }
   } else {
-    console.log("[getLocationAsync] Error: Geolocation data is not available.");
-    getWeatherLocationByIPAsync(callBack);
+    console.log("[WeatherMaps] *** ERROR ***: No Map Data Available");
   }
 }
 
-// Function getWeatherLocationByIPAsync {
-async function getWeatherLocationByIPAsync(callBack) {
-  let cached = { lat: null, lon: null, timestamp: null };
+// Function getWeatherLocationAsync
+// City, State, Country, ZipCode, Latitude, Longitude
+export async function getWeatherLocationAsync(callBack) {
+  if (Log.Debug())
+    console.log("[getWeatherLocationAsync] Checking Location Data");
 
-  cached = JSON.parse(localStorage.getItem("location"));
-  console.log(`[getLocationByIP] Checking IP Location Data`);
+  let response = await fetchCache(
+    "/weatherkittycache/location",
+    null,
+    config.shortCacheTime
+  );
+
+  if (response == null || response.ok == false) {
+    if (Log.Debug()) console.log("[getWeatherLocationAsync] Fetching GeoIp");
+    response = await fetchCache(
+      "/weatherkittycache/geoip",
+      null,
+      config.longCacheTime
+    );
+  }
+
+  if (response == null || response.ok == false) {
+    if (Log.Debug()) console.log("[getWeatherLocationAsync] Fetching Address");
+    response = await fetchCache(
+      "/weatherkittycache/address",
+      null,
+      config.FOREVER
+    );
+    if (Log.Debug()) console.log("[getAddress]", response);
+  }
+
+  if (response != null && response.ok) {
+    let data = await response.json();
+    if (Log.Debug()) console.log("[getWeatherLocationAsync]", data);
+    return data;
+  } else {
+    if (Log.Error()) console.log("[getWeatherLocationAsync] *** ERROR ***");
+    return null;
+  }
+}
+
+// Function getLocationAsync
+// City, State, Country, ZipCode, Latitude, Longitude
+export async function getLocationAsync() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (Log.Debug()) console.log(`[getLocationAsync]`, position);
+        // City, State, Country, ZipCode, Latitude, Longitude
+        let result = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        let response = CreateResponse(result);
+        return response;
+      },
+      (error) => {
+        if (Log.Error())
+          console.log(`[getLocationAsync] Error: ${error.message}`);
+        return null;
+      }
+    );
+  } else {
+    if (Log.Error())
+      console.log(
+        "[getLocationAsync] Error: Geolocation data is not available."
+      );
+    return null;
+  }
+
+  let response = await CreateResponse({
+    lat: 36.82565689086914,
+    lon: -83.32009887695312,
+  });
+  return response;
+}
+
+// Function getWeatherLocationByIPAsync {
+// City, State, Country, ZipCode, Latitude, Longitude
+async function getWeatherLocationByIPAsync(callBack) {
+  if (Log.Debug()) console.log(`[getLocationByIP] Checking IP Location Data`);
 
   // n/c - non-commercial use only
   // Site             Limits    Limit/Mth Limit/Day Limit/Min
@@ -385,58 +434,37 @@ async function getWeatherLocationByIPAsync(callBack) {
   // ipapi.com                  100       ---       ---
   // ipapi.co/json              30000     967       0.5
   let locationUrl = "http://ipapi.co/json/";
-  await fetch(locationUrl)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      if (WeatherKittyDebug <= 2) console.log(data);
-      let lon = data.longitude ? data.longitude : data.lon;
-      let lat = data.latitude ? data.latitude : data.lat;
-      if (WeatherKittyDebug <= 2)
-        console.log(`[getLocationByIP] Latitude: ${lat}, Longitude: ${lon}`);
-      if (
-        lat === null ||
-        lat === undefined ||
-        lon === null ||
-        lon === undefined
-      ) {
-        console.log(
-          "[getLocationByIP] *** ABORT *** : No Location Data Available"
-        );
-        return;
-      }
-      localStorage.setItem(
-        "location",
-        JSON.stringify({
-          lat: String(lat),
-          lon: String(lon),
-          timestamp: Date.now(),
-        })
-      );
-      getWeatherAsync(lat, lon, callBack);
-    });
+  let response = await fetchCache(locationUrl, null, config.longCacheTime);
+
+  // City, State, Country, ZipCode, Latitude, Longitude
+  if (response != null && response.ok) {
+    let data = await response.json();
+    if (Log.Debug()) console.log("[getLocationByIP] Data: ", data);
+    let result = {
+      city: data.city,
+      state: data.region,
+      country: data.country_name,
+      zip: data.postal,
+      latitude: data.latitude,
+      longitude: data.longitude,
+    };
+    if (Log.Debug()) console.log("[getLocationByIP] Result: ", result);
+    return CreateResponse(result);
+  }
+
+  return response;
 }
 
 // Function getWeatherLocationByAddressAsync
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
-async function getWeatherLocationByAddressAsync(callBack) {
+// City, State, Country, ZipCode, Latitude, Longitude
+async function getWeatherLocationByAddressAsync() {
   let address = prompt('"Address, City, State" or "Address, ZipCode"');
   if (address === null || address === "") {
-    console.log("[getAddress] No Address.");
-    let cached = JSON.parse(localStorage.getItem("location"));
-    // manually set location does not expire, aka config.FOREVER
-    // if it's currently manually set, then clear it.
-    if (cached?.timestamp >= config.FOREVER) {
-      console.log("Clearing Cache and Reloading.");
-      localStorage.removeItem("location");
-      localStorage.removeItem("weather");
-      await new Promise((r) => setTimeout(r, 1000)); // sleep for 1 second
-      getWeatherLocationAsync(callBack);
-    }
-    return;
+    if (Log.Info()) console.log("[getAddress] No Address.");
+    return null;
   }
-  console.log(`[getAddress] "${address}"`);
+  if (Log.Debug()) console.log(`[getAddress] "${address}"`);
 
   let array = address.split(",");
   let street = "";
@@ -461,66 +489,51 @@ async function getWeatherLocationByAddressAsync(callBack) {
       zip = array[3].trim();
       break;
     default:
-      console.log("[getAddress] Error: Unable to Parse Address");
+      if (Log.Error())
+        console.log("[getAddress] Error: Unable to Parse Address");
       return;
   }
+
+  // *** WARNING *** CORS Proxy Required
 
   let locationUrl = `https://corsproxy.io/?https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
   if (city !== "") locationUrl += `&city=${city}`;
   if (state !== "") locationUrl += `&state=${state}`;
   if (zip !== "") locationUrl += `&zip=${zip}`;
   locationUrl += `&benchmark=Public_AR_Current&format=json`;
+  locationUrl = locationUrl.toLowerCase();
+  let response = await fetchCache(locationUrl, null, config.FOREVER);
 
-  await fetch(
-    locationUrl
-    // { mode: "cors" }  // 'cors', 'no-cors', 'same-origin', 'navigate'. 'no-cors' means we can't access it in javascript, so we have to fix this.
-  )
-    .then(
-      (response) => {
-        console.log("[getAddress] Response: ", response);
-        return response.json();
-      },
-      (error) => {
-        console.log(`[getAddress] Error: ${error.message}`);
-        return;
-      }
-    )
-    .then((data) => {
-      console.log("[getAddress] ", data);
-      if (data.result.addressMatches.length <= 0) {
-        console.log("[getAddress] Error: No Address Matches");
-        return;
-      }
-      let lat = data.result.addressMatches[0].coordinates.y;
-      let lon = data.result.addressMatches[0].coordinates.x;
-      let location = data.result.addressMatches[0].matchedAddress;
-      console.log(
-        `[getAddress] Location: ${location}', 'Latitude: ${lat}, Longitude: ${lon}`
-      );
-      if (
-        lat === null ||
-        lat === undefined ||
-        lon === null ||
-        lon === undefined
-      ) {
-        console.log("[getAddress] Error: No Lat/Lon Data Available");
-        return;
-      } else {
-        console.log("[getAddress] Attempting to get weather data");
-        // Force Expire the Cache
-        // Disable Location Expire
-        localStorage.setItem(
-          "location",
-          JSON.stringify({
-            lat: lat,
-            lon: lon,
-            timestamp: config.FOREVER,
-          })
-        );
-        localStorage.removeItem("weather");
-        getWeatherAsync(lat, lon, callBack);
-      }
-    });
+  // City, State, Country, ZipCode, Latitude, Longitude
+  if (response != null && response.ok) {
+    let data = await response.json();
+    console.log("[getAddress] Data: ", data);
+    let result = {
+      city: data.result.addressMatches[0].addressComponents.city,
+      state: data.result.addressMatches[0].addressComponents.state,
+      country: (data.result.addressMatches[0].addressComponents.country ??= ""),
+      zip: data.result.addressMatches[0].addressComponents.zip,
+      latitude: data.result.addressMatches[0].coordinates.y,
+      longitude: data.result.addressMatches[0].coordinates.x,
+    };
+    return CreateResponse(result);
+  }
+  return response;
+}
+
+async function CreateResponse(data) {
+  let responseOptions = {
+    status: 200,
+    statusText: "OK",
+    ok: true,
+    headers: new Headers({
+      "Content-Type": "application/json",
+    }),
+  };
+
+  let responseBody = JSON.stringify(data);
+  let response = new Response(responseBody, responseOptions);
+  return response;
 }
 
 // Function getWeatherAsync
@@ -532,11 +545,14 @@ async function getWeatherLocationByAddressAsync(callBack) {
 // it's possible we would want to set this as low as 4 or 5 minutes to
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
-async function getWeatherAsync(lat, lon, callBack) {
-  if (WeatherKittyDebug <= 2)
-    console.log(`[getWeatherAsync] Latitude: ${lat}, Longitude: ${lon}`);
-  if (lat == null || lon == null) {
-    console.log("[getWeatherAsync] *** ABORT ***: No Location Data Available");
+async function getWeatherAsync(callBack) {
+  if (Log.Info()) console.log("[getWeatherAsync] Starting ...");
+  let data = await getWeatherLocationAsync();
+  let lat = data.latitude;
+  let lon = data.longitude;
+  if (lat === null || lon === null) {
+    if (Log.Error())
+      console.log("[getWeatherAsync] *** ERROR ***: No Location");
     return;
   }
 
@@ -854,7 +870,7 @@ async function getWeatherAsync(lat, lon, callBack) {
 
   // Call the callback function:
   callBack(cached);
-  console.log("[getWeatherAsync] Done.");
+  if (Log.Info()) console.log("[getWeatherAsync] Done.");
 }
 
 function ForecastMatrix(data) {
@@ -1370,47 +1386,80 @@ function RemoveAllEventListeners(element) {
   return removedAllEventListeners;
 }
 
+// ------------------------------------------
 // Function fetchCache(url, options, ttl)
-// fetch with cache using indexDB
+// ... and special functions.
+
+const specialUrlTable = {
+  "/weatherkittycache/location": getLocationAsync,
+  "/weatherkittycache/geoip": getWeatherLocationByIPAsync,
+  "/weatherkittycache/address": getWeatherLocationByAddressAsync,
+};
+
 export async function fetchCache(url, options, ttl) {
-  if (ttl == null || ttl <= 0) ttl = config.defaultCacheTime;
+  if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
 
   // url, options, ttl, expires, expired, response
   // get expire from localStorage ... I'm avoiding IndexDB for now
   let expires = Date.now() - 3600000;
   let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
-  if (ttlCache != null && ttlCache[url] != null) {
+  if (ttlCache == null) ttlCache = {};
+  if (ttlCache[url] != null) {
     expires = new Date(ttlCache[url]);
-    Trace(`[fetchCacheTtl] : ${url} expires in ${wkElapsedTime(expires)}`);
+    if (Log.Trace())
+      console.log(
+        `[fetchCacheTtl] : ${url} expires in ${wkElapsedTime(expires)}`
+      );
   } else {
-    ttlCache = {};
-    Trace(`[fetchCacheTtl] ${url} not found in cache or expired`);
+    ttlCache[url] = 0;
+    if (Log.Trace())
+      console.log(`[fetchCacheTtl] ${url} not found in cache or expired`);
   }
   let expired = expires < Date.now();
   let cache = await caches.open("weather-kitty");
   let response = await cache.match(url);
 
-  if (response && !expired) {
-    Info(`[fetchCache] ${url} from cache [${wkElapsedTime(expires)}]`);
+  if (response && response.ok && !expired) {
+    if (Log.Info())
+      console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
 
-  let fetchResponse = await fetch(url, options);
-  if (fetchResponse.ok) {
+  // If the url is not cached or expired, fetch it
+  // If the url is in the specialUrlTable, use the special function
+  let fetchResponse = null;
+
+  if (url in specialUrlTable) {
+    if (Log.Debug()) console.log(`[fetchCache] special: ${url} `);
+    fetchResponse = await specialUrlTable[url](url, options, ttl);
+  } else {
+    fetchResponse = await fetch(url, options);
+  }
+  if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
-    Info(`[fetchCache] ${url} from fetch [${wkElapsedTime(expires)}]`);
+    if (Log.Info())
+      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
     await cache.put(url, responseClone);
     ttlCache[url] = expires;
     localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
     return fetchResponse;
   } else if (response) {
-    Warn(`[fetchCache] ${url} from stale [${wkElapsedTime(expires)}]`);
+    if (Log.Warn())
+      console.log(
+        `[fetchCache] WARNING: Stale: ${url} [${wkElapsedTime(expires)}]`
+      );
     return response;
   } else {
-    Error(`[fetchCache] ERROR: ${url} not found`);
+    if (Log.Warn()) console.log(`[fetchCache] WARNING: not found: ${url}`);
     return null;
   }
+}
+
+// Function corsCache
+async function corsCache(url, options, ttl) {
+  let corsUrl = `${config.CORSProxy}${url}`;
+  return fetchCache(corsUrl, options, ttl);
 }
 
 // -----------------------------------
@@ -1439,20 +1488,18 @@ let WeatherKittyWidgetBlock = `<weather-kitty-current></weather-kitty-current>
 
 let WeatherKittyChartBlock = `<canvas></canvas>`;
 
+// src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img
-            src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
-            alt="NOAA Forcast"
+            alt="NWS Forecast"
             onclick="AIshowFullscreenImage(this)"
         />`;
 
 let WeatherKittyMapRadarBlock = `<img
-            src="https://radar.weather.gov/ridge/standard/CONUS-LARGE_loop.gif"
-            alt="NOAA Radar"
+            alt="NWS Radar"
             onclick="AIshowFullscreenImage(this)"
           />`;
 
 let WeatherKittyMapAlertsBlock = `          <img
-            src="https://www.weather.gov/wwamap/png/US.png"
             alt="US Weather Alerts Map"
             onclick="AIshowFullscreenImage(this)"
           />`;
@@ -1464,4 +1511,4 @@ function WeatherKittyLocationBlock() {
 }
 
 // Run Weather Kitty
-WeatherKitty();
+WeatherKittyStart();

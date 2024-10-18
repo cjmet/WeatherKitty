@@ -84,6 +84,9 @@ For ease of editing and customization
 ### 24/10/18
 
 - Start work on integrating everything back into main.
+- Got a Good start on refactoring.
+- fetchCache, and corsCache, and location, and ...
+  - rather than dealing with IndexDB, I'm using cache() and localStorage() combined.
 
 ### 24/10/17
 

@@ -1,13 +1,36 @@
-import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-import WeatherKitty, {
-  CreateChart,
+// import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
+import WeatherKittyStart, {
   fetchCache,
-  WeatherKittySetDebug,
+  getLocationAsync,
+  getWeatherLocationAsync,
 } from "./WeatherKitty.mjs";
 
-WeatherKittySetDebug(1);
-let response = fetchCache("./files/readme.txt", null, 600000);
-let response2 = fetchCache("./files/readme-daily.txt", null, 600000);
+let element = document.createElement("img");
+let response = await fetchCache("./img/WeatherKittyC.jpeg");
+let blob = await response.blob();
+let url = URL.createObjectURL(blob);
+element.src = url;
+document.body.appendChild(element);
+
+// let result = await getWeatherLocationAsync();
+// console.log(result);
+
+// let headers = new Headers();
+// headers.append("Content-Type", "application/json");
+// let options = {
+//   status: 200,
+//   statusText: "OK",
+//   ok: true,
+//   headers: headers,
+// };
+
+// let response = new Response(data, options);
+// console.log(await response);
+// // console.log(await response.json());
+
+// let response2 = new Response(JSON.stringify(data), options);
+// console.log(await response2);
+// console.log(await response2.json());
 
 if (false) {
   let response = await fetch("./files/USW00014739.csv");
