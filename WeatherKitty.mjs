@@ -1,16 +1,26 @@
-let WeatherKittyDebug = 3; // 10 = off, 0 = trivial, 1 = trace, 2 = info, 3 = warn, 4 = error, 5 = fatal
-// import "./node_modules/chart.js/dist/chart.umd.js";
+let LogLevel = {
+  Verbose: 0,
+  Trace: 1,
+  Debug: 2,
+  Info: 3,
+  Warn: 4,
+  Error: 5,
+  Off: 10,
+};
+
+let WeatherKittyDebug = LogLevel.Info;
+
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
 // strict mode
 ("use strict");
 
-if (WeatherKittyDebug == 0) WeatherKittyDebug = 10;
 let config = {
   FATAL: false,
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
+  defaultCacheTime: 60000 * 30, // 30 minutes
   longCacheTime: 60000 * 60 * 24, // 24 hours
   timeFormat: {
     month: "2-digit",
@@ -33,6 +43,56 @@ let config = {
   WeatherKittyIsLoaded: false,
   WeatherKittyPath: "",
 };
+
+// Logging
+
+if (WeatherKittyDebug == 0) WeatherKittyDebug = 10;
+
+export function WeatherKittySetDebug(level) {
+  WeatherKittyDebug = level;
+}
+
+let LogLevelText = [
+  "vrb",
+  "Trc",
+  "Dbg",
+  "Inf",
+  "WRN",
+  "ERR",
+  "off",
+  "off",
+  "off",
+  "off",
+  "off",
+];
+
+function Debug(message, level) {
+  if (level == null) level = LogLevel.Info;
+  if (WeatherKittyDebug <= level)
+    console.log(`${LogLevelText[level]}: ${message}`);
+}
+
+function Verbose(message) {
+  Debug(message, LogLevel.Verbose);
+}
+
+function Trace(message) {
+  Debug(message, LogLevel.Trace);
+}
+
+function Info(message) {
+  Debug(message, LogLevel.Info);
+}
+
+function Warn(message) {
+  Debug(message, LogLevel.Warn);
+}
+
+function Error(message) {
+  Debug(message, LogLevel.Error);
+}
+
+// /Logging
 
 // Function Weather Kitty
 export default WeatherKitty;
@@ -1151,6 +1211,12 @@ function wkElapsedTime(startTime) {
   seconds = seconds % 60;
   minutes = minutes % 60;
 
+  if (WeatherKittyDebug <= 0) {
+    console.log("Start: ", startTime);
+    console.log("End: ", endTime);
+    console.log("Elapsed: ", elapsed);
+  }
+
   if (hours) return `${hours}h`;
   if (minutes) return `${minutes}m`;
   if (seconds) return `${seconds}s`;
@@ -1303,6 +1369,53 @@ function RemoveAllEventListeners(element) {
   element.parentNode.replaceChild(removedAllEventListeners, element);
   return removedAllEventListeners;
 }
+
+// Function fetchCache(url, options, ttl)
+// fetch with cache using indexDB
+export async function fetchCache(url, options, ttl) {
+  if (ttl == null || ttl <= 0) ttl = config.defaultCacheTime;
+
+  // url, options, ttl, expires, expired, response
+  // get expire from localStorage ... I'm avoiding IndexDB for now
+  let expires = Date.now() - 3600000;
+  let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+  if (ttlCache != null && ttlCache[url] != null) {
+    expires = new Date(ttlCache[url]);
+    Trace(`[fetchCacheTtl] : ${url} expires in ${wkElapsedTime(expires)}`);
+  } else {
+    ttlCache = {};
+    Trace(`[fetchCacheTtl] ${url} not found in cache or expired`);
+  }
+  let expired = expires < Date.now();
+  let cache = await caches.open("weather-kitty");
+  let response = await cache.match(url);
+
+  if (response && !expired) {
+    Info(`[fetchCache] ${url} from cache [${wkElapsedTime(expires)}]`);
+    return response;
+  }
+
+  let fetchResponse = await fetch(url, options);
+  if (fetchResponse.ok) {
+    expires = Date.now() + ttl;
+    Info(`[fetchCache] ${url} from fetch [${wkElapsedTime(expires)}]`);
+    let responseClone = fetchResponse.clone();
+    await cache.put(url, responseClone);
+    ttlCache[url] = expires;
+    localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
+    return fetchResponse;
+  } else if (response) {
+    Warn(`[fetchCache] ${url} from stale [${wkElapsedTime(expires)}]`);
+    return response;
+  } else {
+    Error(`[fetchCache] ERROR: ${url} not found`);
+    return null;
+  }
+}
+
+// -----------------------------------
+
+// -----------------------------------
 
 // HTML Block for Weather Kitty
 // functions instead of variables, so that path updates to the images can take effect

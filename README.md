@@ -70,15 +70,24 @@ For ease of editing and customization
 
 - **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
 - **Software is Licensed:** LGPL 3.0 or newer
+  &nbsp;
 - **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
-- **Chart.js:** MIT License.
+- **chart.js:** MIT License.
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
   - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
-- fflate - Mit License.
+- **fflate** - Mit License.
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
 <!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
 
 ## Blog
+
+### 24/10/18
+
+- Start work on integrating everything back into main.
+
+### 24/10/17
+
+- Additional work on experimental historical charts
 
 ### 24/10/16
 

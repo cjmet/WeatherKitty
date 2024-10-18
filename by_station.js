@@ -1,5 +1,13 @@
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-import WeatherKitty, { CreateChart } from "./WeatherKitty.mjs";
+import WeatherKitty, {
+  CreateChart,
+  fetchCache,
+  WeatherKittySetDebug,
+} from "./WeatherKitty.mjs";
+
+WeatherKittySetDebug(1);
+let response = fetchCache("./files/readme.txt", null, 600000);
+let response2 = fetchCache("./files/readme-daily.txt", null, 600000);
 
 if (false) {
   let response = await fetch("./files/USW00014739.csv");
