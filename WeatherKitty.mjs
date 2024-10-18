@@ -1,7 +1,4 @@
-// WeatherKitty.js Version 240829.15
-
-// Really need to implement log levels, this is effectively trace level or info level with no subtlety.
-let WeatherKittyDebug = 2; // 10 = off, 0 = trivial, 1 = trace, 2 = info, 3 = warn, 4 = error, 5 = fatal
+let WeatherKittyDebug = 3; // 10 = off, 0 = trivial, 1 = trace, 2 = info, 3 = warn, 4 = error, 5 = fatal
 // import "./node_modules/chart.js/dist/chart.umd.js";
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
@@ -10,6 +7,7 @@ import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
 if (WeatherKittyDebug == 0) WeatherKittyDebug = 10;
 let config = {
+  FATAL: false,
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
@@ -47,7 +45,8 @@ export async function WeatherKitty() {
 
   let path = "";
   let results;
-  if (WeatherKittyDebug <= 2) console.log("Weather Kitty Debug Mode");
+  if (WeatherKittyDebug <= 2)
+    console.log(`Weather Kitty Debug Mode: [${WeatherKittyDebug}]`);
   else console.log("[WeatherKitty] Loading ...");
 
   // Testing
@@ -61,7 +60,9 @@ export async function WeatherKitty() {
     }
   }
   if (script === null) {
-    console.log("*** ERROR ***: Unable to find WeatherKitty script path");
+    console.log(
+      `[WeatherKitty] WARNING: Unable to find WeatherKitty script path in:\n[${window.location.pathname}]`
+    );
   } else {
     if (WeatherKittyDebug <= 2)
       console.log("[WeatherKitty] Script: ", script.src);
@@ -143,15 +144,21 @@ function WeatherWidgetInit(path) {
     "WeatherKittyMapAlerts"
   );
 
-  if (count > 0) console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
-  else
+  if (count > 0) {
+    console.log(`[WeatherWidgetInit] Elements Found: ${count}`);
+    return true;
+  } else {
     console.log(
-      "[WeatherWidgetInit] *** ERROR ***: Weather Kitty Elements Not Found"
+      "[WeatherWidgetInit] WARNING: Weather Kitty Elements Not Found"
     );
+    config.FATAL = true;
+    return false;
+  }
 }
 
 // Function Weather Widget
 function WeatherWidget() {
+  if (config.FATAL) return;
   getWeatherLocationAsync(function (weather) {
     // Obs Text
     {
@@ -1344,4 +1351,4 @@ function WeatherKittyLocationBlock() {
 }
 
 // Run Weather Kitty
-// WeatherKitty();
+WeatherKitty();

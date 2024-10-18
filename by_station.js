@@ -1,7 +1,7 @@
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
 import WeatherKitty, { CreateChart } from "./WeatherKitty.mjs";
 
-if (true) {
+if (false) {
   let response = await fetch("./files/USW00014739.csv");
   if (response.ok) {
     let result = await response.text();
