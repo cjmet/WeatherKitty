@@ -21,6 +21,11 @@ let config = {
     hour12: true, // Delete for 24-hour format
     minute: "2-digit",
   },
+  historyFormat: {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  },
   WeatherKittyObsImage: "img/WeatherKittyE8.jpeg",
   WeatherKittyForeImage: "img/WeatherKittyC.jpeg",
 
@@ -912,17 +917,22 @@ function ObservationCharts(data) {
   }
 }
 
-async function CreateChart(chartContainer, key, values, timestamps) {
-  if (
-    values === null ||
-    values === undefined ||
-    values.length === 0 ||
-    values[0].value === undefined
-  ) {
+export async function CreateChart(
+  chartContainer,
+  key,
+  values,
+  timestamps,
+  aspect,
+  history
+) {
+  if (values == null || values.length == 0 || values[0].value === undefined) {
     console.log(
       `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
     );
-    console.log(chartContainer, key, values, timestamps);
+    console.log(chartContainer);
+    console.log(key);
+    console.log(values);
+    console.log(timestamps);
     return;
   }
   if (
@@ -956,8 +966,14 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   for (let i = 0; i < values.length; i++) {
     data.push(values[i].value);
     let date = new Date(timestamps[i]);
-    let label = date.toLocaleString(undefined, config.timeFormat);
-    label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//, "-");
+    let label;
+    if (history) {
+      label = date.toLocaleString(undefined, config.historyFormat);
+      label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//g, "-");
+    } else {
+      label = date.toLocaleString(undefined, config.timeFormat);
+      label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//g, "-");
+    }
     time.push(label);
   }
   data = data.reverse();
@@ -972,6 +988,7 @@ async function CreateChart(chartContainer, key, values, timestamps) {
   let chartAspect = (width - oneEm) / height;
   if (chartAspect < 1) chartAspect = 1;
   if (chartAspect > 2.5) chartAspect = 2.5;
+  if (aspect != null && aspect != 0) chartAspect = aspect;
 
   if (WeatherKittyDebug <= 2)
     console.log(
@@ -1327,4 +1344,4 @@ function WeatherKittyLocationBlock() {
 }
 
 // Run Weather Kitty
-WeatherKitty();
+// WeatherKitty();
