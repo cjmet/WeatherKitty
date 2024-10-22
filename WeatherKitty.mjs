@@ -12,7 +12,7 @@ let LogLevel = {
   Off: 10,
 };
 
-let WeatherKittyDebug = LogLevel.Info;
+let WeatherKittyDebug = LogLevel.Debug;
 
 let config = {
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
@@ -140,7 +140,7 @@ export async function WeatherKittyStart() {
   }
 
   // Start the Weather Kitty Widget
-  if (WeatherKittyDebug <= 1) {
+  if (Log.Debug()) {
     setTimeout(WeatherWidgetInit(path), 3000);
     setTimeout(WeatherKitty, 6000);
   } else {

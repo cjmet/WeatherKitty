@@ -104,9 +104,10 @@ weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
 }
 
 weather-kitty-chart {
-  margin: 1em;
+  background-color: whitesmoke;
   border: 1px black solid;
   border-radius: 1em;
+  margin: 1em;
   box-sizing: border-box;
   flex: 1 1 auto;
   min-width: 0;

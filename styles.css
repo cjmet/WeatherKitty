@@ -154,11 +154,13 @@ body {
 
 #WeatherKittyMain {
   border: black 3px solid;
-  margin: 3px;
   box-sizing: border-box;
   grid-area: main;
   display: flex;
   flex-direction: column;
+
+  background-image: url("./img/Background01g2.png");
+  background-size: 100%;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -192,6 +194,8 @@ body {
 }
 
 #Matrix > div {
+  /* background-color: gainsboro;  */
+  background-color: whitesmoke;
   border: black 1px solid;
   border-radius: 1em;
   margin: 0.25em;
