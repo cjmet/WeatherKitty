@@ -1,7 +1,7 @@
-import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
-
 // strict mode
 ("use strict");
+
+import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
 let LogLevel = {
   Verbose: 0,
@@ -16,7 +16,6 @@ let LogLevel = {
 let WeatherKittyDebug = LogLevel.Info;
 
 let config = {
-  FATAL: false,
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
@@ -52,36 +51,23 @@ let config = {
   WeatherKittyIsInit: false,
   WeatherKittyIsLoaded: false,
   WeatherKittyPath: "",
-};
 
-async function SanityChecks() {
-  if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
-  if (config.longCacheTime < 60000) config.longCacheTime = 60000;
-  if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
-  if (config.locCacheTime < 60000) config.locCacheTime = 60000;
-  if (config.ForecastMapCacheTime < 60000) config.ForecastMapCacheTime = 60000;
-  if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
-  if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
-}
+  SanityChecks: async function () {
+    if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
+    if (config.longCacheTime < 60000) config.longCacheTime = 60000;
+    if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
+    if (config.locCacheTime < 60000) config.locCacheTime = 60000;
+    if (config.ForecastMapCacheTime < 60000)
+      config.ForecastMapCacheTime = 60000;
+    if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
+    if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
+  },
+};
 
 // Logging
 export function WeatherKittySetDebug(level) {
   WeatherKittyDebug = level;
 }
-
-let LogLevelText = [
-  "vrb",
-  "Trc",
-  "Dbg",
-  "Inf",
-  "WRN",
-  "ERR",
-  "off",
-  "off",
-  "off",
-  "off",
-  "off",
-];
 
 let Log = {
   Verbose: () => {
@@ -108,7 +94,7 @@ let Log = {
 // Function Weather Kitty
 export default WeatherKittyStart;
 export async function WeatherKittyStart() {
-  await SanityChecks();
+  await config.SanityChecks();
   if (config.WeatherKittyIsLoaded) {
     console.log("[WeatherKitty] Already Loaded");
     return;
@@ -121,8 +107,6 @@ export async function WeatherKittyStart() {
     console.log(`Weather Kitty Debug Mode: [${WeatherKittyDebug}]`);
   else console.log("[WeatherKitty] Loading ...");
 
-  // Testing
-
   let scripts = document.getElementsByTagName("script");
   let script = null;
   for (let subScript of scripts) {
@@ -133,7 +117,7 @@ export async function WeatherKittyStart() {
   }
   if (script === null) {
     console.log(
-      `[WeatherKitty] WARNING: Unable to find WeatherKitty script path in:\n[${window.location.pathname}]`
+      `[WeatherKitty] WARNING: Unable to find WeatherKitty script in:\n[${window.location.pathname}]`
     );
   } else {
     if (WeatherKittyDebug <= 2)
@@ -145,7 +129,6 @@ export async function WeatherKittyStart() {
     console.log("[WeatherKitty] Path: ", path);
     config.WeatherKittyPath = path;
   }
-  // /Testing
 
   config.WeatherKittyObsImage = path + config.WeatherKittyObsImage;
   config.WeatherKittyForeImage = path + config.WeatherKittyForeImage;
@@ -155,8 +138,8 @@ export async function WeatherKittyStart() {
     console.log(`[WeatherKitty] Fore: ${config.WeatherKittyForeImage}`);
   }
 
-  // Weather Kitty Widget
-  if (WeatherKittyDebug <= 2) {
+  // Start the Weather Kitty Widget
+  if (WeatherKittyDebug <= 1) {
     setTimeout(WeatherWidgetInit(path), 3000);
     setTimeout(WeatherKitty, 6000);
   } else {
@@ -225,15 +208,12 @@ function WeatherWidgetInit(path) {
       console.log(
         "[WeatherWidgetInit] WARNING: Weather Kitty Elements Not Found"
       );
-    config.FATAL = true;
     return false;
   }
 }
 
 // Function Weather Widget
 function WeatherKitty() {
-  if (config.FATAL) return;
-  // cjm
   getWeatherAsync(function (weather) {
     // Obs Text
     {
@@ -351,7 +331,6 @@ async function WeatherMaps(elementName, Url, CacheTime) {
 export async function getWeatherLocationAsync(callBack) {
   if (Log.Debug())
     console.log("[getWeatherLocationAsync] Checking Location Data");
-
   let response = await fetchCache(
     "/weatherkittycache/location",
     null,
@@ -391,23 +370,28 @@ export async function getWeatherLocationAsync(callBack) {
 // City, State, Country, ZipCode, Latitude, Longitude
 export async function getLocationAsync() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        if (Log.Debug()) console.log(`[getLocationAsync]`, position);
-        // City, State, Country, ZipCode, Latitude, Longitude
-        let result = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        let response = CreateResponse(result);
-        return response;
-      },
-      (error) => {
-        if (Log.Error())
-          console.log(`[getLocationAsync] Error: ${error.message}`);
-        return null;
-      }
-    );
+    let position = await new Promise((position, error) => {
+      navigator.geolocation.getCurrentPosition(position, error, {
+        enableHighAccuracy: true,
+      });
+    }).catch((error) => {
+      if (Log.Warn())
+        console.log("[getLocationAsync] Warning: ", error.message);
+      return null;
+    });
+    if (position) {
+      if (Log.Debug())
+        console.log("[getLocationAsync] Position: ", position.coords);
+      let result = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+      let response = CreateResponse(result);
+      return response;
+    } else {
+      if (Log.Warn()) console.log("[getLocationAsync] Warning: No Position");
+      return null;
+    }
   } else {
     if (Log.Error())
       console.log(
@@ -415,12 +399,9 @@ export async function getLocationAsync() {
       );
     return null;
   }
-
-  let response = await CreateResponse({
-    lat: 36.82565689086914,
-    lon: -83.32009887695312,
-  });
-  return response;
+  throw new Error(
+    "getLocationAsync: Neither Position nor Error.  This Should not Happen."
+  );
 }
 
 // Function getWeatherLocationByIPAsync {
@@ -546,14 +527,16 @@ async function CreateResponse(data) {
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
 async function getWeatherAsync(callBack) {
-  if (Log.Info()) console.log("[getWeatherAsync] Starting ...");
   let data = await getWeatherLocationAsync();
   let lat = data.latitude;
   let lon = data.longitude;
-  if (lat === null || lon === null) {
+  if (lat == null || lon == null) {
     if (Log.Error())
       console.log("[getWeatherAsync] *** ERROR ***: No Location");
+    console.log("[getWeatherAsync] ", data);
     return;
+  } else {
+    if (Log.Info) console.log(`[getWeatherAsync] Location: ${lat}, ${lon}`);
   }
 
   // Get Location and check cached location, ... use, update, etc.
@@ -571,7 +554,7 @@ async function getWeatherAsync(callBack) {
   // localStorage.setItem('user', JSON.stringify(userArray));
   // const userData = JSON.parse(localStorage.getItem('user'));
 
-  // Read Local Storage, if note available, create it
+  // Read Local Storage, if not available, create it
   let cached = JSON.parse(localStorage.getItem("weather"));
   if (cached == null) {
     console.log("[getWeatherAsync] No Cached Weather Data");
@@ -1346,7 +1329,7 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
   let widgets = document.getElementsByTagName(tagName);
   for (let widget of widgets) {
     let htmlString = widget?.innerHTML; // check the inner so we can detect custom html
-    if (WeatherKittyDebug <= 2)
+    if (WeatherKittyDebug <= 0)
       console.log("[FindAndReplaceTags] innerHTML: ", htmlString);
     if (
       htmlString != undefined &&
@@ -1354,12 +1337,12 @@ function FindAndReplaceTags(tagName, htmlBlock, className) {
       htmlString != "" &&
       htmlString.includes("<")
     ) {
-      if (WeatherKittyDebug <= 2)
+      if (WeatherKittyDebug <= 1)
         console.log("[FindAndReplaceTags] Custom HTML Detected");
     } else {
-      if (WeatherKittyDebug <= 2)
+      if (WeatherKittyDebug <= 1)
         console.log("[FindAndReplaceTags] Using Default CodeBlock");
-      if (WeatherKittyDebug <= 2) console.log(htmlBlock);
+      if (WeatherKittyDebug <= 0) console.log(htmlBlock);
       widget.innerHTML = htmlBlock; // set the outer so we can include any classes or tags.
       if (className !== null && className !== undefined && className !== "")
         widget.className = className;
