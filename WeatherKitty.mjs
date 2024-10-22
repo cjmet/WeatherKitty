@@ -1,5 +1,4 @@
-// strict mode
-("use strict");
+"use strict";
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
@@ -19,8 +18,10 @@ let config = {
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
-  defaultCacheTime: 60000 * 30, // 30 minutes
+  obsCacheTime: 60000 * 10, // 10 minutes
+  forecastCacheTime: 60000 * 60, // 1 hour
   longCacheTime: 60000 * 60 * 24, // 24 hours
+  defaultCacheTime: 60000 * 30, // 30 minutes
 
   CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for none
 
@@ -213,102 +214,121 @@ function WeatherWidgetInit(path) {
 }
 
 // Function Weather Widget
-function WeatherKitty() {
-  getWeatherAsync(function (weather) {
-    // Obs Text
-    {
-      let text =
-        weather.observationShortText +
-        " " +
-        weather.observationTemperature +
-        weather.observationTemperatureUnit;
-      let img = weather.observationIconUrl;
-      let altimg = config.WeatherKittyObsImage;
-      WeatherSquares("weather-kitty-current", text, img, altimg);
-    }
+async function WeatherKitty() {
+  let weather = await getWeatherAsync();
 
-    // Forecast Text
-    {
-      let text =
-        findWeatherWords(weather.shortForecast) +
-        "<br>" +
-        weather.probabilityOfPrecipitation +
-        "% " +
-        weather.temperature +
-        weather.temperatureUnit;
-      let img = weather.forecastIconUrl;
-      let altimg = config.WeatherKittyForeImage;
-      WeatherSquares("weather-kitty-forecast", text, img, altimg);
-    }
+  // Observation Text
+  {
+    let shortText =
+      weather.observationData.features[0].properties.textDescription;
+    let temp = weather.observationData.features[0].properties.temperature.value;
+    let unit =
+      weather.observationData.features[0].properties.temperature.unitCode;
+    temp = Fahrenheit(temp, unit);
+    let img = weather.observationData.features[0].properties.icon;
+    let altimg = config.WeatherKittyObsImage;
+    let text = `${shortText} ${temp}°F`;
 
-    // Long Forecast
-    let forecast =
-      `<b>${weather.geoLocationName}</b><br><br>` +
-      "<b>Current:</b><br>" +
-      weather.observationShortText +
-      " " +
-      weather.observationTemperature +
-      weather.observationTemperatureUnit +
-      "<br>" +
-      '<div id="weatherspacer"><br> </div>' +
-      "<b>Forecast:</b> <br>" +
-      weather.shortForecast +
-      " " +
-      weather.temperature +
-      weather.temperatureUnit +
-      "<br>" +
-      weather.probabilityOfPrecipitation +
-      "% precipitation<br>" +
-      '<div id="weatherspacer"><br></div>' +
-      weather.detailedForecast;
-    // + "<br>" + weather.forecastStartTime;
+    WeatherSquares("weather-kitty-current", text, img, altimg);
+  }
+
+  // Forecast Text
+  {
+    let shortText = weather.forecastData.properties.periods[0].shortForecast;
+    let temp = weather.forecastData.properties.periods[0].temperature;
+    let unit = weather.forecastData.properties.periods[0].temperatureUnit;
+    temp = Fahrenheit(temp, unit);
+    let img = weather.forecastData.properties.periods[0].icon;
+    let altimg = config.WeatherKittyForeImage;
+    let text = `${shortText} ${temp}°F`;
+
+    WeatherSquares("weather-kitty-forecast", text, img, altimg);
+  }
+
+  // Long Forecast
+  let locationName = null;
+  {
+    locationName =
+      weather.pointData.properties.relativeLocation.properties.city;
+    locationName += ", ";
+    locationName +=
+      weather.pointData.properties.relativeLocation.properties.state;
+    locationName += " - ";
+    locationName +=
+      weather.stationsData.features[0].properties.stationIdentifier;
+
+    let shortText = weather.forecastData.properties.periods[0].shortForecast;
+    let forecast = weather.forecastData.properties.periods[0].detailedForecast;
+    let temp = weather.forecastData.properties.periods[0].temperature;
+    let unit = weather.forecastData.properties.periods[0].temperatureUnit;
+    temp = Fahrenheit(temp, unit);
+    let precip = weather.forecastData.properties.periods[0].detailedForecast;
+    let img = weather.forecastData.properties.periods[0].icon;
+    let altimg = config.WeatherKittyForeImage;
+    let text = `<b>${locationName}</b><br><br>`;
+
+    text += `<b>Current:</b><br>`;
+    text += `${shortText} ${temp}°F<br>`;
+    text += `${precip}% precipitation<br><br>`;
+
+    text += `<b>Forecast:</b><br>`;
+    text += `${forecast} ${temp}°F`;
+
     let widgets = document.getElementsByTagName("weather-kitty-tooltip");
     for (let widget of widgets) {
       // widget.setAttribute("tooltip", forecast);
-      widget.innerHTML = forecast;
+      widget.innerHTML = text;
     }
+  }
 
-    // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
-    widgets = document.getElementsByTagName("weather-kitty-geoaddress");
-    for (let widget of widgets) {
-      let span = widget.getElementsByTagName("span")[0];
-      let button = widget.getElementsByTagName("button")[0];
-      span.innerHTML = weather.geoLocationName;
-      button = RemoveAllEventListeners(button);
-      button.addEventListener("click", () => {
-        getWeatherLocationByAddressAsync(WeatherKitty);
-      });
-    }
+  // weather-kitty-geoaddress Location Block
+  // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
+  let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
+  for (let widget of widgets) {
+    let span = widget.getElementsByTagName("span")[0];
+    let button = widget.getElementsByTagName("button")[0];
+    span.innerHTML = locationName;
+    button = RemoveAllEventListeners(button);
+    button.addEventListener("click", async () => {
+      let result = await getWeatherLocationByAddressAsync();
+      if (result && result.ok) {
+        // Override the location cache, and make it permanent.
+        await setCache("/weatherkittycache/location", result, config.FOREVER);
+      } else {
+        // clear the location cache if you cancel the address or input an invalid address
+        window.alert("No Location Data Available");
+        clearCache("/weatherkittycache/location");
+      }
+      WeatherKitty();
+    });
+  }
 
-    // Charting
-    // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
-    ObservationCharts(weather.observationData);
+  // Charting
+  // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
+  ObservationCharts(weather.observationData.features);
 
-    // cjm
-    // fetchCache the Maps
-    WeatherMaps(
-      "weather-kitty-map-forecast",
-      config.ForecastMapUrl,
-      config.ForecastMapCacheTime
-    );
-    WeatherMaps(
-      "weather-kitty-map-radar",
-      config.RadarMapUrl,
-      config.RadarMapCacheTime
-    );
-    WeatherMaps(
-      "weather-kitty-map-alerts",
-      config.AlertsMapUrl,
-      config.AlertsMapCacheTime
-    );
+  // fetchCache the Maps
+  WeatherMaps(
+    "weather-kitty-map-forecast",
+    config.ForecastMapUrl,
+    config.ForecastMapCacheTime
+  );
+  WeatherMaps(
+    "weather-kitty-map-radar",
+    config.RadarMapUrl,
+    config.RadarMapCacheTime
+  );
+  WeatherMaps(
+    "weather-kitty-map-alerts",
+    config.AlertsMapUrl,
+    config.AlertsMapCacheTime
+  );
 
-    // Forecast Matrix
-    ForecastMatrix(weather.forecastData);
-  });
+  // Forecast Matrix
+  ForecastMatrix(weather.forecastData.properties.periods);
 }
 
 async function WeatherMaps(elementName, Url, CacheTime) {
-  // cjm
   if (Log.Debug())
     console.log(`[WeatherMaps] ${elementName}, ${Url}, ${CacheTime}`);
 
@@ -331,7 +351,9 @@ async function WeatherMaps(elementName, Url, CacheTime) {
 export async function getWeatherLocationAsync(callBack) {
   if (Log.Debug())
     console.log("[getWeatherLocationAsync] Checking Location Data");
-  let response = await fetchCache(
+  let response = null;
+
+  response = await fetchCache(
     "/weatherkittycache/location",
     null,
     config.shortCacheTime
@@ -486,9 +508,14 @@ async function getWeatherLocationByAddressAsync() {
   let response = await fetchCache(locationUrl, null, config.FOREVER);
 
   // City, State, Country, ZipCode, Latitude, Longitude
-  if (response != null && response.ok) {
+  if (response && response.ok) {
     let data = await response.json();
-    console.log("[getAddress] Data: ", data);
+    if (Log.Trace()) console.log("[getAddress] Data: ", data);
+    if (data.result.addressMatches.length <= 0) {
+      if (Log.Warn())
+        console.log("[getAddress] *** WARNING ***: No Address Matches");
+      return null;
+    }
     let result = {
       city: data.result.addressMatches[0].addressComponents.city,
       state: data.result.addressMatches[0].addressComponents.state,
@@ -497,6 +524,7 @@ async function getWeatherLocationByAddressAsync() {
       latitude: data.result.addressMatches[0].coordinates.y,
       longitude: data.result.addressMatches[0].coordinates.x,
     };
+    if (Log.Info()) console.log("[getAddress] Results:", result);
     return CreateResponse(result);
   }
   return response;
@@ -526,17 +554,23 @@ async function CreateResponse(data) {
 // it's possible we would want to set this as low as 4 or 5 minutes to
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
-async function getWeatherAsync(callBack) {
-  let data = await getWeatherLocationAsync();
-  let lat = data.latitude;
-  let lon = data.longitude;
-  if (lat == null || lon == null) {
-    if (Log.Error())
-      console.log("[getWeatherAsync] *** ERROR ***: No Location");
-    console.log("[getWeatherAsync] ", data);
-    return;
-  } else {
+async function getWeatherAsync() {
+  let pointData = null;
+  let stationsData = null;
+  let observationData = null;
+  let forecastData = null;
+  let resultString = "";
+
+  let locData = await getWeatherLocationAsync();
+  let lat = locData?.latitude;
+  let lon = locData?.longitude;
+  if (lat && lon) {
     if (Log.Info) console.log(`[getWeatherAsync] Location: ${lat}, ${lon}`);
+  } else {
+    window.alert("No Location Data Available");
+    throw new Error(
+      "[getWeatherAsync] *** ERROR ***: No Location Data Available"
+    );
   }
 
   // Get Location and check cached location, ... use, update, etc.
@@ -551,313 +585,126 @@ async function getWeatherAsync(callBack) {
 
   // We need the GridID, GridX, GridY to get the forecast
 
-  // localStorage.setItem('user', JSON.stringify(userArray));
-  // const userData = JSON.parse(localStorage.getItem('user'));
-
-  // Read Local Storage, if not available, create it
-  let cached = JSON.parse(localStorage.getItem("weather"));
-  if (cached == null) {
-    console.log("[getWeatherAsync] No Cached Weather Data");
-    cached = {
-      geoLocationName: "",
-      forecastUrl: "",
-      forecastUrlTimeStamp: "",
-      shortForecast: "",
-      forecastIconUrl: "",
-      temperature: "",
-      temperatureUnit: "",
-      probabilityOfPrecipitation: "",
-      detailedForecast: "",
-      forecastStartTime: "",
-      forecastTimeStamp: "",
-
-      observationStationsUrl: "",
-      observationStationID: "",
-      observationStationName: "",
-      observationStationTimeStamp: "",
-
-      observationTimeStamp: "",
-      observationShortText: "",
-      observationIconUrl: "",
-      observationTemperature: "",
-      observationTemperatureUnit: "",
-
-      // Data Structures for more complex usage
-      observationData: [],
-      forecastData: [],
-    };
-    // localStorage.setItem("weather", JSON.stringify(cached));
-  } else {
-    console.log(
-      `[getWeatherAsync] Cached Weather Data [${wkElapsedTime(
-        cached.forecastTimeStamp + config.shortCacheTime
-      )}]`
-    );
-    if (WeatherKittyDebug <= 2) console.log(cached);
-  }
-
-  // Deal with Cache-ing of Weather Data
-  /* 
-  var myHeaders = new Headers();
-  myHeaders.append('pragma', 'no-cache');
-  myHeaders.append('cache-control', 'no-cache');
-
-  var myInit = {
-    method: 'GET',
-    headers: myHeaders,
-  };
-  */
-
-  /* 
-  {
-    headers: {
-      'Pragma': 'no-cache',
-      'Cache-Control': 'no-cache'
+  let stationLocationUrl = `https://api.weather.gov/points/${lat},${lon}`;
+  let weatherForecastUrl = null;
+  let observationStationsUrl = null;
+  let response = null;
+  response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
+  if (response && response.ok) {
+    let data = await response.json();
+    pointData = data;
+    if (Log.Trace()) console.log("[getWeatherAsync] ", data);
+    weatherForecastUrl = String(data.properties.forecast);
+    observationStationsUrl = String(data.properties.observationStations);
+    let city = data.properties.relativeLocation.properties.city;
+    let state = data.properties.relativeLocation.properties.state;
+    let locationName = `${city}, ${state}`;
+    if (Log.Debug()) {
+      console.log("[getWeatherAsync] ", locationName);
     }
-  }
-  */
-
-  // Get the forecast URL
-  let weatherForecastUrl = "";
-  if (
-    cached.forecastUrl !== null &&
-    cached.forecastUrlTimeStamp > Date.now() - config.longCacheTime
-  ) {
-    console.log(
-      `[getWeatherAsync] Using Cached Weather Url [${wkElapsedTime(
-        cached.forecastUrlTimeStamp + config.longCacheTime
-      )}]`
-    );
-    weatherForecastUrl = cached.forecastUrl;
+    resultString += locationName;
   } else {
-    console.log("[getWeatherAsync] Fetching New Weather Url");
-    let stationLocationUrl = `https://api.weather.gov/points/${lat},${lon}`;
-    await fetch(stationLocationUrl)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        if (WeatherKittyDebug <= 2) console.log(data);
-
-        // this is not the best way to handle this, but it works for now
-        if (data?.properties === null || data?.properties === undefined) {
-          console.log(
-            "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
-          );
-          return;
-        }
-
-        if (WeatherKittyDebug <= 2) {
-          console.log(
-            `[stationLocation] cwa: ${data.properties.cwa} GridID: ${data.properties.gridId}, GridX: ${data.properties.gridX}, GridY: ${data.properties.gridY} `
-          );
-          console.log(
-            `[stationLocation] Relative Location: ${data.properties.relativeLocation.properties.city}, ${data.properties.relativeLocation.properties.state}`
-          );
-          console.log(
-            `[stationLocation] Forecast URL: ${data.properties.forecast}`
-          );
-        }
-        weatherForecastUrl = String(data.properties.forecast);
-        let city = data.properties.relativeLocation.properties.city;
-        let state = data.properties.relativeLocation.properties.state;
-        let locationName = `${city}, ${state}`;
-
-        cached.geoLocationName = locationName;
-        cached.forecastUrl = String(weatherForecastUrl);
-        cached.observationStationsUrl = String(
-          data.properties.observationStations
-        );
-        cached.forecastUrlTimeStamp = Date.now();
-        localStorage.setItem("weather", JSON.stringify(cached));
-      });
+    throw new Error("[getWeatherAsync] *** ERROR ***: No Point Data Available");
   }
 
   // Get "Featured" Observation Station ... from Stations
   // https://api.weather.gov/stations/KI35/observations
-  if (
-    cached?.observationStationsUrl !== null &&
-    cached?.observationStationTimeStamp > Date.now() - config.longCacheTime
-  ) {
-    console.log(
-      `[getWeatherAsync] Using Cached Observation Station [${wkElapsedTime(
-        cached.observationStationTimeStamp + config.longCacheTime
-      )}]`
+
+  let observationStationID = null;
+  if (observationStationsUrl) {
+    response = await fetchCache(
+      observationStationsUrl,
+      null,
+      config.longCacheTime
     );
-  } else if (cached?.observationStationsUrl !== "") {
-    console.log("[getWeatherAsync] Fetching new Observation Station");
-    await fetch(cached.observationStationsUrl)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        if (WeatherKittyDebug <= 2) console.log(data);
-
-        // this is not the best way to handle this, but it works for now
-        if (data?.features === null || data?.features === undefined) {
-          console.log(
-            "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
-          );
-          return;
-        }
-
-        if (WeatherKittyDebug <= 2) {
-          console.log(
-            `[ObservationStations] Station ID: ${data.features[0].properties.stationIdentifier}`
-          );
-          console.log(
-            `[ObservationStations] Station Name: ${data.features[0].properties.name}`
-          );
-        }
-        cached.observationStationID = String(
-          data.features[0].properties.stationIdentifier
+    if (response && response.ok) {
+      let data = await response.json();
+      stationsData = data;
+      if (Log.Trace()) console.log("[getWeatherAsync] ", data);
+      observationStationID = String(
+        data.features[0].properties.stationIdentifier
+      );
+      if (Log.Debug()) console.log("[getWeatherAsync] ", observationStationID);
+      resultString += `, ${observationStationID}`;
+    } else {
+      if (Log.Error())
+        console.log(
+          "[getWeatherAsync] *** ERROR ***: No Stations Data Available"
         );
-        cached.observationStationName = String(
-          data.features[0].properties.name
-        );
-        cached.observationStationTimeStamp = Date.now();
-        localStorage.setItem("weather", JSON.stringify(cached));
-      });
+    }
+  } else {
+    if (Log.Error())
+      console.log(
+        "[getWeatherAsync] *** ERROR ***: No Observation Stations URL"
+      );
   }
 
   // Get Current Observation
-  if (cached?.observationStationID === "") {
-    console.log("[getWeatherAsync] No Observation Station ID available");
-  } else if (
-    cached?.observationTimeStamp >
-    Date.now() - config.shortCacheTime
-  ) {
-    console.log(
-      `[getWeatherAsync] Using Cached Observation Data [${wkElapsedTime(
-        cached.observationTimeStamp + config.shortCacheTime
-      )}]`
-    );
-    /* ... */
+
+  if (observationStationID) {
+    let observationUrl = `https://api.weather.gov/stations/${observationStationID}/observations`;
+    response = await fetchCache(observationUrl, null, config.obsCacheTime);
+    if (response && response.ok) {
+      let data = await response.json();
+      if (Log.Trace()) console.log("[getWeatherAsync] ", data);
+      observationData = data;
+      let temp = data.features[0].properties.temperature.value;
+      let units = data.features[0].properties.temperature.unitCode;
+      temp = Fahrenheit(temp, units);
+      let obs = data.features[0].properties.textDescription;
+      if (Log.Debug()) {
+        console.log(`[getWeatherAsync] Observation: ${temp} ${obs}`);
+      }
+      resultString += `, ${temp} ${obs}`;
+    } else {
+      if (Log.Error())
+        console.log("[getWeatherAsync] *** ERROR ***: No Obs Data Available");
+    }
   } else {
-    console.log("[getWeatherAsync] Fetching New Observation Data");
-    let observationUrl = `https://api.weather.gov/stations/${cached.observationStationID}/observations`;
-    await fetch(observationUrl)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        if (WeatherKittyDebug <= 2) console.log(data);
-
-        // this is not the best way to handle this, but it works for now
-        if (data?.features === null || data?.features === undefined) {
-          console.log(
-            "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
-          );
-          return;
-        }
-
-        cached.observationTimeStamp = Date.now();
-        cached.observationShortText = String(
-          data.features[0].properties.textDescription
-        );
-        if (
-          data.features[0].properties.icon !== null &&
-          data.features[0].properties.icon !== ""
-        )
-          cached.observationIconUrl = String(data.features[0].properties.icon);
-        else cached.observationIconUrl = "";
-
-        // Temperature, read it first, then convert it to Fahrenheit
-        {
-          cached.observationTemperature = String(
-            data.features[0].properties.temperature.value
-          );
-          cached.observationTemperatureUnit = String(
-            data.features[0].properties.temperature.unitCode
-          ).replace(/wmoUnit\:deg/i, "");
-          cached.observationTemperature = Fahrenheit(
-            cached.observationTemperature,
-            cached.observationTemperatureUnit
-          );
-          cached.observationTemperatureUnit = "°f";
-        }
-
-        // Intercept Historical Observation Data for Charting
-        cached.observationData = data.features;
-        if (WeatherKittyDebug <= 2) console.log(data);
-
-        localStorage.setItem("weather", JSON.stringify(cached));
-      });
+    if (Log.Error())
+      console.log("[getWeatherAsync] *** ERROR ***: No Observation Station ID");
   }
 
   // Get the forecast
   // https://api.weather.gov/gridpoints/JKL/65,16/forecast
-  if (cached?.forecastTimeStamp > Date.now() - config.shortCacheTime) {
-    console.log(
-      `[getWeatherAsync] Using Cached Weather Data [${wkElapsedTime(
-        cached.forecastTimeStamp + config.shortCacheTime
-      )}]`
+
+  if (weatherForecastUrl) {
+    response = await fetchCache(
+      weatherForecastUrl,
+      null,
+      config.forecastCacheTime
     );
-  } else if (weatherForecastUrl !== "") {
-    console.log("[getWeatherAsync] Fetching New weather Data");
-    await fetch(weatherForecastUrl)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        if (WeatherKittyDebug <= 2) console.log(data);
-
-        // this is not the best way to handle this, but it works for now
-        if (
-          data?.properties?.periods === null ||
-          data?.properties?.periods === undefined
-        ) {
-          console.log(
-            "[getWeatherAsync] *** ABORT ***: Fetch Failed: No Data Available"
-          );
-          return;
-        }
-
-        cached.shortForecast = String(data.properties.periods[0].shortForecast);
-
-        // Temperature, read it first, then convert it to Fahrenheit
-        {
-          cached.temperature = String(data.properties.periods[0].temperature);
-          cached.temperatureUnit = String(
-            data.properties.periods[0].temperatureUnit
-          );
-          cached.temperature = Fahrenheit(
-            cached.temperature,
-            cached.temperatureUnit
-          );
-          cached.temperatureUnit = "°f";
-        }
-
-        let rain = data.properties.periods[0].probabilityOfPrecipitation.value;
-        if (rain === null || rain === undefined || rain === "") {
-          rain = 0;
-        }
-        cached.probabilityOfPrecipitation = String(rain);
-        cached.detailedForecast = String(
-          data.properties.periods[0].detailedForecast
+    if (response.ok) {
+      let data = await response.json();
+      forecastData = data;
+      if (Log.Trace()) console.log("[getWeatherAsync] ", data);
+      let temp = data.properties.periods[0].temperature;
+      let units = data.properties.periods[0].temperatureUnit;
+      temp = Fahrenheit(temp, units);
+      let forecast = data.properties.periods[0].shortForecast;
+      if (Log.Debug()) {
+        console.log(`[getWeatherAsync] Forecast: ${temp} ${forecast}`);
+      }
+      resultString += `, ${temp} ${forecast}`;
+    } else {
+      if (Log.Error())
+        console.log(
+          "[getWeatherAsync] *** ERROR ***: No Forecast Data Available"
         );
-        cached.forecastIconUrl = String(data.properties.periods[0].icon);
-        cached.forecastStartTime = String(data.properties.periods[0].startTime);
-        cached.forecastTimeStamp = Date.now();
-
-        // Intercept forecast data for matrix
-        cached.forecastData = data.properties.periods;
-        console.log("[INTERCEPT] Intercepting forecast Data");
-        console.log(cached.forecastData);
-
-        localStorage.setItem("weather", JSON.stringify(cached));
-      });
+    }
   } else {
-    console.log(`[getWeatherAsync] No weatherForecastUrl available`);
+    if (Log.Error())
+      console.log("[getWeatherAsync] *** ERROR ***: No Forecast URL");
   }
 
   // Call the callback function:
-  callBack(cached);
-  if (Log.Info()) console.log("[getWeatherAsync] Done.");
+  // callBack(cached);
+  if (Log.Info()) console.log(`[getWeatherAsync] ${resultString}`);
+  return { pointData, stationsData, observationData, forecastData };
 }
 
 function ForecastMatrix(data) {
-  if (data == null || data.length === 0) {
+  if (!data || data.length <= 0) {
     console.log("[ForecastMatrix] *** ERROR ***: No Data Available");
     return;
   }
@@ -1182,6 +1029,7 @@ function Fahrenheit(temperature, temperatureUnit) {
   // celcius to fahrenheit: (celsius * 9 / 5) + 32
   let fahrenheit = -999;
   temperatureUnit = temperatureUnit.toLowerCase();
+  temperatureUnit = temperatureUnit.replace(/wmoUnit\:deg/i, "");
   if (temperatureUnit === "f" || temperatureUnit === "°f")
     fahrenheit = Math.round(temperature);
   else if (temperatureUnit == "c" || temperatureUnit === "°c")
@@ -1378,6 +1226,23 @@ const specialUrlTable = {
   "/weatherkittycache/geoip": getWeatherLocationByIPAsync,
   "/weatherkittycache/address": getWeatherLocationByAddressAsync,
 };
+
+export async function clearCache(url) {
+  console.log(`[clearCache] ${url}`);
+  let cache = await caches.open("weather-kitty");
+  await cache.delete(url);
+}
+
+export async function setCache(url, response, ttl) {
+  console.log(`[setCache]`, url, response, ttl);
+  let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+  if (ttlCache == null) ttlCache = {};
+  ttlCache[url] = Date.now() + ttl;
+  localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
+
+  let cache = await caches.open("weather-kitty");
+  await cache.put(url, response);
+}
 
 export async function fetchCache(url, options, ttl) {
   if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
