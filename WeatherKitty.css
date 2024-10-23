@@ -14,7 +14,6 @@ weather-kitty-forecast {
   position: relative;
   width: 5.67em;
   aspect-ratio: 1 / 1;
-  z-index: 0;
   display: grid; /* Grid (1x1) is working better for this use case than flex  */
 
   padding: 0.1em;
@@ -62,6 +61,7 @@ weather-kitty-forecast > img {
 weather-kitty-tooltip {
   position: fixed;
   top: 0;
+  right: 0;
   justify-self: center;
   align-self: start;
 
@@ -77,17 +77,22 @@ weather-kitty-tooltip {
   background-color: rgba(0, 0, 0, 0.75);
   border: black 3px solid;
   opacity: 0;
+  z-index: 10;
 }
 
 weather-kitty:hover,
 weather-kitty-current:hover,
 weather-kitty-forecast:hover {
-  img,
-  span {
+  weather-kitty-current > img,
+  weather-kitty-forecast > img,
+  weather-kitty-current > span,
+  weather-kitty-forecast > span {
     transition: all 0.33s;
     opacity: 0.5;
   }
-  weather-kitty-tooltip {
+
+  weather-kitty-tooltip,
+  weather-kitty-tooltip span {
     color: white;
     transition: all 0.33s;
     translate: 0 0;
