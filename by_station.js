@@ -5,12 +5,7 @@ import WeatherKittyStart, {
   getWeatherLocationAsync,
 } from "./WeatherKitty.mjs";
 
-let element = document.createElement("img");
-let response = await fetchCache("./img/WeatherKittyC.jpeg");
-let blob = await response.blob();
-let url = URL.createObjectURL(blob);
-element.src = url;
-document.body.appendChild(element);
+//
 
 // let result = await getWeatherLocationAsync();
 // console.log(result);

@@ -13,9 +13,10 @@ let LogLevel = {
   Off: 10,
 };
 let Log = {
-  LogLevel: LogLevel.Info,
+  LogLevel: LogLevel.Warn,
   SetLogLevel(level) {
-    Loglevel = level;
+    Log.LogLevel = level;
+    console.log(`[WeatherKittyLog] LogLevel: ${Log.LogLevel}`);
   },
   Verbose: () => {
     return LogLevel.Verbose >= Log.LogLevel;
@@ -99,11 +100,12 @@ export async function WeatherKittyStart() {
     return;
   }
   config.WeatherKittyIsLoaded = true;
+  await microSleep(1); // Just long enough that you can set the log level before it starts.
 
   let path = "";
   let results;
   if (Log.Debug()) console.log(`Weather Kitty Loglevel: [${Log.LogLevel}]`);
-  else console.log("[WeatherKittyStart] Loading ...");
+  else if (Log.Info()) console.log("[WeatherKittyStart] Loading ");
 
   let scripts = document.getElementsByTagName("script");
   let script = null;
@@ -136,7 +138,10 @@ export async function WeatherKittyStart() {
   }
 
   // Start the Weather Kitty Widget
-  if (Log.Debug()) {
+  if (Log.Trace()) {
+    console.log(
+      "[WeatherKittyStart] WARNING: Setting Loading Delays for Debugging."
+    );
     setTimeout(WeatherWidgetInit(path), 3000);
     setTimeout(WeatherKitty, 6000);
   } else {
@@ -222,9 +227,10 @@ function WeatherWidgetInit(path) {
     if (!geoAddressFound) {
       if (Log.Warn())
         console.log(
-          "[WeatherWidgetInit] WARNING: No GeoAddress Element Found.\n \tAdding Set Address Element."
+          "[WeatherWidgetInit] WARNING: No GeoAddress Element Found."
         );
-      SetAddLocationButton(widgets[0]);
+      // SetAddLocationButton(widgets[0]);
+      InsertGeoAddressElement(widgets[0]);
     }
     return true;
   } else {
@@ -239,6 +245,10 @@ function WeatherWidgetInit(path) {
 // Function sleep();
 async function sleep(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
+
+async function microSleep(milliSeconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliSeconds));
 }
 
 // Function Weather Widget
@@ -328,7 +338,6 @@ async function WeatherKitty() {
     for (let widget of widgets) {
       // widget.setAttribute("tooltip", forecast);
       let paragraph = widget.getElementsByTagName("p");
-      console.log("paragraph: ", paragraph);
       if (paragraph && paragraph.length > 0) paragraph[0].innerHTML = text;
     }
   }
@@ -357,6 +366,39 @@ async function WeatherKitty() {
   // }
 }
 
+// Function InsertGeoAddressElement
+function InsertGeoAddressElement(widget) {
+  if (!widget) return;
+
+  let div = document.createElement("div");
+  div.style.width = "100%";
+  div.style.display = "flex";
+  div.style.justifyContent = "right";
+  div.style.alignItems = "center";
+  div.style.margin = "0";
+  div.style.padding = "0";
+  widget.appendChild(div);
+
+  let element = document.createElement("weather-kitty-geoaddress");
+  div.appendChild(element);
+  let results = FindAndReplaceTags(
+    "weather-kitty-geoaddress",
+    WeatherKittyLocationBlock(),
+    "WeatherKittyGeoAddress"
+  );
+  if (!results || results.length <= 0) {
+    if (Log.Error())
+      console.log(
+        "[InsertGeoAddressElement] *** ERROR ***: GeoAddress Element Could Not Be Created"
+      );
+  } else {
+    if (Log.Info())
+      console.log(
+        "[InsertGeoAddressElement] GeoAddress Element Created and Inserted"
+      );
+  }
+}
+
 // Function SetLocation Button
 export function SetAddLocationButton(widget) {
   let button = widget.getElementsByTagName("button")[0];
@@ -369,7 +411,7 @@ export function SetAddLocationButton(widget) {
     div.style.flex = "1 1 auto";
     div.style.display = "flex";
     div.style.justifyContent = "flex-end";
-    div.style.alignItems = "flex-end";
+    div.style.alignItems = "center";
     div.style.zIndex = "10";
     widget.appendChild(div);
 
@@ -657,7 +699,7 @@ async function getWeatherAsync() {
   let lat = locData?.latitude;
   let lon = locData?.longitude;
   if (lat && lon) {
-    if (Log.Info) console.log(`[getWeatherAsync] Location: ${lat}, ${lon}`);
+    if (Log.Info()) console.log(`[getWeatherAsync] Location: ${lat}, ${lon}`);
   } else {
     window.alert("No Location Data Available");
     throw new Error(
@@ -800,30 +842,44 @@ async function getWeatherAsync() {
 // Function ForecastMatrix
 async function ForecastMatrix(data) {
   if (!data || data.length <= 0) {
-    console.log("[ForecastMatrix] *** ERROR ***: No Data Available");
+    if (Log.Error())
+      console.log("[ForecastMatrix] *** ERROR ***: No Data Available");
     return;
   }
-  console.log("[ForecastMatrix] ", data);
+  if (Log.Debug()) console.log("[ForecastMatrix] ", data);
   let text = "";
   for (let period of data) {
-    text += `<div>`;
-    text += `<div>${period.name}</div>`;
-    text += `<img src=${period.icon} alt="Weather Image"><br>`;
-    text += `<div>`;
-    text += `<span>${
-      period.temperature
-    }<small>${period.temperatureUnit.toLowerCase()}</small></span> - <span>`;
-    text += `${(period.probabilityOfPrecipitation.value ??= 0)}<small>${period.probabilityOfPrecipitation.unitCode.replace(
+    text += `
+      <weather-kitty-matrix-card>
+        <weather-kitty-matrix-title>${period.name}</weather-kitty-matrix-title>
+        <img src=${period.icon} alt="Weather Image"><br>
+        <weather-kitty-matrix-summary>
+          <span>
+            ${
+              period.temperature
+            }<small>${period.temperatureUnit.toLowerCase()}</small> 
+          </span>
+          <span> - </span> 
+          <span>
+            ${(period.probabilityOfPrecipitation.value ??= 0)}<small>${period.probabilityOfPrecipitation.unitCode.replace(
       "wmoUnit:percent",
       "%"
-    )}</small><span>`;
-    text += `</div>`;
-    text += `${BadHyphen(period.shortForecast)}`;
-    text += `</div>`;
+    )}</small></span>
+        </weather-kitty-matrix-summary>
+        <weather-kitty-matrix-forecast> ${BadHyphen(
+          period.shortForecast
+        )} </weather-kitty-matrix-forecast>
+      </weather-kitty-matrix-card>`;
   }
-  let target = document.getElementById("Matrix");
-  if (target != null) target.innerHTML = text;
-  else console.log("[ForecastMatrix] *** ERROR ***: Target Not Found");
+  let targets = document.getElementsByTagName("weather-kitty-matrix");
+  console.log(targets);
+  for (let target of targets) {
+    console.log(target);
+    if (target != null) target.innerHTML = text;
+  }
+  if (!targets || targets.length <= 0)
+    if (Log.Error())
+      console.log("[ForecastMatrix] *** ERROR ***: Target Not Found");
 }
 
 // Function ObservationCharts

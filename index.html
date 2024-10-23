@@ -37,10 +37,6 @@
       <h1>Weather Kitty Demo</h1>
       <div id="WeatherKittyHeaderDiv">
         <weather-kitty></weather-kitty>
-
-        <!-- <weather-kitty-current></weather-kitty-current>
-        <weather-kitty-forecast></weather-kitty-forecast> -->
-
         <weather-kitty-geoaddress></weather-kitty-geoaddress>
       </div>
     </header>
@@ -144,30 +140,31 @@
     </script>
 
     <main id="WeatherKittyMain">
-      <div id="MapsAlpha">
+      <div id="MapsAlpha" style="display: none">
         <weather-kitty-map-forecast></weather-kitty-map-forecast>
         <weather-kitty-map-radar></weather-kitty-map-radar>
         <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <div id="Matrix">Forecast<br />The Matrix<br />Placeholder</div>
+      <weather-kitty-matrix></weather-kitty-matrix>
 
       <!-- ---  -->
+      <div id="WeatherKittyChartSamples">
+        <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
+        <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
+        <weather-kitty-chart type="windChill"></weather-kitty-chart>
 
-      <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
-      <weather-kitty-chart type="temperature"></weather-kitty-chart>
-      <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
-      <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
-      <weather-kitty-chart type="windChill"></weather-kitty-chart>
+        <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
 
-      <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
+        <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
 
-      <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
+        <weather-kitty-chart type="visibility"></weather-kitty-chart>
 
-      <weather-kitty-chart type="visibility"></weather-kitty-chart>
-
-      <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
-      <weather-kitty-chart type="windGust"></weather-kitty-chart>
+        <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
+        <weather-kitty-chart type="windGust"></weather-kitty-chart>
+      </div>
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
