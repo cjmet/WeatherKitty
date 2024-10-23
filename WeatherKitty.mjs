@@ -12,7 +12,7 @@ let LogLevel = {
   Off: 10,
 };
 
-let WeatherKittyDebug = LogLevel.Debug;
+let WeatherKittyDebug = LogLevel.Info;
 
 let config = {
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
@@ -106,7 +106,7 @@ export async function WeatherKittyStart() {
   let results;
   if (WeatherKittyDebug <= 2)
     console.log(`Weather Kitty Debug Mode: [${WeatherKittyDebug}]`);
-  else console.log("[WeatherKitty] Loading ...");
+  else console.log("[WeatherKittyStart] Loading ...");
 
   let scripts = document.getElementsByTagName("script");
   let script = null;
@@ -118,16 +118,16 @@ export async function WeatherKittyStart() {
   }
   if (script === null) {
     console.log(
-      `[WeatherKitty] WARNING: Unable to find WeatherKitty script in:\n[${window.location.pathname}]`
+      `[WeatherKittyStart] WARNING: Unable to find WeatherKitty script in:\n[${window.location.pathname}]`
     );
   } else {
     if (WeatherKittyDebug <= 2)
-      console.log("[WeatherKitty] Script: ", script.src);
+      console.log("[WeatherKittyStart] Script: ", script.src);
     let url = new URL(script.src);
     path = url.pathname;
     const lastSlashIndex = path.lastIndexOf("/");
     if (lastSlashIndex >= 0) path = path.substring(0, lastSlashIndex + 1); // Include the trailing slash
-    console.log("[WeatherKitty] Path: ", path);
+    console.log("[WeatherKittyStart] Path: ", path);
     config.WeatherKittyPath = path;
   }
 
@@ -135,8 +135,8 @@ export async function WeatherKittyStart() {
   config.WeatherKittyForeImage = path + config.WeatherKittyForeImage;
 
   if (WeatherKittyDebug <= 2) {
-    console.log(`[WeatherKitty] Obs : ${config.WeatherKittyObsImage}`);
-    console.log(`[WeatherKitty] Fore: ${config.WeatherKittyForeImage}`);
+    console.log(`[WeatherKittyStart] Obs : ${config.WeatherKittyObsImage}`);
+    console.log(`[WeatherKittyStart] Fore: ${config.WeatherKittyForeImage}`);
   }
 
   // Start the Weather Kitty Widget
@@ -148,7 +148,7 @@ export async function WeatherKittyStart() {
     setTimeout(WeatherKitty, 10);
   }
 
-  setInterval(WeatherKitty, config.shortCacheTime);
+  setInterval(WeatherKitty, config.shortCacheTime); // cjm
 }
 
 // Function Weather Widget Initialization
@@ -213,8 +213,33 @@ function WeatherWidgetInit(path) {
   }
 }
 
+// Function sleep();
+async function sleep(seconds) {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+}
+
 // Function Weather Widget
 async function WeatherKitty() {
+  if (Log.Info()) console.log("[WeatherKitty] *** Begin ***");
+  WeatherKittyLoading(true); // in theory this should be ok. otherwise await it.
+  // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
+  WeatherMaps(
+    "weather-kitty-map-forecast",
+    config.ForecastMapUrl,
+    config.ForecastMapCacheTime
+  );
+  WeatherMaps(
+    "weather-kitty-map-radar",
+    config.RadarMapUrl,
+    config.RadarMapCacheTime
+  );
+  WeatherMaps(
+    "weather-kitty-map-alerts",
+    config.AlertsMapUrl,
+    config.AlertsMapCacheTime
+  );
+
+  // Get/Update the Weather Data
   let weather = await getWeatherAsync();
 
   // Observation Text
@@ -307,25 +332,27 @@ async function WeatherKitty() {
   // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
   ObservationCharts(weather.observationData.features);
 
-  // fetchCache the Maps
-  WeatherMaps(
-    "weather-kitty-map-forecast",
-    config.ForecastMapUrl,
-    config.ForecastMapCacheTime
-  );
-  WeatherMaps(
-    "weather-kitty-map-radar",
-    config.RadarMapUrl,
-    config.RadarMapCacheTime
-  );
-  WeatherMaps(
-    "weather-kitty-map-alerts",
-    config.AlertsMapUrl,
-    config.AlertsMapCacheTime
-  );
-
   // Forecast Matrix
   ForecastMatrix(weather.forecastData.properties.periods);
+  if (Log.Info()) console.log("[WeatherKitty] *** End ***");
+  WeatherKittyLoading(false);
+}
+
+// cjm
+// Function WeatherKittyLoading ... loading indicator
+async function WeatherKittyLoading(isLoading) {
+  if (Log.Info()) console.log("[WeatherKittyLoading] ", isLoading);
+  if (isLoading) {
+    // WeatherSquares("weather-kitty-current", "Loading ...", "/null");
+    // WeatherSquares("weather-kitty-forecast", "Loading", "/null");
+
+    let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
+    for (let widget of widgets) {
+      let span = widget.getElementsByTagName("span")[0];
+      span.innerHTML = "Loading ...";
+    }
+    // /isLoading
+  }
 }
 
 async function WeatherMaps(elementName, Url, CacheTime) {
@@ -703,7 +730,7 @@ async function getWeatherAsync() {
   return { pointData, stationsData, observationData, forecastData };
 }
 
-function ForecastMatrix(data) {
+async function ForecastMatrix(data) {
   if (!data || data.length <= 0) {
     console.log("[ForecastMatrix] *** ERROR ***: No Data Available");
     return;
@@ -731,7 +758,7 @@ function ForecastMatrix(data) {
   else console.log("[ForecastMatrix] *** ERROR ***: Target Not Found");
 }
 
-function ObservationCharts(data) {
+async function ObservationCharts(data) {
   if (WeatherKittyDebug <= 2) console.log("[Obs Chart Data] ", data);
 
   let obsArray = ["timestamp"];
@@ -893,7 +920,7 @@ export async function CreateChart(
   time = time.reverse();
 
   //  6em high labels
-  await new Promise((r) => setTimeout(r, 1)); // give the container time to grow/shrink
+  await new Promise((r) => setTimeout(r, 1)); // sleep(); // give the container time to grow/shrink
   let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
   let width = getComputedStyle(chartContainer).width.replace("px", "");
   let height = getComputedStyle(chartContainer).height.replace("px", "");
@@ -974,12 +1001,14 @@ export async function CreateChart(
 }
 
 // Function WeatherSquares
-function WeatherSquares(
+// an imageurl of "/null" will not change the image
+async function WeatherSquares(
   elementId,
   replacementText,
   replacementImgUrl,
   alternateImgUrl
 ) {
+  if (Log.Debug()) console.log(`[WeatherSquares] ${elementId}`);
   let elements = document.getElementsByTagName(elementId);
   if (elements == undefined || elements == null || elements.length === 0) {
     console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
@@ -993,26 +1022,23 @@ function WeatherSquares(
       textDiv = element.querySelector("weather-kitty-forecast > span");
     }
 
-    if (WeatherKittyDebug <= 2)
+    if (Log.Verbose())
       console.log(`[WeatherWidget] Text: ${textDiv.innerHTML}`);
     textDiv.innerHTML = replacementText;
-    if (WeatherKittyDebug <= 2)
+    if (Log.Trace())
       console.log(`[WeatherWidget] Text => ${textDiv.innerHTML}`);
 
     // Icon
 
-    if (WeatherKittyDebug <= 2)
-      console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
-    if (
-      replacementImgUrl !== null &&
-      replacementImgUrl !== "" &&
-      replacementImgUrl.includes("/null") === false
-    )
-      weatherImg.src = replacementImgUrl;
-    else {
-      if (alternateImgUrl !== null && alternateImgUrl !== "")
-        weatherImg.src = alternateImgUrl;
-      else
+    if (Log.Trace()) console.log(`[WeatherWidget] Icon: ${weatherImg.src}`);
+    if (replacementImgUrl != null && replacementImgUrl !== "") {
+      if (replacementImgUrl.toLowerCase().includes("/null") === false)
+        weatherImg.src = replacementImgUrl;
+    } else {
+      if (alternateImgUrl != null && alternateImgUrl !== "") {
+        if (alternateImgUrl.toLowerCase().includes("/null") === false)
+          weatherImg.src = alternateImgUrl;
+      } else
         weatherImg.src = `url(config.WeatherKittyPath + "img/WeatherKittyE8.png")`;
     }
     if (WeatherKittyDebug <= 2)
