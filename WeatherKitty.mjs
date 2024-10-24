@@ -16,7 +16,13 @@ let Log = {
   LogLevel: LogLevel.Warn,
   SetLogLevel(level) {
     Log.LogLevel = level;
-    console.log(`[WeatherKittyLog] LogLevel: ${Log.LogLevel}`);
+    console.log(`[WeatherKittyLog] LogLevel: ${Log.GetLogLevelText()}`);
+  },
+  GetLogLevelText() {
+    for (let key in LogLevel) {
+      if (LogLevel[key] === Log.LogLevel) return key;
+    }
+    return "Unknown";
   },
   Verbose: () => {
     return LogLevel.Verbose >= Log.LogLevel;
@@ -149,7 +155,7 @@ export async function WeatherKittyStart() {
     setTimeout(WeatherKitty, 10);
   }
 
-  setInterval(WeatherKitty, config.shortCacheTime); // cjm
+  setInterval(WeatherKitty, config.shortCacheTime);
 }
 
 // Function Weather Widget Initialization
@@ -253,7 +259,6 @@ async function microSleep(milliSeconds) {
 
 // Function Weather Widget
 async function WeatherKitty() {
-  if (Log.Info()) console.log("[WeatherKitty] *** Begin ***");
   WeatherKittyLoading(true); // in theory this should be ok. otherwise await it.
   // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
   WeatherMaps(
@@ -357,13 +362,8 @@ async function WeatherKitty() {
 
   // Forecast Matrix
   ForecastMatrix(weather.forecastData.properties.periods);
-  if (Log.Info()) console.log("[WeatherKitty] *** End ***");
-  WeatherKittyLoading(false);
 
-  // widgets = document.getElementsByTagName("weather-kitty-chart");
-  // for (let widget of widgets) {
-  //   SetAddLocationButton(widget);
-  // }
+  WeatherKittyLoading(false);
 }
 
 // Function InsertGeoAddressElement
@@ -442,7 +442,6 @@ export function SetAddLocationButton(widget) {
   });
 }
 
-// cjm
 // Function WeatherKittyLoading ... loading indicator
 async function WeatherKittyLoading(isLoading) {
   if (Log.Info()) console.log("[WeatherKittyLoading] ", isLoading);
@@ -472,6 +471,9 @@ async function WeatherMaps(elementName, Url, CacheTime) {
     for (let map of maps) {
       let img = map.getElementsByTagName("img")[0];
       img.src = url;
+      if (Log.Debug()) console.log("[WeatherMaps] Adding Event Listener", img);
+      img.removeEventListener("click", AIshowFullscreenImage);
+      img.addEventListener("click", AIshowFullscreenImage);
     }
   } else {
     console.log("[WeatherMaps] *** ERROR ***: No Map Data Available");
@@ -872,9 +874,9 @@ async function ForecastMatrix(data) {
       </weather-kitty-matrix-card>`;
   }
   let targets = document.getElementsByTagName("weather-kitty-matrix");
-  console.log(targets);
+  if (Log.Debug()) console.log("Weather Matrix: ", targets);
   for (let target of targets) {
-    console.log(target);
+    if (Log.Trace()) console.log("Matrix Targets: ", target);
     if (target != null) target.innerHTML = text;
   }
   if (!targets || targets.length <= 0)
@@ -1367,6 +1369,120 @@ function RemoveAllEventListeners(element) {
   return removedAllEventListeners;
 }
 
+// ------------------------------------------------------------------
+// Gemini AI, and then edited a fair bit.  It was a bit of a mess at first.
+function AIshowFullscreenImage(imageElement) {
+  if (Log.Debug()) console.log("Showing fullscreen image");
+  // Zoom Settings
+  let zoom = "100%";
+  let zoomInit = "200%";
+  let zoomMaxInt = 8;
+
+  // Create a new image element for the popup
+  let flag = 0;
+  const popupImage = new Image();
+  popupImage.src = imageElement.srcElement.currentSrc;
+
+  // Create a popup container element
+  const popupContainer = document.createElement("div");
+  popupContainer.classList.add("fullscreen-image-container");
+  popupContainer.appendChild(popupImage);
+
+  // Add event listeners for pan and zoom
+  popupImage.addEventListener("mousedown", handleMouseDown);
+  popupImage.addEventListener("mousemove", handleMouseMove);
+  popupImage.addEventListener("mouseup", handleMouseUp);
+  popupImage.addEventListener("wheel", handleWheel);
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" || event.keyCode === 27) {
+      if (flag++) return; // Prevents double+ close, but not entirely.
+      if (Log.Debug()) console.log("Escape: Closing fullscreen image");
+      closeFullscreenImage();
+      return;
+    }
+  });
+
+  // Add the popup container to the document body
+  document.body.appendChild(popupContainer);
+
+  // Set the popup container's style to cover the entire screen
+  popupContainer.style.position = "fixed";
+  popupContainer.style.top = "0";
+  popupContainer.style.left = "0";
+  popupContainer.style.width = zoom;
+  popupContainer.style.height = zoom;
+  popupContainer.style.backgroundColor = "rgba(0, 0, 0, 0.8)"; // Optional: Add a semi-transparent background
+  popupContainer.style.display = "flex";
+  popupContainer.style.justifyContent = "center";
+  popupContainer.style.alignItems = "center";
+  popupContainer.style.zIndex = "10";
+
+  // Set the popup image's style to fit the container
+  popupImage.style.maxWidth = zoomInit;
+  popupImage.style.maxHeight = zoomInit;
+
+  // Track panning and zooming variables
+  let isPanning = false;
+  let panX = 0;
+  let panY = 0;
+  let newPanX = 0;
+  let newPanY = 0;
+  let zoomLevel = 1;
+
+  function handleMouseDown(event) {
+    if (event.detail >= 2) {
+      if (Log.Debug()) console.log("Double Click: Closing fullscreen image");
+      closeFullscreenImage();
+      return;
+    }
+    isPanning = true;
+    // panX = event.clientX + popupImage.offsetLeft; // cjm
+    panX = event.clientX - newPanX;
+    // panY = event.clientY + popupImage.offsetTop;
+    panY = event.clientY - newPanY;
+    if (Log.Trace()) console.log("Mouse Down: ", panX, panY);
+  }
+
+  function handleMouseMove(event) {
+    if (isPanning) {
+      newPanX = event.clientX - panX;
+      newPanY = event.clientY - panY;
+      popupImage.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${zoomLevel})`;
+      if (Log.Verbose()) console.log("Mouse Move: ", newPanX, newPanY);
+    }
+  }
+
+  function handleMouseUp() {
+    isPanning = false;
+    let panX = popupImage.offsetLeft;
+    let panY = popupImage.offsetTop;
+    if (Log.Trace()) console.log("Mouse Up: ", panX, panY);
+  }
+
+  function handleWheel(event) {
+    event.preventDefault();
+    const delta = event.deltaY / 1000;
+    zoomLevel += delta;
+    zoomLevel = Math.max(0.25, Math.min(zoomMaxInt, zoomLevel));
+    popupImage.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${zoomLevel})`;
+  }
+
+  // Handle closing the popup (e.g., clicking outside the image)
+  popupContainer.addEventListener("click", (event) => {
+    if (event.target !== popupImage) {
+      if (Log.Debug()) console.log("Click Outside: Closing fullscreen image");
+      closeFullscreenImage();
+    }
+  });
+
+  function closeFullscreenImage() {
+    if (document.body.contains(popupContainer))
+      document.body.removeChild(popupContainer);
+  }
+}
+// /Gemini AI
+// ------------------------------------------------------------------
+
 // Cache Caching ------------------------------------------
 // Function fetchCache(url, options, ttl)
 // ... and special functions
@@ -1491,17 +1607,14 @@ let WeatherKittyChartBlock = `<canvas></canvas>`;
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img
             alt="NWS Forecast"
-            onclick="AIshowFullscreenImage(this)"
         />`;
 
 let WeatherKittyMapRadarBlock = `<img
             alt="NWS Radar"
-            onclick="AIshowFullscreenImage(this)"
           />`;
 
 let WeatherKittyMapAlertsBlock = `          <img
             alt="US Weather Alerts Map"
-            onclick="AIshowFullscreenImage(this)"
           />`;
 
 function WeatherKittyLocationBlock() {

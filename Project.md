@@ -64,31 +64,24 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] fetchCache
-  - [ ] multiple and various counts or something to deal with the various elements
-  - [ ] re-write dependencies
+  - [ ] 201 Main, 15 Maple, 104 Elm, ...
+  - [ ] fetchCache - Locking
         &nbsp;
-  - [ ] Loading Indicator
   - [ ] Historical Weather API
   - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
-  - [ ] Finish maps and Matrix elements
   - [ ] Alerts, Radar, Products, Weather Maps
     - [ ] Alerts
     - [ ] Radar
     - [ ] Products
     - [ ] Weather Maps
     - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
-  - [ ] corsproxy to cache the images locally?
   - [ ] Custom modular geolocation function(s);
-  - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
-    - [ ] value = value or null/undefined to delete
-    - [ ] ttl = time to live in (seconds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
+  - [ ] PouchCache? (key, value, ttl)nds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
   - [ ] Better Charts
-    - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
-  - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
-  - [ ] How can we transition a media query
+    - [ ] Color Coding? Rainbow? Read Danny's Book?
+  - [ ] Extra Large Screen Media Query
 
-- [ ] Project - To-Do List
+- [ ] Supplemental - To-Do List
   - [ ] Vite
   - [ ] React
   - [ ] Auth / OAuth API
