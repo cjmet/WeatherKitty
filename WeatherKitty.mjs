@@ -2,7 +2,13 @@
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 
-// Logging
+// Logging ---------------------------------------------------------------
+// LogLevel.Error     - Critical Errors Only.
+// **LogLevel.Warn**  - DEFAULT: Startup Notification, Warnings, and Errors. We don't want to annoy someone that uses our module with info they don't need.
+// LogLevel.Info      - Summary of what's happening
+// LogLevel.Debug     - Detailed Information
+// LogLevel.Trace     - adds LOADING DELAYS, and other detailed information
+// LogLevel.Verbose   - EVERYTHING, including all the unit conversions.
 let LogLevel = {
   Verbose: 0,
   Trace: 1,
@@ -53,6 +59,7 @@ let config = {
   obsCacheTime: 60000 * 10, // 10 minutes
   forecastCacheTime: 60000 * 60, // 1 hour
   longCacheTime: 60000 * 60 * 24, // 24 hours
+  archiveCacheTime: 60000 * 60 * 24 * 30, // 30 days
   defaultCacheTime: 60000 * 30, // 30 minutes
 
   CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for none
@@ -96,6 +103,7 @@ let config = {
     if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
   },
 };
+export { config };
 
 // Function Weather Kitty
 export default WeatherKittyStart;
@@ -122,9 +130,10 @@ export async function WeatherKittyStart() {
     }
   }
   if (script === null) {
-    console.log(
-      `[WeatherKittyStart] WARNING: Unable to find WeatherKitty script in:\n[${window.location.pathname}]`
-    );
+    if (Log.Debug())
+      console.log(
+        `[WeatherKittyStart] WARNING: Unable to find WeatherKitty script in:\n[${window.location.pathname}]`
+      );
   } else {
     if (Log.Debug()) console.log("[WeatherKittyStart] Script: ", script.src);
     let url = new URL(script.src);
@@ -482,7 +491,7 @@ async function WeatherMaps(elementName, Url, CacheTime) {
 
 // Function getWeatherLocationAsync
 // City, State, Country, ZipCode, Latitude, Longitude
-export async function getWeatherLocationAsync(callBack) {
+export async function getWeatherLocationAsync() {
   if (Log.Debug())
     console.log("[getWeatherLocationAsync] Checking Location Data");
   let response = null;
@@ -562,7 +571,7 @@ export async function getLocationAsync() {
 
 // Function getWeatherLocationByIPAsync {
 // City, State, Country, ZipCode, Latitude, Longitude
-async function getWeatherLocationByIPAsync(callBack) {
+async function getWeatherLocationByIPAsync() {
   if (Log.Debug()) console.log(`[getLocationByIP] Checking IP Location Data`);
 
   // n/c - non-commercial use only
@@ -880,8 +889,7 @@ async function ForecastMatrix(data) {
     if (target != null) target.innerHTML = text;
   }
   if (!targets || targets.length <= 0)
-    if (Log.Error())
-      console.log("[ForecastMatrix] *** ERROR ***: Target Not Found");
+    if (Log.Debug()) console.log("[ForecastMatrix] Matrix Not Found");
 }
 
 // Function ObservationCharts
@@ -994,13 +1002,16 @@ export async function CreateChart(
   history
 ) {
   if (values == null || values.length == 0 || values[0].value === undefined) {
-    console.log(
-      `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
-    );
-    console.log(chartContainer);
-    console.log(key);
-    console.log(values);
-    console.log(timestamps);
+    if (Log.Error())
+      console.log(
+        `[CreateChart] *** ERROR *** Barp! on ${key}.  values are empty`
+      );
+    if (Log.Trace()) {
+      console.log(chartContainer);
+      console.log(key);
+      console.log(values);
+      console.log(timestamps);
+    }
     return;
   }
   if (
@@ -1139,7 +1150,8 @@ async function WeatherSquares(
   if (Log.Debug()) console.log(`[WeatherSquares] ${elementId}`);
   let elements = document.getElementsByTagName(elementId);
   if (elements == undefined || elements == null || elements.length === 0) {
-    console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
+    if (Log.Debug())
+      console.log(`[WeatherSquares] Element [${elementId}] Not Found`);
     return;
   }
   for (let element of elements) {
@@ -1492,14 +1504,14 @@ const specialUrlTable = {
   "/weatherkittycache/address": getWeatherLocationByAddressAsync,
 };
 
-export async function clearCache(url) {
-  console.log(`[clearCache] ${url}`);
+export async function clearCache(url, verbose) {
+  if (Log.Debug() || verbose) console.log(`[clearCache] ${url}`);
   let cache = await caches.open("weather-kitty");
   await cache.delete(url);
 }
 
-export async function setCache(url, response, ttl) {
-  console.log(`[setCache]`, url, response, ttl);
+export async function setCache(url, response, ttl, verbose) {
+  if (Log.Debug() || verbose) console.log(`[setCache]`, url, response, ttl);
   let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
   if (ttlCache == null) ttlCache = {};
   ttlCache[url] = Date.now() + ttl;
@@ -1509,7 +1521,7 @@ export async function setCache(url, response, ttl) {
   await cache.put(url, response);
 }
 
-export async function fetchCache(url, options, ttl) {
+export async function fetchCache(url, options, ttl, verbose) {
   if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
 
   // url, options, ttl, expires, expired, response
@@ -1533,7 +1545,7 @@ export async function fetchCache(url, options, ttl) {
   let response = await cache.match(url);
 
   if (response && response.ok && !expired) {
-    if (Log.Info())
+    if (Log.Info() || verbose)
       console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
@@ -1550,7 +1562,7 @@ export async function fetchCache(url, options, ttl) {
   }
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
-    if (Log.Info())
+    if (Log.Info() || verbose)
       console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
     await cache.put(url, responseClone);
@@ -1569,9 +1581,9 @@ export async function fetchCache(url, options, ttl) {
   }
 }
 
-async function corsCache(url, options, ttl) {
+async function corsCache(url, options, ttl, verbose) {
   let corsUrl = `${config.CORSProxy}${url}`;
-  return fetchCache(corsUrl, options, ttl);
+  return fetchCache(corsUrl, options, ttl, verbose);
 }
 // /Cache Caching -----------------------------------
 0;
