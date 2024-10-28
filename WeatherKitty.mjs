@@ -901,6 +901,10 @@ async function ObservationCharts(data) {
   if (data !== null && data !== undefined && data.length > 0) {
     let keys = Object.keys(data[0].properties);
     for (let key of keys) {
+      if (key == "__proto__")
+        throw new Error(
+          "[ObservationCharts] *** ERROR *** : __proto__ is not a safe type"
+        );
       let unitCode = data[0]?.properties[key]?.unitCode;
       if (
         unitCode != null &&
@@ -915,6 +919,8 @@ async function ObservationCharts(data) {
     return;
   }
 
+  // cjm
+  // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
   let chartData = new Map();
   for (let i = 0; i < obsArray.length; i++) {
     chartData.set(obsArray[i], []);
@@ -922,7 +928,7 @@ async function ObservationCharts(data) {
 
   if (data.length > 0) {
     for (let observation of obsArray) {
-      if (Log.Debug())
+      if (Log.Trace())
         console.log(
           "[Obs Chart Data Collect] ",
           observation,
@@ -955,32 +961,49 @@ async function ObservationCharts(data) {
         }
       }
     }
-    if (Log.Debug()) {
-      let message = "[Observation Chart-able Types Found] ";
+    if (Log.Info()) {
+      let message = "[Observations] ";
       for (let key of obsArray) {
         let unitCode = data[0].properties[key].unitCode;
         if (unitCode !== null && unitCode !== undefined)
           unitCode = unitCode.replace("wmoUnit:", "");
-        message += ` ${key}:${unitCode}, `;
+        message += ` ${key}`;
+        if (Log.Debug()) message += `:${unitCode}`;
+        message += `, `;
       }
       console.log(message);
     }
+  }
+  ProcessCharts(chartData);
+  // containers
+}
+
+// Function Process Chart Elements
+async function ProcessCharts(chartData) {
+  console.log("[ProcessCharts] ", chartData);
+  let types = [];
+  for (let value of chartData.keys()) {
+    types.push(value);
   }
 
   let containerArray = document.getElementsByTagName("weather-kitty-chart");
   for (let container of containerArray) {
     let chartType = container.getAttribute("type");
     if (chartType === null || chartType === undefined) {
-      console.log("[ObservationCharts] *** ERROR ***: Chart Type Not Defined");
-      console.log(container);
+      if (Log.Error())
+        console.log("[ProcessCharts] *** ERROR ***: Chart Type Not Defined");
+      if (Log.Debug()) console.log(container);
       return;
     }
-    if (obsArray.includes(chartType) === false) {
-      console.log(
-        "[ObservationCharts] *** ERROR ***: Chart Type Not Found in Observation Data"
-      );
-      console.log(container);
-      console.log(obsArray);
+    if (types.includes(chartType) === false) {
+      if (Log.Error())
+        console.log(
+          `[ProcessCharts] *** ERROR ***: Chart Type [${chartType}] Not Found`
+        );
+      if (Log.Debug()) {
+        console.log(container);
+        console.log(chartData.keys());
+      }
       return;
     }
     CreateChart(
@@ -995,11 +1018,11 @@ async function ObservationCharts(data) {
 // Function CreateChart
 export async function CreateChart(
   chartContainer,
-  key,
+  key, // Key value and Title of Chart
   values,
   timestamps,
-  aspect,
-  history
+  aspect, // aspect ratio, 0 or null for auto
+  history // history = true for history charts and history date format
 ) {
   if (values == null || values.length == 0 || values[0].value === undefined) {
     if (Log.Error())
@@ -1448,7 +1471,7 @@ function AIshowFullscreenImage(imageElement) {
       return;
     }
     isPanning = true;
-    // panX = event.clientX + popupImage.offsetLeft; // cjm
+    // panX = event.clientX + popupImage.offsetLeft;
     panX = event.clientX - newPanX;
     // panY = event.clientY + popupImage.offsetTop;
     panY = event.clientY - newPanY;

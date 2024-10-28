@@ -114,9 +114,13 @@ async function HistoricalWeatherCharts() {
     lineCount++;
     let properties = line.split(",");
     let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
+    if (type == "__proto__")
+      throw new Error(
+        "[HistoricalWeatherCarts] *** CRITICAL *** : __proto__ is not a safe type"
+      );
     if (id != null && id.length > 0) {
       if (dataSets[type] == null) {
-        console.log(`Adding Type: ${type}`);
+        if (Log.Debug()) console.log(`Adding Type: ${type}`);
         dataSets[type] = {};
         dataSets[type].timestamps = [];
         dataSets[type].values = [];
@@ -126,13 +130,18 @@ async function HistoricalWeatherCharts() {
         dataSets[type].timestamps.push(date);
         dataSets[type].values.push(val);
       } else {
-        console.log(`date is null: [${line}]`);
+        if (Log.Error())
+          console.log(
+            `[HistoricalWeatherCarts] *** ERROR *** : date is null: [${line}]`
+          );
       }
     } else if (lineCount === fileData.length) {
-      console.log("EOL");
+      if (Log.Debug()) console.log("EOL");
     } else {
-      console.log(`id is null: [${line}]`);
-      console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+      if (Log.Error()) {
+        console.log(`[HistoricalWeatherCarts] id is null: [${line}]`);
+        console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+      }
     }
   }
   let dataString = "";
@@ -140,7 +149,13 @@ async function HistoricalWeatherCharts() {
     dataString += key + ", ";
   }
   // count un-named objects
-  console.log(`DataSets[${Object.values(dataSets).length}]: - ${dataString}`);
+  if (Log.Info())
+    console.log(
+      `[HistoricalWeatherCarts] DataSets[${
+        Object.values(dataSets).length
+      }] - ${dataString}`
+    );
+  // if (Log.Trace())
   console.log(dataSets);
 }
 
