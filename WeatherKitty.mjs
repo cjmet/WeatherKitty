@@ -367,7 +367,18 @@ async function WeatherKitty() {
 
   // Charting
   // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
-  ObservationCharts(weather.observationData.features);
+
+  // cjm
+  let chartData = await GetObservationChartData(
+    weather.observationData.features
+  );
+  // let historyData = GetHistoryChartData();
+  // append the history data
+  // for (let key of historyData.keys()) {
+  //    chartData.set(key, historyData.get(key));
+  // }
+
+  WeatherCharts(chartData);
 
   // Forecast Matrix
   ForecastMatrix(weather.forecastData.properties.periods);
@@ -893,8 +904,8 @@ async function ForecastMatrix(data) {
 }
 
 // Function ObservationCharts
-async function ObservationCharts(data) {
-  if (Log.Debug()) console.log("[Obs Chart Data] ", data);
+async function GetObservationChartData(data) {
+  if (Log.Trace()) console.log("[Obs Chart Data] ", data);
 
   let obsArray = ["timestamp"];
 
@@ -905,6 +916,7 @@ async function ObservationCharts(data) {
         throw new Error(
           "[ObservationCharts] *** ERROR *** : __proto__ is not a safe type"
         );
+      if (key == "timestamp") continue;
       let unitCode = data[0]?.properties[key]?.unitCode;
       if (
         unitCode != null &&
@@ -921,14 +933,17 @@ async function ObservationCharts(data) {
 
   // cjm
   // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
+  // such that current obs and historical obs are the same format and can be charted by the same functions/together
+  // about half done ... we have values ... now we need timestamps and unitCodes
   let chartData = new Map();
   for (let i = 0; i < obsArray.length; i++) {
-    chartData.set(obsArray[i], []);
+    chartData.set(obsArray[i], { unitcode: "", timestamps: [], values: [] });
   }
 
+  // is there data to process?
   if (data.length > 0) {
     for (let observation of obsArray) {
-      if (Log.Trace())
+      if (Log.Debug())
         console.log(
           "[Obs Chart Data Collect] ",
           observation,
@@ -937,11 +952,9 @@ async function ObservationCharts(data) {
         );
 
       for (let i = 0; i < data.length; i++) {
-        if (
-          data[i].properties[observation] === null ||
-          data[i].properties[observation] === undefined ||
-          data[i].properties[observation] === ""
-        ) {
+        let item = data[i]?.properties[observation];
+        let timestamp = data[0]?.properties["timestamp"];
+        if (item == null || item == "") {
           chartData.get(observation).push(NaN);
         } else {
           // Convert to Fahrenheit
@@ -957,7 +970,9 @@ async function ObservationCharts(data) {
           }
           // /Convert to Fahrenheit
 
-          chartData.get(observation).push(data[i].properties[observation]);
+          chartData
+            .get(observation)
+            .values.push(data[i].properties[observation]);
         }
       }
     }
@@ -973,14 +988,17 @@ async function ObservationCharts(data) {
       }
       console.log(message);
     }
+  } else {
+    if (Log.Error()) console.log("[ObservationCharts] *** ERROR ***: No Data");
   }
-  ProcessCharts(chartData);
+
+  return chartData;
   // containers
 }
 
 // Function Process Chart Elements
-async function ProcessCharts(chartData) {
-  console.log("[ProcessCharts] ", chartData);
+async function WeatherCharts(chartData) {
+  console.log("[WeatherCharts] ", chartData);
   let types = [];
   for (let value of chartData.keys()) {
     types.push(value);
@@ -1009,8 +1027,8 @@ async function ProcessCharts(chartData) {
     CreateChart(
       container,
       chartType,
-      chartData.get(chartType),
-      chartData.get("timestamp")
+      chartData.get(chartType).values,
+      chartData.get("timestamp").values
     );
   }
 }
