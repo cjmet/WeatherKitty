@@ -931,10 +931,8 @@ async function GetObservationChartData(data) {
     return;
   }
 
-  // cjm
-  // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
+  // refactored into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
   // such that current obs and historical obs are the same format and can be charted by the same functions/together
-  // about half done ... we have values ... now we need timestamps and unitCodes
   let chartData = new Map();
   for (let i = 0; i < obsArray.length; i++) {
     chartData.set(obsArray[i], { unitcode: "", timestamps: [], values: [] });
@@ -992,6 +990,17 @@ async function GetObservationChartData(data) {
     if (Log.Error()) console.log("[ObservationCharts] *** ERROR ***: No Data");
   }
 
+  // reformat the data into the new format
+  // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
+  // aka add timestamps to each observation type
+  for (let observation of obsArray) {
+    if (observation == "timestamp") continue;
+    chartData.get(observation).unitCode =
+      data[0].properties[observation].unitCode;
+    chartData.get(observation).timestamps = chartData.get("timestamp").values;
+  }
+  chartData.delete("timestamp");
+
   return chartData;
   // containers
 }
@@ -1028,7 +1037,7 @@ async function WeatherCharts(chartData) {
       container,
       chartType,
       chartData.get(chartType).values,
-      chartData.get("timestamp").values
+      chartData.get(chartType).timestamps
     );
   }
 }
