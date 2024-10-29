@@ -69,15 +69,34 @@ For ease of editing and customization
 ## Credits, License, and Usage Summary
 
 - **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
-- **Software is Licensed:** LGPL 3.0 or newer
+- **Software is Licensed:** MPL 2.0 or newer
   &nbsp;
 - **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
 - **chart.js:** MIT License.
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
   - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
-- **fflate** - Mit License.
+- **fflate:** Mit License.
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
 <!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
+- **GHCND:** Public Data. **Limit:** Unknown Limit, assume 1 call per second.
+
+  ```
+  https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
+  https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+  https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
+  https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
+
+  Menne, M.J., I. Durre, R.S. Vose, B.E. Gleason, and T.G. Houston, 2012:  An overview
+  of the Global Historical Climatology Network-Daily Database.  Journal of Atmospheric
+  and Oceanic Technology, 29, 897-910, doi:10.1175/JTECH-D-11-00103.1.
+
+  To acknowledge the specific version of the dataset used, please cite:
+  Menne, M.J., I. Durre, B. Korzeniewski, S. McNeill, K. Thomas, X. Yin, S. Anthony, R. Ray,
+  R.S. Vose, B.E.Gleason, and T.G. Houston, 2012: Global Historical Climatology Network -
+  Daily (GHCN-Daily), Version 3. [indicate subset used following decimal,
+  e.g. Version 3.12].
+  NOAA National Climatic Data Center. http://doi.org/10.7289/V5D21VHZ [access date].
+  ```
 
 ## Blog
 

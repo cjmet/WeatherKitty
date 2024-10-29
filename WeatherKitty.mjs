@@ -1,6 +1,7 @@
 "use strict";
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
+import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
 
 // Logging ---------------------------------------------------------------
 // LogLevel.Error     - Critical Errors Only.
@@ -90,6 +91,7 @@ let config = {
 
   WeatherKittyIsInit: false,
   WeatherKittyIsLoaded: false,
+  WeatherKittyIsLoading: false,
   WeatherKittyPath: "",
 
   SanityChecks: async function () {
@@ -108,6 +110,8 @@ export { config };
 // Function Weather Kitty
 export default WeatherKittyStart;
 export async function WeatherKittyStart() {
+  WeatherKittyIsLoading(true);
+  console.log("[WeatherKittyStart] Loading");
   await config.SanityChecks();
   if (config.WeatherKittyIsLoaded) {
     console.log("[WeatherKitty] Already Loaded");
@@ -267,8 +271,12 @@ async function microSleep(milliSeconds) {
 }
 
 // Function Weather Widget
-async function WeatherKitty() {
-  WeatherKittyLoading(true); // in theory this should be ok. otherwise await it.
+export async function WeatherKitty() {
+  if (config.PAUSE) {
+    if (Log.Warn()) console.log("[WeatherKitty] Warning: PAUSED");
+    return;
+  }
+  WeatherKittyIsLoading(true); // in theory this should be ok. otherwise await it.
   // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
   WeatherMaps(
     "weather-kitty-map-forecast",
@@ -367,23 +375,21 @@ async function WeatherKitty() {
 
   // Charting
   // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
-
-  // cjm
   let chartData = await GetObservationChartData(
     weather.observationData.features
   );
-  // let historyData = GetHistoryChartData();
+  let historyData = await GetHistoryChartData();
   // append the history data
-  // for (let key of historyData.keys()) {
-  //    chartData.set(key, historyData.get(key));
-  // }
+  for (let key of historyData.keys()) {
+    chartData.set(key, historyData.get(key));
+  }
 
   WeatherCharts(chartData);
 
   // Forecast Matrix
   ForecastMatrix(weather.forecastData.properties.periods);
 
-  WeatherKittyLoading(false);
+  WeatherKittyIsLoading(false);
 }
 
 // Function InsertGeoAddressElement
@@ -462,20 +468,51 @@ export function SetAddLocationButton(widget) {
   });
 }
 
-// Function WeatherKittyLoading ... loading indicator
-async function WeatherKittyLoading(isLoading) {
-  if (Log.Info()) console.log("[WeatherKittyLoading] ", isLoading);
-  if (isLoading) {
-    // WeatherSquares("weather-kitty-current", "Loading ...", "/null");
-    // WeatherSquares("weather-kitty-forecast", "Loading", "/null");
+export async function SetLocationAddress(address) {
+  let result = await getWeatherLocationByAddressAsync(address);
+  if (result && result.ok) {
+    // Override the location cache, and make it permanent.
+    await setCache("/weatherkittycache/location", result, config.FOREVER);
+  } else {
+    // clear the location cache if you cancel the address or input an invalid address
+    if (result) window.alert("No Location Data Available");
+    clearCache("/weatherkittycache/location");
+  }
+  WeatherKitty();
+}
 
+// Function WeatherKittyLoading ... loading indicator
+// WeatherKittyLoading(set value);
+// WeatherKittyLoading(); // returns true if loading
+export function WeatherKittyIsLoading(isLoading) {
+  // cjm
+  if (isLoading === null || isLoading === undefined) {
+    let result = config.WeatherKittyIsLoading || !config.WeatherKittyIsLoaded;
+    return result;
+  }
+  if (isLoading) {
+    config.WeatherKittyIsLoading = true;
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
-      span.innerHTML = "Loading ...";
+      if (span) span.innerHTML = "Loading ...";
     }
-    // /isLoading
+  } else {
+    config.WeatherKittyIsLoading = false;
   }
+  if (Log.Info()) console.log("[WeatherKittyLoading] ", isLoading);
+  return config.WeatherKittyIsLoading;
+}
+
+export async function WeatherKittyIsLoaded() {
+  while (WeatherKittyIsLoading()) {
+    await microSleep(100);
+  }
+  return;
+}
+
+export function WeatherKittyPause(value) {
+  config.PAUSE = value;
 }
 
 // Function WeatherMaps
@@ -615,9 +652,13 @@ async function getWeatherLocationByIPAsync() {
 // Function getWeatherLocationByAddressAsync
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
 // City, State, Country, ZipCode, Latitude, Longitude
-async function getWeatherLocationByAddressAsync() {
+async function getWeatherLocationByAddressAsync(address) {
   let error = new Response("Address Error", { status: 400, ok: false });
-  let address = prompt('"Address, City, State" or "Address, ZipCode"');
+  if (!address)
+    address = prompt(
+      '"GHCND Station",   "Latitude, Longitude",    "Address, City, State"   or   "Address, ZipCode"'
+    );
+
   if (address === null || address === "") {
     if (Log.Info()) console.log("[getAddress] No Address Provided.");
     return null;
@@ -631,7 +672,28 @@ async function getWeatherLocationByAddressAsync() {
   let zip = "";
 
   switch (array.length) {
+    case 1: {
+      // GHCND Station
+      let name = array[0].trim();
+      let length = name.length;
+      if (length != 11) {
+        if (Log.Error())
+          console.log("[getAddress] Error: Invalid GHCND Station");
+        return error;
+      }
+      //
+      let result = await HistoricalGetStation(name, null, null);
+      return CreateResponse(result);
+      break;
+    }
     case 2:
+      let latitude = parseFloat(array[0].trim());
+      let longitude = parseFloat(array[1].trim());
+      if (!isNaN(latitude) && !isNaN(longitude)) {
+        let result = { latitude: latitude, longitude: longitude };
+        if (Log.Info()) console.log("[getAddress] Results:", result);
+        return CreateResponse(result);
+      }
       street = array[0].trim();
       zip = array[1].trim();
       break;
@@ -667,8 +729,7 @@ async function getWeatherLocationByAddressAsync() {
     let data = await response.json();
     if (Log.Trace()) console.log("[getAddress] Data: ", data);
     if (data.result.addressMatches.length <= 0) {
-      if (Log.Warn())
-        console.log("[getAddress] *** WARNING ***: No Address Matches");
+      if (Log.Warn()) console.log("[getAddress] WARNING: No Address Matches");
       return error;
     }
     let result = {
@@ -931,7 +992,7 @@ async function GetObservationChartData(data) {
     return;
   }
 
-  // refactored into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
+  // refactored into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[], data.values[].value, data.values[].unitCode
   // such that current obs and historical obs are the same format and can be charted by the same functions/together
   let chartData = new Map();
   for (let i = 0; i < obsArray.length; i++) {
@@ -1006,8 +1067,13 @@ async function GetObservationChartData(data) {
 }
 
 // Function Process Chart Elements
-async function WeatherCharts(chartData) {
-  console.log("[WeatherCharts] ", chartData);
+export async function WeatherCharts(chartData) {
+  if (Log.Trace()) console.log("[WeatherCharts] ", chartData);
+  if (chartData == null) {
+    if (Log.Warn())
+      console.log("[WeatherCharts] *** WARNING ***: No Chart Data Available");
+    return;
+  }
   let types = [];
   for (let value of chartData.keys()) {
     types.push(value);
@@ -1023,21 +1089,28 @@ async function WeatherCharts(chartData) {
       return;
     }
     if (types.includes(chartType) === false) {
-      if (Log.Error())
+      container.style.display = "none";
+      if (Log.Warn())
         console.log(
-          `[ProcessCharts] *** ERROR ***: Chart Type [${chartType}] Not Found`
+          `[ProcessCharts] Warning: Chart Type [${chartType}] Not Found`
         );
-      if (Log.Debug()) {
+      if (Log.Trace()) {
         console.log(container);
         console.log(chartData.keys());
       }
-      return;
+      continue;
+    } else {
+      container.style.display = "block";
     }
+    let chart = chartData.get(chartType);
+    if (Log.Trace()) console.log("[WeatherCharts] ", chart);
     CreateChart(
       container,
       chartType,
-      chartData.get(chartType).values,
-      chartData.get(chartType).timestamps
+      chart.values,
+      chart.timestamps,
+      null,
+      chart.history
     );
   }
 }
@@ -1087,8 +1160,16 @@ export async function CreateChart(
   }
   if (key === "timestamp") return; // I should just leave that one in for fun.
 
-  if (Log.Debug())
-    console.log("[CreateChart] ", key, values[0].value, timestamps[0]);
+  if (Log.Debug()) {
+    let length = values.length;
+    let last = length - 1;
+    console.log(`[CreateChart] ${key}, [${length}]}`);
+    if (Log.Trace()) {
+      console.log(`[CreateChart] ${timestamps[0]}, ${values[0].value}`);
+      console.log(`[CreateChart] ${timestamps[last]}, ${values[last].value}`);
+    }
+    if (Log.Verbose()) console.log(`[CreateChart] ${values}`);
+  }
 
   let data = [];
   let time = [];
@@ -1096,6 +1177,7 @@ export async function CreateChart(
     data.push(values[i].value);
     let date = new Date(timestamps[i]);
     let label;
+    if (Log.Trace()) console.log(`[CreateChart] History: ${history}`);
     if (history) {
       label = date.toLocaleString(undefined, config.historyFormat);
       label = label.replace(/ AM/, "a").replace(/ PM/, "p").replace(/\//g, "-");
@@ -1105,8 +1187,16 @@ export async function CreateChart(
     }
     time.push(label);
   }
-  data = data.reverse();
-  time = time.reverse();
+  if (!history) {
+    // Oldest to Newest
+    data = data.reverse();
+    time = time.reverse();
+  }
+  // limit history data to 500 points
+  if (history && data.length > 500) {
+    data = data.slice(data.length - 500);
+    time = time.slice(time.length - 500);
+  }
 
   //  6em high labels
   await new Promise((r) => setTimeout(r, 1)); // sleep(); // give the container time to grow/shrink
@@ -1118,6 +1208,7 @@ export async function CreateChart(
   if (chartAspect < 1) chartAspect = 1;
   if (chartAspect > 2.5) chartAspect = 2.5;
   if (aspect != null && aspect != 0) chartAspect = aspect;
+  if (isNaN(chartAspect)) chartAspect = 2;
 
   if (Log.Debug())
     console.log(
@@ -1237,7 +1328,7 @@ async function WeatherSquares(
 
 // Function WeatherTemperatureFahrenheit
 // .replace(/wmoUnit\:deg/i, "")
-function Fahrenheit(temperature, temperatureUnit) {
+export function Fahrenheit(temperature, temperatureUnit) {
   // ((fahrenheit - 32) * 5 / 9) °F to °C;
   if (temperature === null || temperature === undefined || temperature === "")
     return NaN;
@@ -1638,6 +1729,377 @@ async function corsCache(url, options, ttl, verbose) {
 // /Cache Caching -----------------------------------
 0;
 
+// GetHistoryChartData ------------------------------------------------
+// ---
+async function GetHistoryChartData(latitude, longitude) {
+  let location;
+  if (latitude && longitude) {
+    location = { latitude: latitude, longitude: longitude };
+  } else {
+    location = await getWeatherLocationAsync();
+  }
+  if (location && location.latitude && location.longitude) {
+    if (Log.Debug()) console.log(`[GetHistoryChartData] Location: Ok`);
+  } else {
+    if (Log.Error())
+      console.log("[GetHistoryChartData] *** ERROR *** : Location Error ");
+    return;
+  }
+
+  let station;
+  station = await HistoricalGetStation(
+    null,
+    location.latitude,
+    location.longitude
+  );
+  if (station?.id && station?.id.length == 11) {
+    if (Log.Debug()) console.log(`[GetHistoryChartData] Station: Ok`);
+  } else {
+    if (Log.Error())
+      console.log("[GetHistoryChartData] *** ERROR *** : Station Error ");
+    return;
+  }
+
+  let fileData;
+  fileData = await HistoricalGetCsvFile(station.id);
+  if (fileData && fileData?.length > 0) {
+    if (Log.Debug()) console.log(`[GetHistoryChartData] fileDataCheck: Ok`);
+    // ...
+  } else {
+    if (Log.Error())
+      console.log("[GetHistoryChartData] *** ERROR *** : File Data Error ");
+    return;
+  }
+
+  // ... what's next ???
+  // ... Process the File Data into Data Sets
+  // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
+  // USW00014739,19360101,TMAX, 17,,,0,2400
+  let dataSets = {};
+  let lineCount = 0;
+  for (let line of fileData) {
+    lineCount++;
+    let properties = line.split(",");
+    let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
+    if (type == "__proto__")
+      throw new Error(
+        "[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type"
+      );
+    if (id != null && id.length > 0) {
+      if (dataSets[type] == null) {
+        if (Log.Trace()) console.log(`Adding Type: ${type}`);
+        dataSets[type] = {};
+        dataSets[type].history = true; // weather history data
+        dataSets[type].timestamps = [];
+        dataSets[type].values = [];
+      }
+
+      if (date != null) {
+        let fDate =
+          date.substring(0, 4) +
+          "-" +
+          date.substring(4, 6) +
+          "-" +
+          date.substring(6, 8);
+        date = fDate;
+        if (obsTime != null && obsTime.length > 0) {
+          let time =
+            obsTime.substring(0, 2) + ":" + obsTime.substring(2, 4) + ":00";
+          date += "T" + time;
+        } else {
+          date += "T24:00:00";
+        }
+        dataSets[type].timestamps.push(date);
+        dataSets[type].values.push(val);
+      } else {
+        if (Log.Error())
+          console.log(
+            `[GetHistoryChartData] *** ERROR *** : date is null: [${line}]`
+          );
+      }
+    } else if (lineCount === fileData.length) {
+      if (Log.Debug()) console.log("EOL");
+    } else {
+      if (Log.Error()) {
+        console.log(`[GetHistoryChartData] id is null: [${line}]`);
+        console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+      }
+    }
+  }
+  let dataString = "";
+  for (let key in dataSets) {
+    dataString += key + ", ";
+  }
+  // count un-named objects
+  if (Log.Info()) console.log(`[History] ${dataString}`);
+  if (Log.Trace()) console.log("[GetHistoryChartData] ", dataSets);
+  dataSets = await reformatDataSets(dataSets);
+  return dataSets;
+}
+
+async function reformatDataSets(dataSets) {
+  let mapSets = new Map();
+  for (let key in dataSets) {
+    let dataSet = dataSets[key];
+    for (let i = 0; i < dataSet.values.length; i++) {
+      let item = await ConvertHistoricalUnit(dataSet.values[i], key);
+      dataSet.values[i] = item;
+    }
+    mapSets.set(key, dataSet);
+  }
+  return mapSets;
+}
+
+async function ConvertHistoricalUnit(data, key) {
+  data = { value: data, unitCode: key };
+  if (DataConversion[key] != null) {
+    data = await DataConversion[key](data);
+  }
+  return data;
+}
+
+let DataConversion = {
+  TempHistory: function (data) {
+    let value = parseFloat(data.value) / 10.0;
+    if (value != NaN) value = Fahrenheit(value, "c");
+    let item = { value: value, unitCode: "°F" };
+    return item;
+  },
+  TOBS: function (data) {
+    return DataConversion.TempHistory(data);
+  },
+  TMAX: function (data) {
+    return DataConversion.TempHistory(data);
+  },
+  TMIN: function (data) {
+    return DataConversion.TempHistory(data);
+  },
+  TAVG: function (data) {
+    return DataConversion.TempHistory(data);
+  },
+};
+
+// ---
+
+// Function HistoricalGetStation // cjm2
+async function HistoricalGetStation(station, latitude, longitude) {
+  if (Log.Debug())
+    console.log(
+      `[HistoricalGetStation] ${station} - ${latitude}, ${longitude}`
+    );
+  if (station == null && (latitude == null || longitude == null)) {
+    if (Log.Error())
+      console.log("[HistoricalGetStation] *** ERROR *** : Location Error ");
+    return null;
+  }
+
+  // Get List of Stations ghcnd-stations.txt, cache it for a month?
+  // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+  let response = await fetchCache(
+    "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+    null,
+    config.archiveCacheTime
+  );
+
+  let lines;
+  if (response?.ok) {
+    let result = await response.text();
+    lines = result.split("\n");
+    if (lines?.length <= 0 || lines[0].length <= 12) {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+    if (Log.Debug())
+      console.log(
+        `[HistoricalGetStation] lines: ${lines.length}, result: ${result.length}`
+      );
+    if (Log.Trace()) {
+      let firstLines = lines.slice(0, 5);
+      let lastLines = lines.slice(-5);
+      console.log(firstLines, lastLines);
+    }
+  } else {
+    if (Log.Error())
+      console.log(
+        `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
+      );
+  }
+
+  let data = [];
+
+  let result = {
+    id: station,
+    latitude: latitude,
+    longitude: longitude,
+    distance: Number.MAX_SAFE_INTEGER,
+  };
+
+  for (let line of lines) {
+    let location = {};
+    location.id = line.substring(0, 11).trim();
+    location.lat = parseFloat(line.substring(12, 20).trim());
+    location.lon = parseFloat(line.substring(21, 30).trim());
+    location.elev = line.substring(31, 37).trim();
+    location.state = line.substring(38, 40).trim();
+    location.name = line.substring(41, 71).trim();
+    location.gsn = line.substring(72, 75).trim();
+    location.hcn = line.substring(76, 79).trim();
+    location.wmo = line.substring(80, 85).trim();
+
+    data.push(location);
+    let distance = ManhattanDistance(
+      latitude,
+      longitude,
+      location.lat,
+      location.lon
+    );
+
+    let idString = "" + location.id;
+    let stationString = "" + station;
+    if (idString.toLowerCase() == stationString.toLowerCase()) {
+      if (Log.Debug())
+        console.log(
+          `[HistoricalGetStation] ${location.id} - ${location.name}, ${
+            location.state
+          } - ${distance.toFixed(4)}`
+        );
+      result.id = location.id;
+      result.distance = 0;
+      result.latitude = location.lat;
+      result.longitude = location.lon;
+    } else if (distance < result.distance) {
+      if (Log.Trace())
+        console.log(
+          `[HistoricalGetStation] ${location.id} - ${location.name}, ${
+            location.state
+          } - ${distance.toFixed(4)}`
+        );
+      result.id = location.id;
+      result.distance = distance;
+      result.latitude = location.lat;
+      result.longitude = location.lon;
+    }
+  }
+
+  if (Log.Info()) console.log(`[HistoricalGetStation] `, result);
+  if (Log.Trace()) console.log(nearestStation);
+  return result;
+}
+
+// Function HistoricalGetCsvFile
+async function HistoricalGetCsvFile(stationId) {
+  //https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
+  // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
+  // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
+  let url = `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`;
+  let response = await fetchCache(url, null, config.longCacheTime);
+  let fileData;
+
+  // let sleep = await new Promise((r) => setTimeout(r, 1000));
+  if (Log.Trace()) console.log(response);
+  let blob_compressed;
+  let blob_uncompressed;
+  let result = "";
+  // get the blob from the response
+  if (response.ok) {
+    // un-gzip the blob
+
+    let TotalSize = 0;
+    let Chunks = [];
+    let data_in;
+    let data_out;
+    blob_compressed = await response.blob();
+    if (Log.Debug())
+      console.log(`blob_compressed: ${blob_compressed.size}`, blob_compressed);
+
+    let utfDecode;
+    let dcmpStrm;
+    try {
+      Chunks = [];
+
+      let stringData = "";
+      utfDecode = new fflate.DecodeUTF8((data, final) => {
+        stringData += data;
+      });
+      dcmpStrm = new fflate.Decompress((chunk, final) => {
+        //   console.log(chunk);
+        if (Log.Debug())
+          console.log("chunk was encoded with GZIP, Zlib, or DEFLATE");
+        utfDecode.push(chunk, final);
+      });
+
+      for await (const chunk of blob_compressed.stream()) {
+        TotalSize += chunk.length;
+        if (Log.Debug())
+          console.log(`TotalSize[35]: ${chunk.length} += ${TotalSize}`);
+        dcmpStrm.push(chunk);
+      }
+
+      if (Log.Debug()) {
+        console.log(`TotalSize[38]: ${TotalSize}`);
+        console.log(`stringData: ${stringData.length}`);
+      }
+      result = stringData;
+    } catch (e) {
+      console.log("*** ERROR *** - Decompression Error: " + e);
+    } finally {
+      console.log("Decompression Complete");
+    }
+
+    fileData = result.split("\n");
+    if (!fileData || fileData.length <= 0) {
+      if (Log.Error())
+        console.log(
+          "[HistoricalGetCsvFile] *** ERROR *** : fileData Error, No Data "
+        );
+      return null;
+    } else if (Log.Debug()) console.log(`fileDataCheck: Ok `);
+  } else {
+    console.log("HTTP-Error: " + response.status);
+  }
+  if (Log.Trace()) {
+    let firstLines = fileData.slice(0, 5);
+    let lastLines = fileData.slice(-5);
+    console.log(`result: ${result.length}, lines: ${fileData.length}`);
+    console.log(firstLines, lastLines);
+  }
+  return fileData;
+}
+// ---
+// / GetHistoryChartData ------------------------------------------------
+
+// Math Functions ---------------------------------------------------------
+// ---
+function MathAverage(values) {
+  if (!values || values.length <= 0) return null;
+  let sum = 0.0;
+  for (let value of values) {
+    sum += parseInt(value);
+  }
+  let average = sum / values.length;
+  return average;
+}
+
+function MathDistance(lat1, lon1, lat2, lon2) {
+  let dy = lat2 - lat1;
+  let dx = lon2 - lon1;
+  let distance = Math.SQRT2(dy ** 2 + dx ** 2);
+  return distance;
+}
+
+function ManhattanDistance(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return NaN;
+  let dy = lat2 - lat1;
+  let dx = lon2 - lon1;
+  let distance = Math.abs(dy) + Math.abs(dx);
+  return distance;
+}
+// ---
+// /Math Functions --------------------------------------------------------
+
 // HTML Blocks -----------------------------------
 // functions instead of variables, so that path updates to the images can take effect
 function WeatherKittyCurrentBlock() {
@@ -1687,4 +2149,13 @@ function WeatherKittyLocationBlock() {
 // /Blocks -----------------------------------
 
 // Run Weather Kitty
-WeatherKittyStart();
+async function Main() {
+  if (config.PAUSE) {
+    if (Log.Warn()) console.log("[WeatherKittyStart] Warning: PAUSED");
+    while (config.PAUSE) {
+      await microSleep(100);
+    }
+  }
+  WeatherKittyStart();
+}
+setTimeout(Main, 40);

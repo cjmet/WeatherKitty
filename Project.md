@@ -64,10 +64,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] refactor charts into Map of KvPs or Map of Pairs. Obs are one ts, where one half of the pair is always the same, but Historical are KvPs with varying on both sides.
-  - [ ] Historical Weather API
-  - [ ] 201 Main, 15 Maple, 104 Elm, ...
-  - [ ] fetchCache - Locking
+  - [ ] Chart DataLength Option, right now history is truncated at 500 records
+  - [ ] City, State by ghcnd
+  - [ ] fetchCache - Locking?
+    - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ????
   - [ ] Find Nearest if not Exist
   - [ ] Aliases, temp = TMax, Tmin, Tobs
   - [ ] repeatable weatherkitty?
