@@ -28,7 +28,7 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 - <b>`<weather-kitty-current></weather-kitty-current>`</b> - Current Conditions
 - <b>`<weather-kitty-forecast></weather-kitty-forecast>`</b> - Forecast
 - <b>`<weather-kitty-geoaddress></weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
-- <b>`<weather-kitty-forecast-week></weather-kitty-forecast-week>`</b> - Forecast matrix for the next week.
+- <b>`<weather-kitty-week></weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
 - <b>`<weather-kitty-map-forecast></weather-kitty-map-forecast>`</b> - Forecast map link.
 - <b>`<weather-kitty-map-radar></weather-kitty-map-radar>`</b> - Radar map link.
 - <b>`<weather-kitty-map-alerts></weather-kitty-map-alerts>`</b> - Alerts map link.

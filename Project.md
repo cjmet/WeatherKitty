@@ -64,19 +64,21 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] refactor loading indicator, maybe hide the text, new text, then remove new and show old?
-  - [ ] css small screen kill "demo" text and set no-wrap hidden on the city name
+  - [ ] Aliases, temp = TMax, Tmin, Tobs
+    - [ ] WT**, WV**
   - [ ] Chart DataLength Option, right now history is truncated at 500 records
   - [ ] City, State by ghcnd
     - [ ] Prefer Order: USW*, USC*, \*
-  - [ ] state names from ghcnd-states.txt
+    - [ ] state names from ghcnd-states.txt
   - [ ] fetchCache - Locking?
     - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ????
+  - [ ] GNIS API
   - [ ] Find Nearest if not Exist
-  - [ ] Aliases, temp = TMax, Tmin, Tobs
   - [ ] repeatable weatherkitty?
-  - [ ] export set address interactive and set address programmatically
-  - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
+  - [ ] Work on Parallel Async and Slow Connections
+    - [ ] ...
+    - [ ] ghcnd operations need to be unlinked, and fill in later.
+  - [ ] ...
         &nbsp;
 
   - [ ] Sec Fix GetLists(s)

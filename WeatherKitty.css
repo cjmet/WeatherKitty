@@ -36,7 +36,8 @@ weather-kitty-geoaddress {
   align-items: center;
   justify-content: center;
 }
-weather-kitty-geoaddress span {
+weather-kitty-geoaddress span,
+weather-kitty-geoaddress label {
   font-family: Arial, Helvetica, sans-serif;
   font-size: small;
   color: white;
@@ -44,6 +45,16 @@ weather-kitty-geoaddress span {
   text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
     -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
+}
+weather-kitty-geoaddress span {
+  display: none;
+}
+
+weather-kitty-geoaddress label {
+  text-align: left;
+  width: 10em;
+  height: 1.2em;
+  overflow: hidden;
 }
 
 weather-kitty-geoaddress button {
@@ -115,7 +126,7 @@ weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
 
 /* ---------------------------------------------------------------------------- */
 /* Matrix */
-weather-kitty-matrix {
+weather-kitty-week {
   border-radius: 1em;
   box-sizing: border-box;
   margin: 1em;
@@ -128,11 +139,11 @@ weather-kitty-matrix {
   hyphens: auto;
 }
 
-weather-kitty-matrix img {
+weather-kitty-week img {
   margin: 0 0.25em;
 }
 
-weather-kitty-matrix-card {
+weather-kitty-week-card {
   /* background-color: gainsboro;  */
   background-color: whitesmoke;
   border: black 1px solid;
@@ -141,7 +152,7 @@ weather-kitty-matrix-card {
   max-width: 6em;
 }
 
-weather-kitty-matrix-title {
+weather-kitty-week-title {
   height: 2.5em;
   display: flex;
   justify-content: center;
@@ -149,7 +160,7 @@ weather-kitty-matrix-title {
   font-weight: bold;
 }
 
-weather-kitty-matrix-summary {
+weather-kitty-week-summary {
   display: flex;
   justify-content: space-evenly;
   align-items: center;

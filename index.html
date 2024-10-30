@@ -26,9 +26,9 @@
           alt="Angle Hornet Logo"
         />
         <nav id="HamburgerLinks">
-          <a href="#">Link 1</a>
-          <a href="#">Link 2</a>
-          <a href="#">Link 3</a>
+          <a onclick="NavHome">Home</a>
+          <a onclick="NavWeather">Weather<br />Charts</a>
+          <a onclick="NavHistory">History<br />Charts</a>
         </nav>
       </div>
     </div>
@@ -48,31 +48,53 @@
         <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <weather-kitty-matrix></weather-kitty-matrix>
+      <weather-kitty-week></weather-kitty-week>
 
       <!-- ---  -->
-      <div id="WeatherKittyChartSamples">
+
+      <div id="WeatherKittyHomeCharts">
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
-        <weather-kitty-chart type="TOBS"></weather-kitty-chart>
-        <weather-kitty-chart type="TAVG"></weather-kitty-chart>
-        <weather-kitty-chart type="TMAX"></weather-kitty-chart>
-        <weather-kitty-chart type="TMIN"></weather-kitty-chart>
-        <!-- 
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+      </div>
+
+      <!-- ---------------------------------------------- -->
+
+      <div id="WeatherKittyCurrentCharts">
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
         <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
         <weather-kitty-chart type="windChill"></weather-kitty-chart>
-
         <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
-
         <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
-
         <weather-kitty-chart type="visibility"></weather-kitty-chart>
-
         <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
-        <weather-kitty-chart type="windGust"></weather-kitty-chart> -->
+        <weather-kitty-chart type="windGust"></weather-kitty-chart>
       </div>
+
+      <!-- ---------------------------------------------- -->
+
+      <div id="WeatherKittyHistoryCharts">
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+        <weather-kitty-chart type="TOBS"></weather-kitty-chart>
+        <weather-kitty-chart type="TAVG"></weather-kitty-chart>
+        <weather-kitty-chart type="TMAX"></weather-kitty-chart>
+        <weather-kitty-chart type="TMIN"></weather-kitty-chart>
+
+        <weather-kitty-chart type="PRCP"></weather-kitty-chart>
+        <weather-kitty-chart type="SNOW"></weather-kitty-chart>
+        <weather-kitty-chart type="SNWD"></weather-kitty-chart>
+        <weather-kitty-chart type="AWND"></weather-kitty-chart>
+        <weather-kitty-chart type="RHAV"></weather-kitty-chart>
+        <weather-kitty-chart type="PSUN"></weather-kitty-chart>
+        <weather-kitty-chart type="TSUN"></weather-kitty-chart>
+
+        <weather-kitty-chart type="WT**"></weather-kitty-chart>
+        <weather-kitty-chart type="WV**"></weather-kitty-chart>
+      </div>
+
+      <!-- --- -->
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>

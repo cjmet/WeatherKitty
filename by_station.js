@@ -1,11 +1,28 @@
-import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-import WeatherKittyStart, {
-  Log,
-  LogLevel,
-  CreateChart,
-} from "./WeatherKitty.mjs";
+let temp = NaN;
+if (temp == NaN) console.log("temp is NaN");
+if (temp == "NaN") console.log("temp is 'NaN'");
+if (temp == null) console.log("temp is null");
+if (temp == undefined) console.log("temp is undefined");
+if (temp == "") console.log("temp is ''");
+if (temp === NaN) console.log("temp is === NaN");
+if (isNaN(temp)) console.log("temp is isNaN");
 
-Log.SetLogLevel(LogLevel.Debug);
+let precip = NaN;
+let shortText = "No Data";
+if (temp == null || temp == NaN || temp == "NaN") temp = "";
+if (precip == null || precip == NaN) precip = "";
+
+let text = `${shortText} ${temp}°F - ${precip}%`;
+console.log(text);
+
+// import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
+// import WeatherKittyStart, {
+//   Log,
+//   LogLevel,
+//   CreateChart,
+// } from "./WeatherKitty.mjs";
+
+// Log.SetLogLevel(LogLevel.Debug);
 
 async function experiments() {
   if (false) {
