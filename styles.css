@@ -193,6 +193,7 @@ weather-kitty-chart > canvas {
   }
 }
 
+/* // cjm  */
 @media (max-width: 450px), (max-height: 450px) {
   #WeatherKittyBody {
     display: grid;
@@ -251,12 +252,12 @@ weather-kitty-chart > canvas {
     }
   }
 
-  #WeatherKittyHeader h1 {
-    font-size: 1.33em;
-  }
-
   #WeatherKittyHeaderDiv {
     height: 4.5em;
+  }
+
+  #WeatherKittyHeader h1 {
+    font-size: 1.33em;
   }
 
   #WeatherKittyMain {
@@ -278,12 +279,31 @@ weather-kitty-chart > canvas {
 
 @media (max-width: 450px) {
   #WeatherKittyHeader h1 {
-    font-size: 1em;
+    font-size: 0;
+  }
+  .WeatherKittyGeoAddress > span {
+    font-size: 0.9em;
+    height: 1.2em;
+    overflow: hidden;
   }
 }
 
 @media (max-width: 375px) {
   #WeatherKittyHeader h1 {
     font-size: 0;
+  }
+  .WeatherKittyGeoAddress > span {
+    font-size: 0.75em;
+    height: 1.1em;
+  }
+}
+
+@media (max-width: 350px) {
+  #WeatherKittyHeader h1 {
+    font-size: 0;
+  }
+  .WeatherKittyGeoAddress > span {
+    font-size: 0.6em;
+    height: 1.1em;
   }
 }

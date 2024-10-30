@@ -64,8 +64,12 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] refactor loading indicator, maybe hide the text, new text, then remove new and show old?
+  - [ ] css small screen kill "demo" text and set no-wrap hidden on the city name
   - [ ] Chart DataLength Option, right now history is truncated at 500 records
   - [ ] City, State by ghcnd
+    - [ ] Prefer Order: USW*, USC*, \*
+  - [ ] state names from ghcnd-states.txt
   - [ ] fetchCache - Locking?
     - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ????
   - [ ] Find Nearest if not Exist

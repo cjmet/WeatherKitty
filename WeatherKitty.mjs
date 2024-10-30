@@ -296,6 +296,8 @@ export async function WeatherKitty() {
 
   // Get/Update the Weather Data
   let weather = await getWeatherAsync();
+  console.log("[WeatherKitty] Weather Data: ", weather);
+  let historyStation = await HistoryGetStation(); // cjm
 
   // Observation Text
   {
@@ -307,7 +309,10 @@ export async function WeatherKitty() {
     temp = Fahrenheit(temp, unit);
     let img = weather.observationData.features[0].properties.icon;
     let altimg = config.WeatherKittyObsImage;
-    let text = `${shortText} ${temp}°F`;
+    let precip =
+      weather.forecastData.properties.periods[0].probabilityOfPrecipitation
+        .value;
+    let text = `${shortText} ${temp}°F - ${precip}%`;
 
     WeatherSquares("weather-kitty-current", text, img, altimg);
   }
@@ -320,7 +325,10 @@ export async function WeatherKitty() {
     temp = Fahrenheit(temp, unit);
     let img = weather.forecastData.properties.periods[0].icon;
     let altimg = config.WeatherKittyForeImage;
-    let text = `${shortText} ${temp}°F`;
+    let precip =
+      weather.forecastData.properties.periods[0].probabilityOfPrecipitation
+        .value;
+    let text = `${shortText} ${temp}°F - ${precip}%`;
 
     WeatherSquares("weather-kitty-forecast", text, img, altimg);
   }
@@ -336,13 +344,14 @@ export async function WeatherKitty() {
     locationName += " - ";
     locationName +=
       weather.stationsData.features[0].properties.stationIdentifier;
+    locationName += historyStation?.id ? " - " + historyStation.id : "";
 
     let shortText = weather.forecastData.properties.periods[0].shortForecast;
     let forecast = weather.forecastData.properties.periods[0].detailedForecast;
     let temp = weather.forecastData.properties.periods[0].temperature;
     let unit = weather.forecastData.properties.periods[0].temperatureUnit;
     temp = Fahrenheit(temp, unit);
-    let precip = weather.forecastData.properties.periods[0].detailedForecast;
+    let precip = weather.forecastData.properties.periods[0].detailedForecast; // already above
     let img = weather.forecastData.properties.periods[0].icon;
     let altimg = config.WeatherKittyForeImage;
     let text = "";
@@ -378,7 +387,7 @@ export async function WeatherKitty() {
   let chartData = await GetObservationChartData(
     weather.observationData.features
   );
-  let historyData = await GetHistoryChartData();
+  let historyData = await HistoryGetChartData();
   // append the history data
   for (let key of historyData.keys()) {
     chartData.set(key, historyData.get(key));
@@ -485,7 +494,6 @@ export async function SetLocationAddress(address) {
 // WeatherKittyLoading(set value);
 // WeatherKittyLoading(); // returns true if loading
 export function WeatherKittyIsLoading(isLoading) {
-  // cjm
   if (isLoading === null || isLoading === undefined) {
     let result = config.WeatherKittyIsLoading || !config.WeatherKittyIsLoaded;
     return result;
@@ -682,7 +690,7 @@ async function getWeatherLocationByAddressAsync(address) {
         return error;
       }
       //
-      let result = await HistoricalGetStation(name, null, null);
+      let result = await HistoryGetStation(name, null, null);
       return CreateResponse(result);
       break;
     }
@@ -1062,6 +1070,7 @@ async function GetObservationChartData(data) {
   }
   chartData.delete("timestamp");
 
+  if (Log.Info()) console.log("[Observations] ", chartData); // cjm
   return chartData;
   // containers
 }
@@ -1731,9 +1740,12 @@ async function corsCache(url, options, ttl, verbose) {
 
 // GetHistoryChartData ------------------------------------------------
 // ---
-async function GetHistoryChartData(latitude, longitude) {
+async function HistoryGetChartData(station, latitude, longitude) {
   let location;
-  if (latitude && longitude) {
+  if (station) location = await HistoryGetStation(station);
+  if (location?.latitude && location?.longitude) {
+    if (Log.Trace()) console.log(`[GetHistoryChartData] Location: Ok`);
+  } else if (latitude && longitude) {
     location = { latitude: latitude, longitude: longitude };
   } else {
     location = await getWeatherLocationAsync();
@@ -1746,8 +1758,7 @@ async function GetHistoryChartData(latitude, longitude) {
     return;
   }
 
-  let station;
-  station = await HistoricalGetStation(
+  station = await HistoryGetStation(
     null,
     location.latitude,
     location.longitude
@@ -1756,18 +1767,22 @@ async function GetHistoryChartData(latitude, longitude) {
     if (Log.Debug()) console.log(`[GetHistoryChartData] Station: Ok`);
   } else {
     if (Log.Error())
-      console.log("[GetHistoryChartData] *** ERROR *** : Station Error ");
+      console.log(
+        `[GetHistoryChartData] *** ERROR *** : Station Error [${station.id}]`
+      );
     return;
   }
 
   let fileData;
-  fileData = await HistoricalGetCsvFile(station.id);
+  fileData = await HistoryGetCsvFile(station.id);
   if (fileData && fileData?.length > 0) {
     if (Log.Debug()) console.log(`[GetHistoryChartData] fileDataCheck: Ok`);
     // ...
   } else {
     if (Log.Error())
-      console.log("[GetHistoryChartData] *** ERROR *** : File Data Error ");
+      console.log(
+        `[GetHistoryChartData] *** ERROR *** : File Data Error [${station.id}]`
+      );
     return;
   }
 
@@ -1783,7 +1798,7 @@ async function GetHistoryChartData(latitude, longitude) {
     let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
     if (type == "__proto__")
       throw new Error(
-        "[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type"
+        `[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type [${station.id}]`
       );
     if (id != null && id.length > 0) {
       if (dataSets[type] == null) {
@@ -1814,7 +1829,7 @@ async function GetHistoryChartData(latitude, longitude) {
       } else {
         if (Log.Error())
           console.log(
-            `[GetHistoryChartData] *** ERROR *** : date is null: [${line}]`
+            `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}]`
           );
       }
     } else if (lineCount === fileData.length) {
@@ -1831,18 +1846,18 @@ async function GetHistoryChartData(latitude, longitude) {
     dataString += key + ", ";
   }
   // count un-named objects
-  if (Log.Info()) console.log(`[History] ${dataString}`);
-  if (Log.Trace()) console.log("[GetHistoryChartData] ", dataSets);
-  dataSets = await reformatDataSets(dataSets);
+  if (Log.Info()) console.log(`[History] [${station.id}] ${dataString}`);
+  dataSets = await HistoryReformatDataSets(dataSets);
+  if (Log.Info()) console.log("[GetHistoryChartData] ", dataSets); // cjm
   return dataSets;
 }
 
-async function reformatDataSets(dataSets) {
+async function HistoryReformatDataSets(dataSets) {
   let mapSets = new Map();
   for (let key in dataSets) {
     let dataSet = dataSets[key];
     for (let i = 0; i < dataSet.values.length; i++) {
-      let item = await ConvertHistoricalUnit(dataSet.values[i], key);
+      let item = await HistoryConvertUnits(dataSet.values[i], key);
       dataSet.values[i] = item;
     }
     mapSets.set(key, dataSet);
@@ -1850,15 +1865,15 @@ async function reformatDataSets(dataSets) {
   return mapSets;
 }
 
-async function ConvertHistoricalUnit(data, key) {
+async function HistoryConvertUnits(data, key) {
   data = { value: data, unitCode: key };
-  if (DataConversion[key] != null) {
-    data = await DataConversion[key](data);
+  if (HistoryDataConversion[key] != null) {
+    data = await HistoryDataConversion[key](data);
   }
   return data;
 }
 
-let DataConversion = {
+let HistoryDataConversion = {
   TempHistory: function (data) {
     let value = parseFloat(data.value) / 10.0;
     if (value != NaN) value = Fahrenheit(value, "c");
@@ -1866,27 +1881,42 @@ let DataConversion = {
     return item;
   },
   TOBS: function (data) {
-    return DataConversion.TempHistory(data);
+    return HistoryDataConversion.TempHistory(data);
   },
   TMAX: function (data) {
-    return DataConversion.TempHistory(data);
+    return HistoryDataConversion.TempHistory(data);
   },
   TMIN: function (data) {
-    return DataConversion.TempHistory(data);
+    return HistoryDataConversion.TempHistory(data);
   },
   TAVG: function (data) {
-    return DataConversion.TempHistory(data);
+    return HistoryDataConversion.TempHistory(data);
   },
 };
 
 // ---
 
-// Function HistoricalGetStation // cjm2
-async function HistoricalGetStation(station, latitude, longitude) {
+// Function HistoricalGetStation
+async function HistoryGetStation(station, latitude, longitude) {
   if (Log.Debug())
     console.log(
-      `[HistoricalGetStation] ${station} - ${latitude}, ${longitude}`
+      `[HistoricalGetStation] Entry: ${station} - ${latitude}, ${longitude}`
     );
+  if (station == null && (latitude == null || longitude == null)) {
+    let location = await getWeatherLocationAsync();
+    if (location && location?.latitude && location?.longitude) {
+      latitude = location.latitude;
+      longitude = location.longitude;
+      if (Log.Debug()) console.log("[HistoricalGetStation] ", location);
+    } else {
+      if (Log.Error())
+        console.log(
+          "[HistoricalGetStation] *** ERROR *** : Location Error ",
+          location
+        );
+      return null;
+    }
+  }
   if (station == null && (latitude == null || longitude == null)) {
     if (Log.Error())
       console.log("[HistoricalGetStation] *** ERROR *** : Location Error ");
@@ -1984,13 +2014,13 @@ async function HistoricalGetStation(station, latitude, longitude) {
     }
   }
 
-  if (Log.Info()) console.log(`[HistoricalGetStation] `, result);
+  if (Log.Info()) console.log(`[HistoricalGetStation] Result: `, result);
   if (Log.Trace()) console.log(nearestStation);
   return result;
 }
 
 // Function HistoricalGetCsvFile
-async function HistoricalGetCsvFile(stationId) {
+async function HistoryGetCsvFile(stationId) {
   //https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
