@@ -98,7 +98,7 @@ let config = {
   WeatherKittyIsLoading: false,
   WeatherKittyPath: "",
 
-  SanityChecks: async function () {
+  SanityChecks: function () {
     if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
     if (config.longCacheTime < 60000) config.longCacheTime = 60000;
     if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
@@ -108,6 +108,10 @@ let config = {
     if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
     if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
   },
+  isLoadingIsVerbose: false,
+  Verbose: function () {
+    this.isLoadingIsVerbose = !this.isLoadingIsVerbose;
+  },
 };
 export { config };
 
@@ -115,7 +119,7 @@ export { config };
 export default WeatherKittyStart;
 export async function WeatherKittyStart() {
   await WeatherKittyIsLoading(true, "startup");
-  await config.SanityChecks();
+  config.SanityChecks();
   if (config.WeatherKittyIsLoaded) {
     if (Log.Error())
       console.log("[WeatherKitty] *** ERROR *** : Already Loaded");
@@ -557,15 +561,22 @@ export async function SetLocationAddress(address) {
 // WeatherKittyLoading(set value);
 // WeatherKittyLoading(); // returns true if loading
 let loadingTimer = 0;
+let lastTimer = 0;
 export async function WeatherKittyIsLoading(isLoading, message, verbose) {
   if (isLoading === null || isLoading === undefined) {
     let result = config.WeatherKittyIsLoading || !config.WeatherKittyIsLoaded;
     return result;
   }
 
-  if (message) message = message.trim();
+  if (config.isLoadingIsVerbose) verbose = true;
   if (isLoading != config.WeatherKittyIsLoading) {
-    if (isLoading) loadingTimer = Date.now();
+    if (isLoading) {
+      loadingTimer = Date.now();
+      lastTimer = loadingTimer;
+    }
+  }
+  if (message) {
+    message = message.trim();
   }
 
   if (
@@ -575,9 +586,14 @@ export async function WeatherKittyIsLoading(isLoading, message, verbose) {
   )
     console.log(
       "[WeatherKittyLoading]",
-      isLoading ? message : `Loaded [${wkElapsedTime(loadingTimer)}]`
+      isLoading
+        ? message + ` [${wkElapsedTime(lastTimer)}]`
+        : `Loaded [${wkElapsedTime(lastTimer)}] [${wkElapsedTime(
+            loadingTimer
+          )}]`
     );
 
+  if (message && message.length > 8) message = message.substring(0, 8);
   if (isLoading) {
     config.WeatherKittyIsLoading = true;
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
@@ -586,7 +602,7 @@ export async function WeatherKittyIsLoading(isLoading, message, verbose) {
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `;
+        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `; // cjm
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
@@ -603,7 +619,12 @@ export async function WeatherKittyIsLoading(isLoading, message, verbose) {
       }
     }
   }
-  if (Log.Debug()) console.log("[WeatherKittyLoading] ", isLoading);
+  if (Log.Debug())
+    console.log(
+      `[WeatherKittyLoading]  [${wkElapsedTime(lastTimer)}]`,
+      isLoading
+    );
+  lastTimer = Date.now();
   await microSleep(1);
   return config.WeatherKittyIsLoading;
 }
@@ -1495,7 +1516,7 @@ function wkElapsedTime(startTime) {
   if (minutes > 1) return `${minutes}m`;
   if (seconds > 1) return `${seconds}s`;
 
-  return `${hours}h ${minutes}m ${seconds}s`;
+  return `${elapsed}ms`;
 }
 
 // Function findWeatherWords
@@ -1956,7 +1977,6 @@ async function HistoryGetChartData(station, latitude, longitude) {
     }
   }
 
-  // cjm
   await WeatherKittyIsLoading(true, "Trimming");
   await microSleep(1);
   for (let key in dataSets) {
@@ -2180,8 +2200,10 @@ async function HistoryGetCsvFile(stationId) {
   //https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
+  let idString = stationId.toLowerCase().substring(11 - 8); // cjm
+  await WeatherKittyIsLoading(true, `FetchCSV ${idString}`);
+
   let url = `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`;
-  await WeatherKittyIsLoading(true, stationId);
   let response = await fetchCache(url, null, config.longCacheTime);
   let fileData;
 

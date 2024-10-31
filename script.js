@@ -6,6 +6,7 @@ import {
   WeatherKittyIsLoaded,
   WeatherKittyPause,
   sleep,
+  config,
 } from "./WeatherKitty.mjs";
 // LogLevel.Info - Default Level, summary of what's happening
 // LogLevel.Trace - adds LOADING DELAYS, and other detailed information
@@ -13,7 +14,8 @@ import {
 // Load custom Config first, then startup.
 if (true) {
   WeatherKittyPause(true);
-  Log.SetLogLevel(LogLevel.Info);
+  // Log.SetLogLevel(LogLevel.Info);
+  config.Verbose(true);
   await SetLocationAddress("USW00014739");
   WeatherKittyPause(false);
 }
@@ -41,6 +43,10 @@ if (false) {
   if (element) element.addEventListener("click", NavWeather);
   element = document.getElementById("NavHistory");
   if (element) element.addEventListener("click", NavHistory);
+  element = document.getElementById("ExpireData");
+  if (element) element.addEventListener("click", ExpireData);
+  element = document.getElementById("PurgeData");
+  if (element) element.addEventListener("click", PurgeData);
 }
 
 function NavToClass(classNames) {
@@ -65,17 +71,28 @@ function NavToClass(classNames) {
   }
 }
 
-export function NavHome() {
+function NavHome() {
   console.log("Navigating Home");
   NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"]);
 }
 
-export function NavWeather() {
+function NavWeather() {
   console.log("Navigating Weather");
   NavToClass(["WeatherKittyWeatherCharts"]);
 }
 
-export function NavHistory() {
+function NavHistory() {
   console.log("Navigating History");
   NavToClass(["WeatherKittyHistoryCharts"]);
+}
+
+function ExpireData() {
+  console.log("Expiring Data");
+  localStorage.clear();
+}
+
+function PurgeData() {
+  console.log("Purging Data");
+  localStorage.clear();
+  caches.delete("weather-kitty");
 }

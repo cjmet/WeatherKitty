@@ -64,25 +64,36 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] Check for charts first, then only pull the charts we need
-    - [ ] History is always 4 letter codes
-    - [ ] Obs is always more
-    - [ ] Truncate history on read, save cpu time.
+  - [ ] Check for charts first, then only pull the charts we need?
+    - [x] History is always 4 letter codes
+    - [x] Obs is always more
+    - [x] Truncate history on read, save cpu time.
     - [ ] pass in chart lists so we only process ones we need
-  - [ ] Aliases, temp = TMax, Tmin, Tobs
+    - [ ] better handling of data types and standardization so we don't have to do so much processing and reprocessing of data
+    - [ ] processed data cache in front of the raw fetchcache data?
+  - [ ] Aliases,
+    - [x]temp = TMax, Tmin, Tobs
     - [ ] WT**, WV**
-  - [ ] Chart DataLength Option, right now history is truncated at 500 records
+  - [ ] Global Warming Charts, 1936 to 2024
+    - [ ] By Year, By Month, By Week
+  - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
+    - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
+    - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
+    - [ ] Const MaxWidth = 32000 pixels, more and chart.js breaks.
+    - [ ] DataLength: Truncate, ReverseTruncate, Average, None
   - [ ] City, State by ghcnd
     - [ ] Prefer Order: USW*, USC*, \*
     - [ ] state names from ghcnd-states.txt
-  - [ ] fetchCache - Locking?
+    - [ ] modularize AddressByGhcnd
+  - [ ] fetchCache - Locking? Queuing?
     - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ????
   - [ ] GNIS API
   - [ ] Find Nearest if not Exist
   - [ ] repeatable weatherkitty?
   - [ ] Work on Parallel Async and Slow Connections
-    - [ ] ...
+    - [ ] already worked on optimization some. Lots more work to do.
     - [ ] ghcnd operations need to be unlinked, and fill in later.
+    - [ ] parallel history charts, or even all charts?
   - [ ] ...
         &nbsp;
 
