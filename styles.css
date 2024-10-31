@@ -164,9 +164,9 @@ body {
 }
 
 /* // cjm  */
-#WeatherKittyHomeCharts,
-#WeatherKittyCurrentCharts,
-#WeatherKittyHistoryCharts {
+.WeatherKittyHomeCharts,
+.WeatherKittyWeatherCharts,
+.WeatherKittyHistoryCharts {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -179,7 +179,7 @@ weather-kitty-chart > canvas {
 /* ---------------------------------------------------------------------------- */
 /* MapsAlpha */
 
-#MapsAlpha {
+.MapsAlpha {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -189,7 +189,7 @@ weather-kitty-chart > canvas {
 /* ---------------------------------------------------------------------------- */
 /* media query for width and height of viewport */
 @media (max-width: 1535px) {
-  #MapsAlpha {
+  .MapsAlpha {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
   }
@@ -308,4 +308,13 @@ weather-kitty-chart > canvas {
     font-size: 0.6em;
     height: 1.1em;
   }
+}
+
+/* hidden class ...  */
+.hidden {
+  border: 3px solid red;
+  margin: 3px;
+  padding: 3px;
+  opacity: 0.5;
+  display: none;
 }

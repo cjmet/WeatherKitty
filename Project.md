@@ -64,6 +64,11 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] Check for charts first, then only pull the charts we need
+    - [ ] History is always 4 letter codes
+    - [ ] Obs is always more
+    - [ ] Truncate history on read, save cpu time.
+    - [ ] pass in chart lists so we only process ones we need
   - [ ] Aliases, temp = TMax, Tmin, Tobs
     - [ ] WT**, WV**
   - [ ] Chart DataLength Option, right now history is truncated at 500 records

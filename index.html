@@ -26,9 +26,9 @@
           alt="Angle Hornet Logo"
         />
         <nav id="HamburgerLinks">
-          <a onclick="NavHome">Home</a>
-          <a onclick="NavWeather">Weather<br />Charts</a>
-          <a onclick="NavHistory">History<br />Charts</a>
+          <a id="NavHome">Home</a>
+          <a id="NavWeather">Weather<br />Charts</a>
+          <a id="NavHistory">History<br />Charts</a>
         </nav>
       </div>
     </div>
@@ -42,24 +42,24 @@
     </header>
 
     <main id="WeatherKittyMain">
-      <div id="MapsAlpha">
+      <div class="MapsAlpha">
         <weather-kitty-map-forecast></weather-kitty-map-forecast>
         <weather-kitty-map-radar></weather-kitty-map-radar>
         <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <weather-kitty-week></weather-kitty-week>
+      <weather-kitty-week class="WeekAlpha"></weather-kitty-week>
 
       <!-- ---  -->
 
-      <div id="WeatherKittyHomeCharts">
+      <div class="WeatherKittyHomeCharts">
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="TEMP"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
 
-      <div id="WeatherKittyCurrentCharts">
+      <div class="WeatherKittyWeatherCharts">
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
@@ -75,7 +75,7 @@
 
       <!-- ---------------------------------------------- -->
 
-      <div id="WeatherKittyHistoryCharts">
+      <div class="WeatherKittyHistoryCharts">
         <weather-kitty-chart type="TEMP"></weather-kitty-chart>
         <weather-kitty-chart type="TOBS"></weather-kitty-chart>
         <weather-kitty-chart type="TAVG"></weather-kitty-chart>

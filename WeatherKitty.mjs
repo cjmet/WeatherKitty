@@ -73,6 +73,13 @@ let config = {
   AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
   AlertsMapCacheTime: 60000 * 10, // 10 minutes
 
+  HistoryDataMaxLimit: 500,
+
+  historyFormat: {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  },
   timeFormat: {
     month: "2-digit",
     day: "2-digit",
@@ -80,11 +87,7 @@ let config = {
     hour12: true, // Delete for 24-hour format
     minute: "2-digit",
   },
-  historyFormat: {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  },
+
   WeatherKittyObsImage: "img/WeatherKittyE8.jpeg",
   WeatherKittyForeImage: "img/WeatherKittyC.jpeg",
 
@@ -263,11 +266,11 @@ async function WeatherWidgetInit(path) {
 }
 
 // Function sleep();
-async function sleep(seconds) {
+export async function sleep(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-async function microSleep(milliSeconds) {
+export async function microSleep(milliSeconds) {
   return new Promise((resolve) => setTimeout(resolve, milliSeconds));
 }
 
@@ -277,7 +280,7 @@ export async function WeatherKitty() {
     if (Log.Warn()) console.log("[WeatherKitty] Warning: PAUSED");
     return;
   }
-  await WeatherKittyIsLoading(true, "widget"); // in theory this should be ok. otherwise await it.
+  await WeatherKittyIsLoading(true, "WeatherKitty"); // in theory this should be ok. otherwise await it.
   // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
   WeatherMaps(
     "weather-kitty-map-forecast",
@@ -400,27 +403,65 @@ export async function WeatherKitty() {
     SetAddLocationButton(widget);
   }
 
-  // Charting
-  // barometricPressure, dewpoint, heatIndex, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, temperature, visibility, windChill, windGust, windSpeed,
-  await WeatherKittyIsLoading(true, "Obs ChartData");
-  let chartData = await GetObservationChartData(
-    weather.observationData.features
-  );
-  await WeatherKittyIsLoading(true, "History ChartData");
-  let historyData = await HistoryGetChartData();
-  // append the history data
-  await WeatherKittyIsLoading(true, "Merged ChartData");
-  for (let key of historyData.keys()) {
-    chartData.set(key, historyData.get(key));
-  }
-
   // Forecast Matrix
   await WeatherKittyIsLoading(true, "Forecast Matrix");
   ForecastMatrix(weather.forecastData.properties.periods);
 
-  await WeatherCharts(chartData);
+  // --------------------------------------------------------------
+  // Charting
+  // barometricPressure, dewpoint, ...
+  // check for chart types, if we don't need them, don't pull the data.
+  let ChartTypes = await WeatherKittyGetChartTypes();
+  if (Log.Debug())
+    console.log(
+      `[WeatherKitty] ChartTypes[${ChartTypes.length}]: `,
+      ChartTypes
+    );
+
+  if (ChartTypes?.length > 0) {
+    let chartData = new Map();
+    let historyData = new Map();
+
+    if (ChartTypes?.Weather?.length > 0) {
+      await WeatherKittyIsLoading(true, "Obs ChartData");
+      chartData = await GetObservationChartData(
+        weather.observationData.features
+      );
+    }
+
+    if (ChartTypes?.History.length > 0) {
+      await WeatherKittyIsLoading(true, "History ChartData");
+      historyData = await HistoryGetChartData();
+    }
+
+    // append the history data
+    if (ChartTypes?.History.length > 0 && historyData.size > 0) {
+      await WeatherKittyIsLoading(true, "Merged ChartData");
+      for (let key of historyData.keys()) {
+        chartData.set(key, historyData.get(key));
+      }
+    } else if (ChartTypes?.History.length > 0) {
+      chartData = historyData;
+    }
+
+    await WeatherCharts(chartData);
+  }
 
   await WeatherKittyIsLoading(false);
+}
+
+async function WeatherKittyGetChartTypes() {
+  let result = { Weather: [], History: [] };
+  let elements = document.getElementsByTagName("weather-kitty-chart");
+  for (let element of elements) {
+    let chartType = element.getAttribute("type");
+    if (chartType) {
+      if (chartType.length === 4) result.History.push(chartType);
+      else result.Weather.push(chartType);
+    }
+  }
+  result.length = result.Weather.length + result.History.length;
+  return result;
 }
 
 // Function InsertGeoAddressElement
@@ -515,15 +556,27 @@ export async function SetLocationAddress(address) {
 // Function WeatherKittyLoading ... loading indicator
 // WeatherKittyLoading(set value);
 // WeatherKittyLoading(); // returns true if loading
-export async function WeatherKittyIsLoading(isLoading, message) {
+let loadingTimer = 0;
+export async function WeatherKittyIsLoading(isLoading, message, verbose) {
   if (isLoading === null || isLoading === undefined) {
     let result = config.WeatherKittyIsLoading || !config.WeatherKittyIsLoaded;
     return result;
   }
 
   if (message) message = message.trim();
-  if (Log.Trace() || (Log.Warn() && isLoading != config.WeatherKittyIsLoading))
-    console.log("[WeatherKittyLoading]", isLoading ? message : "Loaded");
+  if (isLoading != config.WeatherKittyIsLoading) {
+    if (isLoading) loadingTimer = Date.now();
+  }
+
+  if (
+    verbose ||
+    Log.Trace() ||
+    (Log.Warn() && isLoading != config.WeatherKittyIsLoading)
+  )
+    console.log(
+      "[WeatherKittyLoading]",
+      isLoading ? message : `Loaded [${wkElapsedTime(loadingTimer)}]`
+    );
 
   if (isLoading) {
     config.WeatherKittyIsLoading = true;
@@ -550,7 +603,7 @@ export async function WeatherKittyIsLoading(isLoading, message) {
       }
     }
   }
-  if (Log.Info()) console.log("[WeatherKittyLoading] ", isLoading);
+  if (Log.Debug()) console.log("[WeatherKittyLoading] ", isLoading);
   await microSleep(1);
   return config.WeatherKittyIsLoading;
 }
@@ -1258,10 +1311,11 @@ export async function CreateChart(
   }
   await microSleep(1);
   // limit history data to 500 points
-  if (history && data.length > 500) {
-    data = data.slice(data.length - 500);
-    time = time.slice(time.length - 500);
-  }
+  // this should no longer be needed, we truncated it elsewhere.
+  // if (history && data.length > config.historyLimit) {
+  //   data = data.slice(data.length - config.historyLimit);
+  //   time = time.slice(time.length - config.historyLimit);
+  // }
 
   //  6em high labels
   await microSleep(1); // sleep(); // give the container time to grow/shrink
@@ -1424,9 +1478,9 @@ function wkElapsedTime(startTime) {
   let endTime = new Date();
   // let elapsed = Math.abs(endTime - startTime);
   let elapsed = endTime - startTime;
-  let seconds = Math.trunc(elapsed / 1000);
-  let minutes = Math.trunc(seconds / 60);
-  let hours = Math.trunc(minutes / 60);
+  let seconds = (elapsed / 1000).toFixed(2);
+  let minutes = (seconds / 60).toFixed(2);
+  let hours = (minutes / 60).toFixed(2);
 
   seconds = seconds % 60;
   minutes = minutes % 60;
@@ -1437,9 +1491,9 @@ function wkElapsedTime(startTime) {
     console.log("Elapsed: ", elapsed);
   }
 
-  if (hours) return `${hours}h`;
-  if (minutes) return `${minutes}m`;
-  if (seconds) return `${seconds}s`;
+  if (hours > 1) return `${hours}h`;
+  if (minutes > 1) return `${minutes}m`;
+  if (seconds > 1) return `${seconds}s`;
 
   return `${hours}h ${minutes}m ${seconds}s`;
 }
@@ -1899,6 +1953,20 @@ async function HistoryGetChartData(station, latitude, longitude) {
         console.log(`[GetHistoryChartData] id is null: [${line}]`);
         console.log(`lineCount: ${lineCount} of ${fileData.length}`);
       }
+    }
+  }
+
+  // cjm
+  await WeatherKittyIsLoading(true, "Trimming");
+  await microSleep(1);
+  for (let key in dataSets) {
+    if (dataSets[key].timestamps.length > config.HistoryDataMaxLimit) {
+      dataSets[key].timestamps = dataSets[key].timestamps.slice(
+        dataSets[key].timestamps.length - config.HistoryDataMaxLimit
+      );
+      dataSets[key].values = dataSets[key].values.slice(
+        dataSets[key].values.length - config.HistoryDataMaxLimit
+      );
     }
   }
 
