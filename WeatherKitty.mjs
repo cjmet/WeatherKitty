@@ -73,7 +73,7 @@ let config = {
   AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
   AlertsMapCacheTime: 60000 * 10, // 10 minutes
 
-  HistoryDataMaxLimit: 500,
+  HistoryDataMaxLimit: 32000, // Default: 500 // cjm
 
   historyFormat: {
     year: "numeric",
@@ -602,7 +602,7 @@ export async function WeatherKittyIsLoading(isLoading, message, verbose) {
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `; // cjm
+        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `;
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
@@ -1221,7 +1221,7 @@ export async function WeatherCharts(chartData) {
       if (Log.Debug()) console.log(container);
       return;
     }
-    await WeatherKittyIsLoading(true, chartType.toLowerCase());
+    await WeatherKittyIsLoading(true, chartType.toLowerCase() + " Chart");
     if (types.includes(chartType) === false) {
       container.style.display = "none";
       if (Log.Warn())
@@ -1252,7 +1252,7 @@ export async function WeatherCharts(chartData) {
 }
 
 // Function CreateChart
-export async function CreateChart(
+export async function CreateChart( // cjm optimize this
   chartContainer,
   key, // Key value and Title of Chart
   values,
@@ -1310,6 +1310,7 @@ export async function CreateChart(
   let data = [];
   let time = [];
   await microSleep(1);
+  // cjm optimize this, maybe on-read
   for (let i = 0; i < values.length; i++) {
     data.push(values[i].value);
     let date = new Date(timestamps[i]);
@@ -1325,18 +1326,12 @@ export async function CreateChart(
     time.push(label);
   }
   await microSleep(1);
+  // cjm optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
   if (!history) {
     // Oldest to Newest
     data = data.reverse();
     time = time.reverse();
   }
-  await microSleep(1);
-  // limit history data to 500 points
-  // this should no longer be needed, we truncated it elsewhere.
-  // if (history && data.length > config.historyLimit) {
-  //   data = data.slice(data.length - config.historyLimit);
-  //   time = time.slice(time.length - config.historyLimit);
-  // }
 
   //  6em high labels
   await microSleep(1); // sleep(); // give the container time to grow/shrink
@@ -2033,7 +2028,7 @@ async function HistoryReformatDataSets(dataSets) {
     mapSets.set("TEMP", mapSets.get("TAVG"));
   }
 
-  // WT**, WV** - Weather Types // cjm
+  // WT**, WV** - Weather Types
 
   return mapSets;
 }
@@ -2200,7 +2195,7 @@ async function HistoryGetCsvFile(stationId) {
   //https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
   // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
-  let idString = stationId.toLowerCase().substring(11 - 8); // cjm
+  let idString = stationId.toLowerCase().substring(11 - 8);
   await WeatherKittyIsLoading(true, `FetchCSV ${idString}`);
 
   let url = `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`;

@@ -64,13 +64,16 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] Check for charts first, then only pull the charts we need?
+  - [ ] History Chart Optimization
+
+    - [ ] Check for charts first, then only pull the charts we need?
+    - [ ] better handling of data types and standardization so we don't have to do so much processing and reprocessing of data
     - [x] History is always 4 letter codes
     - [x] Obs is always more
     - [x] Truncate history on read, save cpu time.
     - [ ] pass in chart lists so we only process ones we need
-    - [ ] better handling of data types and standardization so we don't have to do so much processing and reprocessing of data
     - [ ] processed data cache in front of the raw fetchcache data?
+
   - [ ] Aliases,
     - [x]temp = TMax, Tmin, Tobs
     - [ ] WT**, WV**
