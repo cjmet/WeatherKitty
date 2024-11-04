@@ -14,16 +14,10 @@ import {
 // Load custom Config first, then startup.
 if (true) {
   WeatherKittyPause(true);
-  // Log.SetLogLevel(LogLevel.Info);
+  // Log.SetLogLevel(LogLevel.Debug);
   config.Verbose(true);
   await SetLocationAddress("USW00014739");
   WeatherKittyPause(false);
-}
-
-if (false) {
-  await WeatherKittyIsLoaded();
-  await sleep(1);
-  WeatherKitty();
 }
 
 // Alternative Way to do the above, but it loads default first, then sets the location and reloads

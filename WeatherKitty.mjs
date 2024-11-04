@@ -73,7 +73,7 @@ let config = {
   AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
   AlertsMapCacheTime: 60000 * 10, // 10 minutes
 
-  HistoryDataMaxLimit: 32000, // Default: 500 // cjm
+  HistoryDataMaxLimit: 500, // Default: 500, 32000 for testing // cjm
 
   historyFormat: {
     year: "numeric",
@@ -95,7 +95,6 @@ let config = {
 
   WeatherKittyIsInit: false,
   WeatherKittyIsLoaded: null,
-  WeatherKittyIsLoading: false,
   WeatherKittyPath: "",
 
   SanityChecks: function () {
@@ -177,6 +176,7 @@ export async function WeatherKittyStart() {
   }
 
   setInterval(WeatherKitty, config.shortCacheTime);
+  await WeatherKittyIsLoading(false, "startup");
 }
 
 // Function Weather Widget Initialization
@@ -306,7 +306,6 @@ export async function WeatherKitty() {
   let weather = await getWeatherAsync();
   let historyStation = await HistoryGetStation();
 
-  await WeatherKittyIsLoading(true, "widget");
   // Observation Text
   {
     let shortText =
@@ -406,10 +405,12 @@ export async function WeatherKitty() {
     if (span) span.innerHTML = locationName;
     SetAddLocationButton(widget);
   }
+  await WeatherKittyIsLoading(false, "GeoAddress");
 
   // Forecast Matrix
   await WeatherKittyIsLoading(true, "Forecast Matrix");
   ForecastMatrix(weather.forecastData.properties.periods);
+  await WeatherKittyIsLoading(false, "Forecast Matrix");
 
   // --------------------------------------------------------------
   // Charting
@@ -431,11 +432,14 @@ export async function WeatherKitty() {
       chartData = await GetObservationChartData(
         weather.observationData.features
       );
+      await WeatherKittyIsLoading(false, "Obs ChartData");
     }
 
     if (ChartTypes?.History.length > 0) {
       await WeatherKittyIsLoading(true, "History ChartData");
+
       historyData = await HistoryGetChartData();
+      await WeatherKittyIsLoading(false, "History ChartData");
     }
 
     // append the history data
@@ -444,6 +448,7 @@ export async function WeatherKitty() {
       for (let key of historyData.keys()) {
         chartData.set(key, historyData.get(key));
       }
+      await WeatherKittyIsLoading(false, "Merged ChartData");
     } else if (ChartTypes?.History.length > 0) {
       chartData = historyData;
     }
@@ -451,7 +456,8 @@ export async function WeatherKitty() {
     await WeatherCharts(chartData);
   }
 
-  await WeatherKittyIsLoading(false);
+  await WeatherKittyIsLoading(false, "WeatherKitty");
+  // await WeatherKittyIsLoading(false);
 }
 
 async function WeatherKittyGetChartTypes() {
@@ -557,58 +563,64 @@ export async function SetLocationAddress(address) {
   WeatherKitty();
 }
 
+// --------------------------------------------------------------
 // Function WeatherKittyLoading ... loading indicator
 // WeatherKittyLoading(set value);
 // WeatherKittyLoading(); // returns true if loading
-let loadingTimer = 0;
-let lastTimer = 0;
+// if isLoading is false and message is null, then clear all indicators
+let KvpTimers = new Map();
 export async function WeatherKittyIsLoading(isLoading, message, verbose) {
+  // cjm
+  // if WKL(null) then return status of loading
   if (isLoading === null || isLoading === undefined) {
-    let result = config.WeatherKittyIsLoading || !config.WeatherKittyIsLoaded;
+    let result = KvpTimers.keys().length > 0;
     return result;
   }
-
   if (config.isLoadingIsVerbose) verbose = true;
-  if (isLoading != config.WeatherKittyIsLoading) {
-    if (isLoading) {
-      loadingTimer = Date.now();
-      lastTimer = loadingTimer;
+  if (message == null && isLoading === false) KvpTimers.clear();
+  else if (message == null) message = "msg";
+
+  if (isLoading) {
+    KvpTimers.set(message, Date.now());
+    if (Log.Debug() || verbose) {
+      console.log(`[WeatherKittyLoading] ${message}`);
+    }
+  } else {
+    if (KvpTimers.has(message)) {
+      if (Log.Debug() || verbose) {
+        console.log(
+          `[WeatherKittyLoading] ${message} [${wkElapsedTime(
+            KvpTimers.get(message)
+          )}]` // cjm
+        );
+      }
+      KvpTimers.delete(message);
     }
   }
-  if (message) {
-    message = message.trim();
-  }
+  SetLoadingIndicatorMessage(KvpTimers);
+  let result = KvpTimers.keys().length > 0;
+  return result;
+}
 
-  if (
-    verbose ||
-    Log.Trace() ||
-    (Log.Warn() && isLoading != config.WeatherKittyIsLoading)
-  )
-    console.log(
-      "[WeatherKittyLoading]",
-      isLoading
-        ? message + ` [${wkElapsedTime(lastTimer)}]`
-        : `Loaded [${wkElapsedTime(lastTimer)}] [${wkElapsedTime(
-            loadingTimer
-          )}]`
-    );
-
-  if (message && message.length > 8) message = message.substring(0, 8);
-  if (isLoading) {
-    config.WeatherKittyIsLoading = true;
+async function SetLoadingIndicatorMessage(kvpMap) {
+  // cjm
+  if (kvpMap.size > 0) {
+    let array = [...kvpMap.entries()];
+    let [message, value] = array[array.length - 1];
+    message = message.trim().toLowerCase();
+    if (message && message.length > 8) message = message.substring(0, 8);
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `;
+        if (message) label.innerHTML = `Loading ${message}... &nbsp; `;
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
     }
   } else {
-    config.WeatherKittyIsLoading = false;
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
@@ -619,14 +631,6 @@ export async function WeatherKittyIsLoading(isLoading, message, verbose) {
       }
     }
   }
-  if (Log.Debug())
-    console.log(
-      `[WeatherKittyLoading]  [${wkElapsedTime(lastTimer)}]`,
-      isLoading
-    );
-  lastTimer = Date.now();
-  await microSleep(1);
-  return config.WeatherKittyIsLoading;
 }
 
 export async function WeatherKittyIsLoaded() {
@@ -915,6 +919,7 @@ async function getWeatherAsync() {
       "[getWeatherAsync] *** ERROR ***: No Location Data Available"
     );
   }
+  await WeatherKittyIsLoading(false, "Location");
 
   // Get Location and check cached location, ... use, update, etc.
   // check the cached forecasturl, cwa, gridId, gridX, gridY ... use, update, etc.
@@ -950,6 +955,7 @@ async function getWeatherAsync() {
   } else {
     throw new Error("[getWeatherAsync] *** ERROR ***: No Point Data Available");
   }
+  await WeatherKittyIsLoading(false, "Point Data");
 
   // Get "Featured" Observation Station ... from Stations
   // https://api.weather.gov/stations/KI35/observations
@@ -977,6 +983,7 @@ async function getWeatherAsync() {
           "[getWeatherAsync] *** ERROR ***: No Stations Data Available"
         );
     }
+    await WeatherKittyIsLoading(false, "Obs Station ID");
   } else {
     if (Log.Error())
       console.log(
@@ -1006,6 +1013,7 @@ async function getWeatherAsync() {
       if (Log.Error())
         console.log("[getWeatherAsync] *** ERROR ***: No Obs Data Available");
     }
+    await WeatherKittyIsLoading(false, "Obs Data");
   } else {
     if (Log.Error())
       console.log("[getWeatherAsync] *** ERROR ***: No Observation Station ID");
@@ -1039,6 +1047,7 @@ async function getWeatherAsync() {
           "[getWeatherAsync] *** ERROR ***: No Forecast Data Available"
         );
     }
+    await WeatherKittyIsLoading(false, "Forecast Data");
   } else {
     if (Log.Error())
       console.log("[getWeatherAsync] *** ERROR ***: No Forecast URL");
@@ -1205,7 +1214,7 @@ export async function WeatherCharts(chartData) {
       console.log("[WeatherCharts] *** WARNING ***: No Chart Data Available");
     return;
   }
-  await WeatherKittyIsLoading(true, "Charts");
+  await WeatherKittyIsLoading(true, "Charts"); // cjm2
   let types = [];
   for (let value of chartData.keys()) {
     types.push(value);
@@ -1221,7 +1230,7 @@ export async function WeatherCharts(chartData) {
       if (Log.Debug()) console.log(container);
       return;
     }
-    await WeatherKittyIsLoading(true, chartType.toLowerCase() + " Chart");
+
     if (types.includes(chartType) === false) {
       container.style.display = "none";
       if (Log.Warn())
@@ -1248,6 +1257,7 @@ export async function WeatherCharts(chartData) {
       chart.history
     );
   }
+  await WeatherKittyIsLoading(false, "Charts");
   if (Log.Debug()) console.log("[WeatherCharts] Complete");
 }
 
@@ -1307,6 +1317,7 @@ export async function CreateChart( // cjm optimize this
     if (Log.Verbose()) console.log(`[CreateChart] ${values}`);
   }
 
+  await WeatherKittyIsLoading(true, key);
   let data = [];
   let time = [];
   await microSleep(1);
@@ -1356,6 +1367,7 @@ export async function CreateChart( // cjm optimize this
   if (canvas === null || canvas === undefined) {
     console.log("[CreateChart] *** ERROR ***: Canvas Element Not Found");
     console.log(chartContainer);
+    await WeatherKittyIsLoading(false, key);
     return;
   }
 
@@ -1415,6 +1427,7 @@ export async function CreateChart( // cjm optimize this
     ];
   }
   // ------------------------------------------------------------------
+  await WeatherKittyIsLoading(false, key);
 }
 
 // Function WeatherSquares
@@ -1902,7 +1915,6 @@ async function HistoryGetChartData(station, latitude, longitude) {
   }
 
   let fileData;
-  await WeatherKittyIsLoading(true, "History Csv");
   fileData = await HistoryGetCsvFile(station.id);
   if (fileData && fileData?.length > 0) {
     if (Log.Debug()) console.log(`[GetHistoryChartData] fileDataCheck: Ok`);
@@ -1971,6 +1983,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
       }
     }
   }
+  await WeatherKittyIsLoading(false, "Csv Data");
 
   await WeatherKittyIsLoading(true, "Trimming");
   await microSleep(1);
@@ -1984,6 +1997,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
       );
     }
   }
+  await WeatherKittyIsLoading(false, "Trimming");
 
   await WeatherKittyIsLoading(true, "Reformatting");
   await microSleep(1);
@@ -1993,6 +2007,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
     for (let key of dataSets.keys()) keys.push(key);
     console.log(`[History] [${station.id}] ${keys.join(", ")}`);
   }
+  await WeatherKittyIsLoading(false, "Reformatting");
   if (Log.Trace()) console.log("[GetHistoryChartData] ", dataSets);
   return dataSets;
 }
@@ -2100,6 +2115,7 @@ async function HistoryGetStation(station, latitude, longitude) {
     null,
     config.archiveCacheTime
   );
+  await WeatherKittyIsLoading(false, "ghcnd stations");
 
   let lines;
   if (response?.ok) {
@@ -2110,6 +2126,7 @@ async function HistoryGetStation(station, latitude, longitude) {
         console.log(
           `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
         );
+
       return null;
     }
     if (Log.Debug())
@@ -2184,6 +2201,7 @@ async function HistoryGetStation(station, latitude, longitude) {
       result.longitude = location.lon;
     }
   }
+  await WeatherKittyIsLoading(false, "station data");
 
   if (Log.Info()) console.log(`[HistoricalGetStation] Result: `, result);
   if (Log.Trace()) console.log(nearestStation);
@@ -2260,6 +2278,7 @@ async function HistoryGetCsvFile(stationId) {
         console.log(
           "[HistoricalGetCsvFile] *** ERROR *** : fileData Error, No Data "
         );
+      await WeatherKittyIsLoading(false, "history data");
       return null;
     } else if (Log.Debug()) console.log(`fileDataCheck: Ok `);
   } else {
@@ -2271,8 +2290,12 @@ async function HistoryGetCsvFile(stationId) {
     console.log(`result: ${result.length}, lines: ${fileData.length}`);
     console.log(firstLines, lastLines);
   }
+  await WeatherKittyIsLoading(false, "history data");
+  await WeatherKittyIsLoading(false, `FetchCSV ${idString}`);
+
   return fileData;
 }
+
 // ---
 // / GetHistoryChartData ------------------------------------------------
 
@@ -2327,7 +2350,11 @@ function WeatherKittyForecastBlock() {
   return results;
 }
 
-let WeatherKittyWidgetBlock = `<weather-kitty-current></weather-kitty-current>
+let WeatherKittyWidgetBlock = `<weather-kitty-tooltip>
+    <weather-kitty-geoaddress></weather-kitty-geoaddress>
+    <p></p>
+  </weather-kitty-tooltip>
+  <weather-kitty-current></weather-kitty-current>
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
