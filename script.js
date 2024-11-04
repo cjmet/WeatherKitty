@@ -3,28 +3,26 @@ import {
   LogLevel,
   SetLocationAddress,
   WeatherKitty,
-  WeatherKittyIsLoaded,
+  WeatherKittyWaitOnLoaded,
   WeatherKittyPause,
   sleep,
   config,
 } from "./WeatherKitty.mjs";
-// LogLevel.Info - Default Level, summary of what's happening
-// LogLevel.Trace - adds LOADING DELAYS, and other detailed information
 
-// Load custom Config first, then startup.
-if (true) {
-  WeatherKittyPause(true);
-  // Log.SetLogLevel(LogLevel.Debug);
-  config.Verbose(true);
+let LoadFirst = true; // else reload after initial load.
+if (LoadFirst) {
+  WeatherKittyPause(true); // stop the widget and disable the initial load
+  Log.SetLogLevel(LogLevel.Info);
   await SetLocationAddress("USW00014739");
-  WeatherKittyPause(false);
-}
-
-// Alternative Way to do the above, but it loads default first, then sets the location and reloads
-if (false) {
-  await WeatherKittyIsLoaded();
+  WeatherKittyPause(false); // re-enable the widget
+  WeatherKitty(); // initialize the widget
+} else {
+  // Alternative Way to do the above, but it loads default first, then sets the location and reloads
+  Log.SetLogLevel(LogLevel.Info);
+  await WeatherKittyWaitOnLoaded();
   console.log("Weather Kitty is loaded!");
   await SetLocationAddress("USW00014739");
+  WeatherKitty(); // reload the widget
 }
 
 // BUTTONS -------------------------------------
