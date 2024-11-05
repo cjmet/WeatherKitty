@@ -1,7 +1,11 @@
 /* Page Layout */
 html,
 body {
+  box-sizing: border-box;
   margin: 0;
+  /* overflow-x: scroll;
+  scrollbar-width: 60px; */
+  min-height: calc(100vh - 1.1rem);
 }
 
 #WeatherKittyBody {
@@ -106,6 +110,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  z-index: 1;
 }
 
 #WeatherKittyHeader h1 {
@@ -152,9 +157,9 @@ body {
 }
 
 #WeatherKittyMain {
-  border: black 3px solid;
   box-sizing: border-box;
   grid-area: main;
+
   display: flex;
   flex-direction: column;
 
@@ -165,14 +170,11 @@ body {
 /* // cjm  */
 .WeatherKittyHomeCharts,
 .WeatherKittyWeatherCharts,
-.WeatherKittyHistoryCharts {
+.WeatherKittyHistoryCharts,
+.WeatherKittyClimateCharts {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-}
-
-weather-kitty-chart > canvas {
-  z-index: 10;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -184,6 +186,12 @@ weather-kitty-chart > canvas {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
 }
+
+/* ---------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------------- */
 /* media query for width and height of viewport */
@@ -206,6 +214,14 @@ weather-kitty-chart > canvas {
       "footer footer footer";
   }
 
+  weather-kitty-tooltip {
+    margin: 1em 0 0 0;
+  }
+
+  #Logo {
+    z-index: 1;
+  }
+
   #Logo img {
     height: 4em;
   }
@@ -216,16 +232,17 @@ weather-kitty-chart > canvas {
     border: black 3px solid;
     border-left: none;
     border-right: none;
+    z-index: 1;
   }
 
   #HamburgerLinks {
     position: fixed;
     border: gray 3px solid;
-    top: 2.66em;
-    left: 4.66em;
+    top: 0;
+    left: 0;
     width: 0;
     height: 0;
-    margin: 0 0.5em;
+    margin: 0;
   }
 
   #HamburgerLinks a,
@@ -247,8 +264,8 @@ weather-kitty-chart > canvas {
     }
     #HamburgerLinks {
       transition: width 0.15s, height 0.66s;
-      width: 7em;
-      height: 17em;
+      width: auto;
+      height: auto;
       opacity: 1;
     }
   }

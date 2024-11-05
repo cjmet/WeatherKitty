@@ -29,6 +29,7 @@
           <a id="NavHome">Home</a>
           <a id="NavWeather">Weather<br />Charts</a>
           <a id="NavHistory">History<br />Charts</a>
+          <a id="NavClimate">Climate<br />Charts</a>
           <hr width="50%" />
           <a id="ExpireData">Expire<br />Data</a>
           <a id="PurgeData">Purge<br />Data</a>
@@ -57,19 +58,13 @@
 
       <div class="WeatherKittyHomeCharts">
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
-        <!-- // cjm  -->
-        <weather-kitty-chart
-          type="TEMP"
-          dataLength="avg"
-          maxDataPoints="auto"
-          pixelsPerDataPoint="auto"
-        ></weather-kitty-chart>
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
 
       <div class="WeatherKittyWeatherCharts">
-        <!-- <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
@@ -79,13 +74,13 @@
         <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
         <weather-kitty-chart type="visibility"></weather-kitty-chart>
         <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
-        <weather-kitty-chart type="windGust"></weather-kitty-chart> -->
+        <weather-kitty-chart type="windGust"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
 
       <div class="WeatherKittyHistoryCharts">
-        <!-- <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
         <weather-kitty-chart type="TOBS"></weather-kitty-chart>
         <weather-kitty-chart type="TAVG"></weather-kitty-chart>
         <weather-kitty-chart type="TMAX"></weather-kitty-chart>
@@ -100,7 +95,28 @@
         <weather-kitty-chart type="TSUN"></weather-kitty-chart>
 
         <weather-kitty-chart type="WT**"></weather-kitty-chart>
-        <weather-kitty-chart type="WV**"></weather-kitty-chart> -->
+        <weather-kitty-chart type="WV**"></weather-kitty-chart>
+      </div>
+
+      <div class="WeatherKittyClimateCharts">
+        <weather-kitty-chart
+          type="TEMP"
+          MaxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
+        <weather-kitty-chart
+          type="TMAX"
+          MaxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
+        <weather-kitty-chart
+          type="TMIN"
+          MaxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
       </div>
 
       <!-- --- -->

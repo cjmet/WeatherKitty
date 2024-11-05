@@ -183,6 +183,18 @@ weather-kitty-chart {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
+  position: relative;
+}
+
+weather-kitty-chart > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  margin: 2em 0 0 3.5em;
+  color: #606060;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: small;
 }
 
 /* required use of a container query */

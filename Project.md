@@ -64,6 +64,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
   - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
     - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 510
       - [ ] Controls Number of Data Points
@@ -97,6 +98,8 @@ It sounds so neat and simple, and it so very much isn't.
     - [ ] already worked on optimization some. Lots more work to do.
     - [ ] ghcnd operations need to be unlinked, and fill in later.
     - [ ] parallel history charts, or even all charts?
+  - [ ] disable nav while loading?
+  - [ ] disable set while loading?
   - [ ] ...
         &nbsp;
 

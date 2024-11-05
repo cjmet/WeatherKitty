@@ -10,11 +10,15 @@ import {
 
 let LoadFirst = true; // else reload after initial load.
 if (LoadFirst) {
-  WeatherKittyPause(true); // stop the widget and disable the initial load
+  // WeatherKittyPause(true); // stop the widget and disable the initial load
   // Log.SetLogLevel(LogLevel.Info);
-  await SetLocationAddress("USW00014739");
-  WeatherKittyPause(false); // re-enable the widget
-  WeatherKitty(); // initialize the widget
+  // await SetLocationAddress("USW00014739");
+  // WeatherKittyPause(false); // re-enable the widget
+  // WeatherKitty(); // initialize the widget
+  // await WeatherKittyWaitOnLoad(); // wait for the widget to load
+  // NavHome();
+  await WeatherKittyWaitOnLoad(); // wait for the widget to load
+  NavClimate();
 } else {
   // Alternative Way to do the above, but it loads default first, then sets the location and reloads
   Log.SetLogLevel(LogLevel.Info);
@@ -22,6 +26,7 @@ if (LoadFirst) {
   console.log("Weather Kitty is loaded!");
   await SetLocationAddress("USW00014739");
   WeatherKitty(); // reload the widget
+  NavHome();
 }
 
 // BUTTONS -------------------------------------
@@ -34,6 +39,8 @@ if (LoadFirst) {
   if (element) element.addEventListener("click", NavWeather);
   element = document.getElementById("NavHistory");
   if (element) element.addEventListener("click", NavHistory);
+  element = document.getElementById("NavClimate");
+  if (element) element.addEventListener("click", NavClimate);
   element = document.getElementById("ExpireData");
   if (element) element.addEventListener("click", ExpireData);
   element = document.getElementById("PurgeData");
@@ -41,12 +48,14 @@ if (LoadFirst) {
 }
 
 function NavToClass(classNames) {
+  if (!classNames) classNames = [];
   let classList = [
     "MapsAlpha",
     "WeekAlpha",
     "WeatherKittyHomeCharts",
     "WeatherKittyWeatherCharts",
     "WeatherKittyHistoryCharts",
+    "WeatherKittyClimateCharts",
   ];
   for (let classId of classList) {
     let elements = document.getElementsByClassName(classId);
@@ -75,6 +84,11 @@ function NavWeather() {
 function NavHistory() {
   console.log("Navigating History");
   NavToClass(["WeatherKittyHistoryCharts"]);
+}
+
+function NavClimate() {
+  console.log("Navigating Climate");
+  NavToClass(["WeatherKittyClimateCharts"]);
 }
 
 function ExpireData() {
