@@ -64,26 +64,26 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
+    - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 510
+      - [ ] Controls Number of Data Points
+    - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
+      - [ ] Controls Display, Aspect, Etc. "Auto", 4, 1, "Max", etc.
+    - [ ] DataLength: Truncate, ReverseTruncate, Average, None. Default Truncate.
+    - [x] Const MaxWidth = 32000 pixels, more and chart.js breaks.
+    - [ ] Deal with Null and NaN Data
+  - [ ] Global Warming Charts, 1936 to 2024
+    - [ ] Data API
+    - [ ] Set or Override Chart Sizes and Such
+    - [ ] By Year, By Month, By Week
   - [ ] History Chart Optimization
-
     - [ ] Check for charts first, then only pull the charts we need?
     - [ ] better handling of data types and standardization so we don't have to do so much processing and reprocessing of data
-    - [x] History is always 4 letter codes
-    - [x] Obs is always more
-    - [x] Truncate history on read, save cpu time.
     - [ ] pass in chart lists so we only process ones we need
     - [ ] processed data cache in front of the raw fetchcache data?
-
   - [ ] Aliases,
     - [x]temp = TMax, Tmin, Tobs
     - [ ] WT**, WV**
-  - [ ] Global Warming Charts, 1936 to 2024
-    - [ ] By Year, By Month, By Week
-  - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
-    - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
-    - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
-    - [ ] Const MaxWidth = 32000 pixels, more and chart.js breaks.
-    - [ ] DataLength: Truncate, ReverseTruncate, Average, None
   - [ ] City, State by ghcnd
     - [ ] Prefer Order: USW*, USC*, \*
     - [ ] state names from ghcnd-states.txt

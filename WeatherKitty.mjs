@@ -54,6 +54,7 @@ let Log = {
 export { Log, LogLevel };
 // /Logging
 
+// CONFIG ---------------------------------------------------------------
 let config = {
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
@@ -73,7 +74,14 @@ let config = {
   AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
   AlertsMapCacheTime: 60000 * 10, // 10 minutes
 
-  HistoryDataMaxLimit: 500, // Default: 500, 32000 for testing // cjm
+  // These only apply to the HISTORY charts
+  CHARTMAXWIDTH: 32000, // this is a constant, more will crash chart.js and/or the browser
+
+  ChartDataResize: "truncate", // truncate, reverse, average, none()
+  ChartPixelsPerPoint: 4, // "Auto", default: 4 or None. 4 looks best visually to me.
+  ChartMaxPoints: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),  // cjm2
+
+  // /History
 
   historyFormat: {
     year: "numeric",
@@ -99,6 +107,10 @@ let config = {
   WeatherKittyPath: "",
 
   SanityChecks: function () {
+    if (config.ChartMaxPoints === "Calc" || config.ChartMaxPoints === "calc")
+      config.ChartMaxPoints = Math.floor(
+        config.CHARTMAXWIDTH / config.ChartPixelsPerPoint
+      );
     if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
     if (config.longCacheTime < 60000) config.longCacheTime = 60000;
     if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
@@ -110,6 +122,7 @@ let config = {
   },
 };
 export { config };
+// /CONFIG ---------------------------------------------------------------
 
 // Function Weather Kitty
 async function WeatherKittyStart() {
@@ -610,7 +623,7 @@ async function SetLoadingIndicatorMessage(kvpMap) {
   }
 }
 
-export async function WeatherKittyWaitOnLoaded() {
+export async function WeatherKittyWaitOnLoad() {
   while (!config.WeatherWidgetIsLoaded || (await WeatherKittyIsLoading())) {
     await microSleep(100);
   }
@@ -1187,7 +1200,7 @@ export async function WeatherCharts(chartData) {
       console.log("[WeatherCharts] *** WARNING ***: No Chart Data Available");
     return;
   }
-  // cjm2
+
   let types = [];
   for (let value of chartData.keys()) {
     types.push(value);
@@ -1241,7 +1254,7 @@ export async function CreateChart( // cjm optimize this
   values,
   timestamps,
   aspect, // aspect ratio, 0 or null for auto
-  history // history = true for history charts and history date format
+  isHistory // history = true for history charts and history date format
 ) {
   WeatherKittyIsLoading(`${key}`, async () => {
     if (values == null || values.length == 0 || values[0].value === undefined) {
@@ -1290,6 +1303,90 @@ export async function CreateChart( // cjm optimize this
       }
     }
 
+    // cjm3
+    // - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
+    // - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
+    // - [ ] DataLength: Truncate, ReverseTruncate, Average, None
+    let maxDataPoints = chartContainer.getAttribute("maxDataPoints");
+    let pixelsPerPoint = chartContainer.getAttribute("pixelsPerDataPoint");
+    let dataLength = chartContainer.getAttribute("dataLength");
+    if (isHistory)
+      console.log("Chart Read", maxDataPoints, pixelsPerPoint, dataLength);
+
+    if (!maxDataPoints) maxDataPoints = "auto";
+    if (!pixelsPerPoint) pixelsPerPoint = "auto";
+    if (!dataLength) dataLength = "Truncate";
+
+    let mxString = "" + maxDataPoints;
+    if (mxString === "auto") maxDataPoints = config.ChartMaxPoints;
+    if (
+      // if it's invalid, set it to default
+      !maxDataPoints ||
+      maxDataPoints <= 0 ||
+      maxDataPoints > config.CHARTMAXWIDTH
+    )
+      maxDataPoints = config.ChartMaxPoints;
+
+    let pxString = "" + pixelsPerPoint;
+    pxString = pxString.toLowerCase();
+    if (pxString !== "auto") {
+      pixelsPerPoint = parseInt(pixelsPerPoint);
+      if (pixelsPerPoint <= 0) pixelsPerPoint = config.PixelsPerPoint;
+      let calculatedMaxPoints = Math.floor(
+        config.CHARTMAXWIDTH / pixelsPerPoint
+      );
+      if (maxDataPoints > calculatedMaxPoints)
+        maxDataPoints = calculatedMaxPoints;
+    }
+
+    // Truncate it if needed
+    if (isHistory)
+      console.log("Chart Set", maxDataPoints, pixelsPerPoint, dataLength);
+    {
+      if (values.length > maxDataPoints) {
+        // if (Log.Debug()) // cjm2
+        console.log(
+          `[CreateChart] ${key} ${
+            isHistory ? "(History)" : ""
+          } ${dataLength} [${values.length} to ${maxDataPoints}]`
+        );
+
+        if (dataLength.substring(5) === "trunc") {
+          values = values.slice(values.length - maxDataPoints);
+          timestamps = timestamps.slice(timestamps.length - maxDataPoints);
+        } else if (dataLength.includes("rev")) {
+          values = values.slice(0, maxDataPoints);
+          timestamps = timestamps.slice(0, maxDataPoints);
+        } else if (dataLength === "average" || dataLength.includes("avg")) {
+          let avgValues = [];
+          let avgTimestamps = [];
+          let step = Math.ceil(values.length / maxDataPoints);
+          let remainder = values.length % maxDataPoints;
+          let sum = 0;
+          let count = 0;
+          for (let i = 0; i < values.length; i++) {
+            sum += values[i].value;
+            count++;
+            if (count >= step) {
+              avgValues.push({
+                value: sum / count,
+                unitCode: values[i].unitCode,
+              });
+              avgTimestamps.push(timestamps[i]);
+              sum = 0;
+              count = 0;
+            }
+          }
+          avgValues.push(sum / count);
+          avgTimestamps.push(timestamps[values.length - 1]);
+
+          values = avgValues;
+          timestamps = avgTimestamps;
+        }
+        // else "None" or invalid: do nothing
+      }
+    }
+
     let data = [];
     let time = [];
     await microSleep(1);
@@ -1298,8 +1395,7 @@ export async function CreateChart( // cjm optimize this
       data.push(values[i].value);
       let date = new Date(timestamps[i]);
       let label;
-      if (Log.Verbose()) console.log(`[CreateChart] History: ${history}`);
-      if (history) {
+      if (isHistory) {
         label = date.toLocaleString(undefined, config.historyFormat);
         label = label
           .replace(/ AM/, "a")
@@ -1316,7 +1412,7 @@ export async function CreateChart( // cjm optimize this
     }
     await microSleep(1);
     // cjm optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
-    if (!history) {
+    if (!isHistory) {
       // Oldest to Newest
       data = data.reverse();
       time = time.reverse();
@@ -1324,15 +1420,38 @@ export async function CreateChart( // cjm optimize this
 
     //  6em high labels
     await microSleep(1); // sleep(); // give the container time to grow/shrink
+    let chartAspect;
+    // if (!isHistory) // cjm2
     let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
     let width = getComputedStyle(chartContainer).width.replace("px", "");
     let height = getComputedStyle(chartContainer).height.replace("px", "");
     if (height < oneEm * 18) height = oneEm * 18;
-    let chartAspect = (width - oneEm) / height;
+    chartAspect = (width - oneEm) / height;
     if (chartAspect < 1) chartAspect = 1;
     if (chartAspect > 2.5) chartAspect = 2.5;
     if (aspect != null && aspect != 0) chartAspect = aspect;
     if (isNaN(chartAspect)) chartAspect = 2;
+
+    if (false && isHistory) {
+      // cjm2
+      // Set ONLY Width, Don't set both width and height, it will distort the chart
+      let width = Math.round(data.length * pixelsPerPoint);
+      let height = Math.round(window.innerHeight * 0.7);
+      chartContainer.style.width = width + "px";
+      chartAspect = width / height; // cjm2
+      console.log(
+        "Chart",
+        key,
+        "Data Points:",
+        data.length,
+        "Width:",
+        width,
+        "Height:",
+        height,
+        "Aspect:",
+        chartAspect
+      );
+    }
 
     if (Log.Trace())
       console.log(
@@ -1376,8 +1495,8 @@ export async function CreateChart( // cjm optimize this
           ],
         },
         options: {
-          aspectRatio: chartAspect,
-          maintainAspectRatio: true,
+          // aspectRatio: chartAspect,
+          // maintainAspectRatio: true,
           scales: {
             x: {
               ticks: {
@@ -1388,6 +1507,10 @@ export async function CreateChart( // cjm optimize this
           },
         },
       });
+      if (chartAspect) {
+        newChart.options.aspectRatio = chartAspect;
+        newChart.options.maintainAspectRatio = true;
+      }
       await microSleep(1);
       newChart.update();
     } else {
@@ -1843,7 +1966,9 @@ async function corsCache(url, options, ttl, verbose) {
 0;
 
 // GetHistoryChartData ------------------------------------------------
-// ---
+// Returns:
+//    Map("TMAX", {timestamps: [timestamps], values: [{value: int, unitCode: string}]})
+
 async function HistoryGetChartData(station, latitude, longitude) {
   let location;
   if (station) location = await HistoryGetStation(station);
@@ -1895,7 +2020,9 @@ async function HistoryGetChartData(station, latitude, longitude) {
   // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
   // USW00014739,19360101,TMAX, 17,,,0,2400
 
-  let dataSets = {};
+  // Data is a mixed hodgepodge so we have to use an array for the first read.
+  let dataSets;
+  dataSets = {};
   let lineCount = 0;
   for (let line of fileData) {
     lineCount++;
@@ -1930,7 +2057,8 @@ async function HistoryGetChartData(station, latitude, longitude) {
           date += "T24:00:00";
         }
         dataSets[type].timestamps.push(date);
-        dataSets[type].values.push(val);
+        let value = { value: val, unitCode: type };
+        dataSets[type].values.push(value);
       } else {
         if (Log.Error())
           console.log(
@@ -1948,16 +2076,20 @@ async function HistoryGetChartData(station, latitude, longitude) {
   }
 
   await microSleep(1);
-  for (let key in dataSets) {
-    if (dataSets[key].timestamps.length > config.HistoryDataMaxLimit) {
-      dataSets[key].timestamps = dataSets[key].timestamps.slice(
-        dataSets[key].timestamps.length - config.HistoryDataMaxLimit
-      );
-      dataSets[key].values = dataSets[key].values.slice(
-        dataSets[key].values.length - config.HistoryDataMaxLimit
-      );
-    }
-  }
+
+  // {
+  //   let localLimit = config.ChartMaxPoints; // cjm2
+  //   for (let key in dataSets) {
+  //     if (dataSets[key].timestamps.length > localLimit) {
+  //       dataSets[key].timestamps = dataSets[key].timestamps.slice(
+  //         dataSets[key].timestamps.length - localLimit
+  //       );
+  //       dataSets[key].values = dataSets[key].values.slice(
+  //         dataSets[key].values.length - localLimit
+  //       );
+  //     }
+  //   }
+  // }
 
   await microSleep(1);
   dataSets = await HistoryReformatDataSets(dataSets);
@@ -2008,7 +2140,6 @@ async function HistoryReformatDataSets(dataSets) {
 }
 
 async function HistoryConvertUnits(data, key) {
-  data = { value: data, unitCode: key };
   if (HistoryDataConversion[key] != null) {
     data = await HistoryDataConversion[key](data);
   }
@@ -2165,6 +2296,12 @@ async function HistoryGetStation(station, latitude, longitude) {
     return result;
   });
 }
+
+// TruncateData(), ReverseTruncateData(), AverageData(), AllData()
+async function TruncateData() {}
+async function ReverseTruncateData() {}
+async function AverageData() {}
+async function AllData() {}
 
 // Function HistoricalGetCsvFile
 async function HistoryGetCsvFile(stationId) {
