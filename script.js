@@ -8,20 +8,24 @@ import {
   sleep,
 } from "./WeatherKitty.mjs";
 
-let NavFirst = true;
-// Load then Nav, everything will calculate and load before navigating
-if (NavFirst) {
-  // WeatherKittyPause(true); // stop the widget and disable the initial load
-  // Log.SetLogLevel(LogLevel.Info);
-  // await SetLocationAddress("USW00014739");
-  // WeatherKittyPause(false); // re-enable the widget
-  // WeatherKitty(); // initialize the widget
+let CodeKy = false;
+let Boston = false;
+let TestFubarDisplay = false;
+
+WeatherKittyPause(true); // stop the widget and disable the initial load
+if (CodeKy) Log.SetLogLevel(LogLevel.Info);
+if (Boston) await SetLocationAddress("USW00014739");
+if (TestFubarDisplay) {
+  WeatherKittyPause(false);
+  WeatherKitty();
   NavHome();
-}
-// Nav then Load, the charts will barf and punt because they can't measure the container that hasn't rendered or is set to display:none
-else {
+  await WeatherKittyWaitOnLoad();
+  NavClimate();
+} else {
+  WeatherKittyPause(false);
+  WeatherKitty();
   await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  NavHom();
+  NavClimate();
 }
 
 // BUTTONS -------------------------------------

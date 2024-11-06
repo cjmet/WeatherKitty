@@ -79,11 +79,16 @@ let config = {
   // These only apply to the HISTORY charts
   CHARTMAXWIDTH: 32000, // this is a constant, more will crash chart.js and/or the browser
 
-  ChartDataResizeDefault: "truncate", // truncate, reverse, average, none()
+  ChartTrimDefault: { weather: "average", history: "truncate" }, // truncate, reverse, average, none()
   ChartPixelsPerPointDefault: 4, // "Auto", default: 4 or None. 4 looks best visually to me.
-  ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),  // cjm2
+  ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),  // cjm-chart
   ChartAspectDefault: 2.7,
   ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
+
+  maxWidth: 30720,
+  maxHeight: 17280,
+  defaultWidth: 1920,
+  defaultHeight: 1080,
 
   // /History
 
@@ -308,7 +313,7 @@ export async function WeatherKitty() {
       config.AlertsMapCacheTime
     );
 
-    // DATA -------------------------------------------------------------- // cjm
+    // DATA --------------------------------------------------------------
     // Get/Update the Weather Data
     let weather = await getWeatherAsync();
     let historyStation = await HistoryGetStation();
@@ -568,7 +573,6 @@ export async function SetLocationAddress(address) {
 // WeatherKittyLoading(); // returns true if loading
 // if isLoading is false and message is null, then clear all indicators
 export async function WeatherKittyIsLoading(message, func) {
-  // cjm
   // if WKL(null) then return status of loading
   if (message == null || func == null) {
     let result = config.KvpTimers.size > 0;
@@ -593,7 +597,6 @@ export async function WeatherKittyIsLoading(message, func) {
 }
 
 async function SetLoadingIndicatorMessage(kvpMap) {
-  // cjm
   if (kvpMap.size > 0) {
     let array = [...kvpMap.entries()];
     let [message, value] = array[array.length - 1];
@@ -1222,7 +1225,8 @@ export async function WeatherCharts(chartData) {
 
     if (types.includes(chartType) === false) {
       container.style.display = "none";
-      if (Log.Warn())
+      if (false && Log.Warn())
+        // cjm
         console.log(
           `[ProcessCharts] Warning: Chart Type [${chartType}] Not Found`
         );
@@ -1251,7 +1255,7 @@ export async function WeatherCharts(chartData) {
 }
 
 // Function CreateChart
-export async function CreateChart( // cjm optimize this
+export async function CreateChart(
   chartContainer,
   key, // Key value and Title of Chart
   values,
@@ -1306,118 +1310,90 @@ export async function CreateChart( // cjm optimize this
       }
     }
 
-    // cjm3
+    // cjm-chart
+    await microSleep(1); // to let the container render
     // - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
     // - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
     // - [ ] DataLength: Truncate, ReverseTruncate, Average, None
-    let maxDataPoints = chartContainer.getAttribute("maxDataPoints");
-    let pixelsPerPoint = chartContainer.getAttribute("pixelsPerDataPoint");
-    let dataLength = chartContainer.getAttribute("trimData");
 
+    let maxDataPoints, pixelsPerPoint, dataLength, width, height, chartAspect;
+    let chartDiv = chartContainer.getElementsByTagName("div")[0];
+    maxDataPoints = chartDiv.getAttribute("maxDataPoints");
     if (!maxDataPoints) maxDataPoints = "auto";
+    maxDataPoints = maxDataPoints.toLowerCase();
+
+    pixelsPerPoint = chartDiv.getAttribute("pixelsPerDataPoint");
     if (!pixelsPerPoint) pixelsPerPoint = "auto";
+    pixelsPerPoint = pixelsPerPoint.toLowerCase();
+
+    dataLength = chartDiv.getAttribute("trimData");
     if (!dataLength) dataLength = "truncate";
+    dataLength = dataLength.toLowerCase();
 
-    let mxString = "" + maxDataPoints;
-    mxString = mxString.toLowerCase();
-    let pxString = "" + pixelsPerPoint;
-    pxString = pxString.toLowerCase();
-    let dxString = "" + dataLength;
-    dxString = dxString.toLowerCase();
+    // ---------------------  Calculate Width and Height ---------------------
 
-    // word settings, "max", "default", "history"
-    if (pxString.includes("default") || pxString.includes("history")) {
-      pixelsPerPoint = config.ChartPixelsPerPointDefault;
-      pxString = "" + pixelsPerPoint;
-    }
-    if (mxString.includes("default") || mxString.includes("history")) {
-      maxDataPoints = config.ChartMaxPointsDefault;
-      mxString = "" + maxDataPoints;
-    }
-    if (mxString.includes("max")) {
-      let divisor =
-        pixelsPerPoint > 0 ? pixelsPerPoint : config.ChartPixelsPerPointDefault;
-      maxDataPoints = config.CHARTMAXWIDTH / divisor;
-    }
+    // Calculate Width and Height in order to later calculate Aspect Ratio
+    width = window.getComputedStyle(chartDiv).width;
+    height = window.getComputedStyle(chartDiv).height;
+    // if (Log.Trace()) // cjm
+    console.log("Width:1 ", width, "Height: ", height);
 
-    // SET ASPECT RATIO, MX and PX, etc.
-    await microSleep(1); // sleep(); // give the container time to grow/shrink
-    let chartAspect;
-    let oneEm = getComputedStyle(chartContainer).fontSize.replace("px", "");
-    let width = getComputedStyle(chartContainer).width.replace("px", "");
-    let height = getComputedStyle(chartContainer).height.replace("px", "");
+    if (!width || !GetPixels(width)) width = chartDiv.getAttribute("width");
+    if (!height || !GetPixels(height)) height = chartDiv.getAttribute("height");
+    // if (Log.Trace()) // cjm
+    console.log("Width:2 ", width, "Height: ", height);
+
+    if (!width || !GetPixels(width)) width = window.innerWidth;
+    if (!height || !GetPixels(height)) height = window.innerHeight;
+    // if (Log.Trace()) // cjm
+    console.log("Width:3 ", width, "Height: ", height);
+
+    width = parseFloat(width);
+    height = parseFloat(height);
+
+    if (width < 16 || width > config.maxWidth) width = config.defaultWidth;
+    if (height < 16 || height > config.maxHeight) height = config.defaultHeight;
+
+    // Default Aspect Ratio ------------------------------------------------
+    chartAspect = width / height;
+    if (chartAspect < 1) chartAspect = 1;
+    if (chartAspect > 3.56) chartAspect = 3.56;
+    // /Default Aspect Ratio
+
+    // MAX DATA POINTS
+    // ---
+    // if mx then we need to set mx based on input parameters
+
+    let localPx =
+      pixelsPerPoint === "auto" || pixelsPerPoint === "default"
+        ? config.ChartPixelsPerPointDefault
+        : pixelsPerPoint;
+    localPx = parseFloat(localPx);
+    if (isNaN(localPx)) localPx = config.ChartPixelsPerPointDefault;
+    localPx = Math.abs(localPx);
+
+    if (maxDataPoints === "auto") maxDataPoints = Math.floor(width / localPx);
+    else if (maxDataPoints === "default")
+      maxDataPoints = config.ChartMaxDataPointsDefault;
+    else if (maxDataPoints === "max")
+      maxDataPoints = Math.floor(config.CHARTMAXWIDTH / localPx);
+    maxDataPoints = Math.abs(maxDataPoints);
 
     // ---
-    // ASPECT
-    // ---
-    // if (Log.Debug())
-    // cjm4
-    console.log(
-      `PXSTRING Start: ${key} ${pxString} ${width} ${height} ${chartAspect}`
-    );
-    // cjm6
-    // if NaNs set vhs ... if NaNs set aspect to default(s) for now
-    if (isNaN(height) || isNaN(width)) {
-      if (window.innerWidth > window.innerHeight)
-        chartAspect = config.ChartAspectDefault;
-      else chartAspect = 1;
-      height = config.ChartHeightPuntVh + "vh";
-    } else {
-      if (height < oneEm * 16) height = oneEm * 16; // We want to target about this height
-      chartAspect = (width - oneEm) / height;
-      if (chartAspect < 1) chartAspect = 1;
-      if (chartAspect > config.ChartAspectDefault)
-        chartAspect = config.ChartAspectDefault;
-      if (aspect != null && aspect != 0) chartAspect = aspect;
-      if (isNaN(chartAspect)) chartAspect = 2;
-    }
-    console.log(
-      `PXSTRING Init: ${key} ${pxString} ${width} ${height} ${chartAspect}`
-    );
-
-    // ---
-    // Auto Auto  ...  Default Size and Aspect, fit to screen?
-    // ---
-    if (mxString === "auto" && pxString === "auto") {
-      maxDataPoints = config.ChartMaxPointsDefault;
-      pixelsPerPoint = config.ChartPixelsPerPointDefault;
-    }
-    // Auto PX
-    else if (mxString === "auto" && pixelsPerPoint > 0) {
-      let divisor = pixelsPerPoint >= 1 ? pixelsPerPoint : 1;
-      maxDataPoints = config.CHARTMAXWIDTH / pixelsPerPoint;
-    }
-    // MX Auto
-    else if (maxDataPoints > 0 && pxString === "auto") {
-      if (maxDataPoints > config.CHARTMAXWIDTH)
-        maxDataPoints = config.CHARTMAXWIDTH;
-    }
-    // MX PX
-    else if (maxDataPoints > 0 && pixelsPerPoint > 0) {
-      if (maxDataPoints > config.CHARTMAXWIDTH)
-        maxDataPoints = config.CHARTMAXWIDTH;
-    }
+    // /MAX DATA POINTS
 
     // TRIM Data if needed
     {
       if (values.length > maxDataPoints) {
-        if (Log.Trace())
-          // cjm2
-          console.log(
-            `TRIM:${dxString.toUpperCase()} - ${key} ${
-              isHistory ? "(History)" : ""
-            } ${dxString} [${values.length} to ${maxDataPoints}]`
-          );
-
-        if (dxString.substring(0, 5) === "trunc") {
+        if (dataLength.substring(0, 5) === "trunc") {
           if (Log.Trace()) console.log("TRUNCATE");
           values = values.slice(values.length - maxDataPoints);
           timestamps = timestamps.slice(timestamps.length - maxDataPoints);
-        } else if (dxString.includes("rev")) {
+        } else if (dataLength.includes("rev")) {
           if (Log.Trace()) console.log("REVERSE TRUNCATE");
           values = values.slice(0, maxDataPoints);
           timestamps = timestamps.slice(0, maxDataPoints);
-        } else if (dxString === "average" || dxString.includes("avg")) {
+        } else if (dataLength === "average" || dataLength.includes("avg")) {
           if (Log.Trace()) console.log("AVERAGE");
           let avgValues = [];
           let avgTimestamps = [];
@@ -1450,77 +1426,21 @@ export async function CreateChart( // cjm optimize this
     }
     // /TRIM Data
 
+    console.log(
+      `[CreateChart] ${key} - Data:${values.length} / Mx:${maxDataPoints};   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:${width}, He:${height}, As:${chartAspect}`
+    );
+
+    // PIXELS PER POINT
     // ---
-    // CLIMATE CHARTS
-    // ---
-    // PXSTRING, Allow WIDE DATA
-    // --- // cjm5
-    if (Log.Debug()) console.log("PXSTRING", pxString, pixelsPerPoint);
-    if (pxString !== "auto" && pixelsPerPoint > 0) {
-      height = Math.round(width / chartAspect) - oneEm * 2;
-      if (Log.Debug()) console.log("Calc: ", width, height, chartAspect);
-
-      if (isNaN(height)) height = config.ChartHeightPuntVh + "vh";
-      if (isNaN(chartAspect)) chartAspect = config.ChartAspectDefault;
-      if (isNaN(width)) width = height * chartAspect;
-      if (isNaN(width))
-        width = "" + Math.round(config.ChartHeightPuntVh * chartAspect) + "vh";
-
-      if (isNaN(width)) chartContainer.style.width = width;
-      else chartContainer.style.width = width + "px";
-      if (isNaN(height)) chartContainer.style.height = height;
-      else chartContainer.style.height = height + "px";
-      if (Log.Debug())
-        console.log(
-          "Container",
-          chartContainer.style.width,
-          chartContainer.style.height
-        );
-
-      let overWidth = Math.floor(values.length * pixelsPerPoint);
-      chartAspect = NaN; // cjm
-
-      let div = chartContainer.getElementsByTagName("div")[0];
-      if (div) {
-        if (Log.Debug())
-          console.log("overWidth", overWidth, height, chartAspect);
-        div.style.width = overWidth + "px";
-        div.style.height = `calc(${chartContainer.style.height} - 2em)`;
-      } else console.log("[CreateChart] *** ERROR ***: Div Element Not Found");
-
-      let label = chartContainer.getElementsByTagName("span")[0];
-      if (label) {
-        label.innerHTML = key + " - " + values[0].unitCode;
-        label.style.display = "block";
-      }
-    } else {
-      let label = chartContainer.getElementsByTagName("span")[0];
-      if (label) {
-        label.innerHTML = key + " - " + values[0].unitCode;
-        label.style.display = "none";
-      }
-    }
-    // /PXSTRING
-    if (Log.Debug())
-      // cjm4
-      console.log(
-        `Chart Set: ${key}, History:${isHistory}, Mx:${mxString}, Px:${pxString},Dx:${dxString}`,
-        ` - `,
-        `Values:${values.length}, Width:${parseInt(width)}, Height:${parseInt(
-          height
-        )}, Aspect:${chartAspect.toFixed(2)}`
-      );
+    // if px then we need to set width based on (reduced) number of data points
 
     // ---
-    // Set Left Label
-    // ---
-
-    // /Label
+    // /PIXELS PER POINT
 
     let data = [];
     let time = [];
     await microSleep(1);
-    // cjm optimize this, maybe on-read
+    // cjm-optimize
     for (let i = 0; i < values.length; i++) {
       data.push(values[i].value);
       let date = new Date(timestamps[i]);
@@ -1541,7 +1461,7 @@ export async function CreateChart( // cjm optimize this
       time.push(label);
     }
     await microSleep(1);
-    // cjm optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
+    // cjm-optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
     if (!isHistory) {
       // Oldest to Newest
       data = data.reverse();
@@ -1583,8 +1503,8 @@ export async function CreateChart( // cjm optimize this
           ],
         },
         options: {
-          aspectRatio: chartAspect,
-          maintainAspectRatio: true,
+          // aspectRatio: chartAspect,
+          // maintainAspectRatio: true,
           scales: {
             x: {
               ticks: {
@@ -1617,6 +1537,15 @@ export async function CreateChart( // cjm optimize this
     }
     // ------------------------------------------------------------------
   });
+}
+
+function GetPixels(pxString) {
+  let pixels = 0;
+  pxString = pxString.toLowerCase();
+  if (pxString.includes("px")) {
+    pixels = parseFloat(pxString.replace("px", ""));
+  }
+  return pixels;
 }
 
 // Function WeatherSquares
@@ -2545,7 +2474,7 @@ function WeatherKittyForecastBlock() {
   return results;
 }
 
-let WeatherKittyWidgetBlock = `<weather-kitty-tooltip>
+let WeatherKittyWidgetBlock = `<weather-kitty-tooltip style="display:none;">
     <weather-kitty-geoaddress></weather-kitty-geoaddress>
     <p></p>
   </weather-kitty-tooltip>
@@ -2578,12 +2507,7 @@ function WeatherKittyGeoAddressBlock() {
 
 // Run Weather Kitty
 async function Main() {
-  if (false && config.PAUSE) {
-    if (Log.Warn()) console.log("[WeatherKittyStart] Warning: PAUSED");
-    while (config.PAUSE) {
-      await microSleep(100);
-    }
-  }
+  // Once upon a time there was more here.
   await WeatherKittyStart();
 }
 

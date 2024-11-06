@@ -172,26 +172,37 @@ weather-kitty-week-summary {
 }
 /* ---------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------- */
+/* CHARTS */
+/* --- */
 weather-kitty-chart {
-  background-color: whitesmoke;
-  opacity: 1;
-  border: 3px black solid;
-  border-radius: 1em;
-  margin: 1em;
+  /* position: relative; */
+  /* container: chart / size;  */
+  border: red 3px solid;
   box-sizing: border-box;
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  position: relative;
+  background-color: whitesmoke;
+  flex: 1 0 auto;
+  display: block;
+  height: 100%;
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
 weather-kitty-chart > div {
+  position: relative; /* required for chart.js responsiveness */
+  border: green 3px solid;
   box-sizing: border-box;
   margin: 0.5em;
+  /* width: calc(100cqw - 1em);
+  height: calc(100cqh - 1em); */
   width: calc(100% - 1em);
-  height: calc(100% - 1em);
+  height: calc(100% - 2em);
+}
+
+weather-kitty-chart > canvas {
+  border: blue 3px solid;
+  box-sizing: border-box;
 }
 
 weather-kitty-chart > span {
@@ -203,8 +214,13 @@ weather-kitty-chart > span {
   color: #606060;
   font-family: Arial, Helvetica, sans-serif;
   font-size: small;
+  display: none;
 }
+/* --- */
+/* /CHARTS */
+/* ---------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------- */
 /* required use of a container query */
 /* use of padding required, margin still causes issues even with container query */
 weather-kitty-map-forecast,

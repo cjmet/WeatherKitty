@@ -3,7 +3,7 @@ html,
 body {
   box-sizing: border-box;
   margin: 0;
-  min-height: calc(100vh - 2rem);
+  height: 100%;
 }
 
 #WeatherKittyBody {
@@ -165,9 +165,10 @@ body {
 
   display: flex;
   flex-direction: column;
+  overflow: auto;
 
-  background-image: url("./img/Background01g2.png");
-  background-size: 100%;
+  /* background-image: url("./img/Background01g2.png");
+  background-size: 100%; */
 }
 
 /* // cjm  */
@@ -175,7 +176,8 @@ body {
 .WeatherKittyWeatherCharts,
 .WeatherKittyHistoryCharts,
 .WeatherKittyClimateCharts {
-  flex: 1 1 auto;
+  height: 100%;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }

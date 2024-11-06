@@ -64,6 +64,16 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] Px Mx Logic
+    - [ ] PX
+      - [ ] "auto" - does not resize chart, but is the same size as "default" if asked for calc
+      - [ ] "default" - 4
+      - [ ] set - resizes to fit data
+    - [ ] MX
+      - [ ] "auto" - MAX / PX
+      - [ ] "default" - 510
+      - [ ] "max" - CHART_MAX / PX
+      - [ ] set - resizes data to fit
   - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
   - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
     - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 510
