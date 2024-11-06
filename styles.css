@@ -3,9 +3,7 @@ html,
 body {
   box-sizing: border-box;
   margin: 0;
-  /* overflow-x: scroll;
-  scrollbar-width: 60px; */
-  min-height: calc(100vh - 1.1rem);
+  min-height: calc(100vh - 2rem);
 }
 
 #WeatherKittyBody {
@@ -35,14 +33,15 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 0 0 0.25em;
+  /* padding: 0 0 0 0.25em; */
   z-index: 2;
 }
 
-#Hamburger img {
+#HamburgerImg {
   height: 4.5em;
   align-self: center;
   justify-self: center;
+  display: none;
 }
 
 #Hamburger {
@@ -52,7 +51,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   z-index: 1;
 }
 
@@ -72,7 +71,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   opacity: 1;
   margin: 0 0.5em;
 }
@@ -88,7 +87,11 @@ body {
   text-decoration: none;
   font-weight: bolder;
   margin: 0.25em 0;
-  padding: 0.25em 0.5em;
+  padding: 0.1em 0.5em;
+}
+
+#HamburgerLinks > #NavHome {
+  padding: 0.675em 0;
 }
 
 #HamburgerLinks a:hover {
@@ -104,7 +107,7 @@ body {
   top: 0;
   background-color: #333;
   color: white;
-  padding: 0 0.25em;
+  /* padding: 0 0.25em; */
   text-align: left;
 
   display: flex;
@@ -235,6 +238,10 @@ body {
     z-index: 1;
   }
 
+  #HamburgerImg {
+    display: block;
+  }
+
   #HamburgerLinks {
     position: fixed;
     border: gray 3px solid;
@@ -249,15 +256,15 @@ body {
   #HamburgerLinks a:link,
   #HamburgerLinks a:visited {
     border: black 3px solid;
-    margin: 0.5em 1em;
-    padding: 1.5em 0.66em;
+    margin: 0.2em 0.25em;
+  }
+
+  #HamburgerLinks hr {
+    display: none;
   }
 
   #Hamburger:hover {
-    padding: 0.25em;
-    #HamburgerImg {
-      margin: -0.25em;
-    }
+    /* padding: 0.25em; */
     #HamburgerRelative {
       background-color: gray;
       border-radius: 1em;
@@ -330,7 +337,7 @@ body {
 .hidden {
   border: 3px solid red;
   margin: 3px;
-  padding: 3px;
+  /* padding: 3px; */
   opacity: 0.5;
   display: none;
 }

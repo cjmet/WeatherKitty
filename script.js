@@ -8,25 +8,20 @@ import {
   sleep,
 } from "./WeatherKitty.mjs";
 
-let LoadFirst = true; // else reload after initial load.
-if (LoadFirst) {
+let NavFirst = true;
+// Load then Nav, everything will calculate and load before navigating
+if (NavFirst) {
   // WeatherKittyPause(true); // stop the widget and disable the initial load
   // Log.SetLogLevel(LogLevel.Info);
   // await SetLocationAddress("USW00014739");
   // WeatherKittyPause(false); // re-enable the widget
   // WeatherKitty(); // initialize the widget
-  // await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  // NavHome();
-  await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  NavClimate();
-} else {
-  // Alternative Way to do the above, but it loads default first, then sets the location and reloads
-  Log.SetLogLevel(LogLevel.Info);
-  await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  console.log("Weather Kitty is loaded!");
-  await SetLocationAddress("USW00014739");
-  WeatherKitty(); // reload the widget
   NavHome();
+}
+// Nav then Load, the charts will barf and punt because they can't measure the container that hasn't rendered or is set to display:none
+else {
+  await WeatherKittyWaitOnLoad(); // wait for the widget to load
+  NavHom();
 }
 
 // BUTTONS -------------------------------------

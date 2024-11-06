@@ -176,7 +176,6 @@ weather-kitty-chart {
   background-color: whitesmoke;
   opacity: 1;
   border: 3px black solid;
-  padding: 1em;
   border-radius: 1em;
   margin: 1em;
   box-sizing: border-box;
@@ -184,6 +183,15 @@ weather-kitty-chart {
   min-width: 0;
   min-height: 0;
   position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+weather-kitty-chart > div {
+  box-sizing: border-box;
+  margin: 0.5em;
+  width: calc(100% - 1em);
+  height: calc(100% - 1em);
 }
 
 weather-kitty-chart > span {

@@ -83,7 +83,7 @@ let config = {
   ChartPixelsPerPointDefault: 4, // "Auto", default: 4 or None. 4 looks best visually to me.
   ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),  // cjm2
   ChartAspectDefault: 2.7,
-  ChartHeightPunt: "66vh", //  The charts were hidden or failed or errored out.
+  ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
 
   // /History
 
@@ -1350,16 +1350,18 @@ export async function CreateChart( // cjm optimize this
     // ---
     // ASPECT
     // ---
-    if (Log.Debug())
-      // cjm4
-      console.log(
-        `PXSTRING Start: ${pxString} ${width} ${height} ${chartAspect}`
-      );
+    // if (Log.Debug())
+    // cjm4
+    console.log(
+      `PXSTRING Start: ${key} ${pxString} ${width} ${height} ${chartAspect}`
+    );
+    // cjm6
+    // if NaNs set vhs ... if NaNs set aspect to default(s) for now
     if (isNaN(height) || isNaN(width)) {
       if (window.innerWidth > window.innerHeight)
         chartAspect = config.ChartAspectDefault;
       else chartAspect = 1;
-      height = config.ChartHeightPunt;
+      height = config.ChartHeightPuntVh + "vh";
     } else {
       if (height < oneEm * 16) height = oneEm * 16; // We want to target about this height
       chartAspect = (width - oneEm) / height;
@@ -1369,6 +1371,9 @@ export async function CreateChart( // cjm optimize this
       if (aspect != null && aspect != 0) chartAspect = aspect;
       if (isNaN(chartAspect)) chartAspect = 2;
     }
+    console.log(
+      `PXSTRING Init: ${key} ${pxString} ${width} ${height} ${chartAspect}`
+    );
 
     // ---
     // Auto Auto  ...  Default Size and Aspect, fit to screen?
@@ -1446,28 +1451,43 @@ export async function CreateChart( // cjm optimize this
     // /TRIM Data
 
     // ---
-    // PXSTRING, Allow WIDE DATA
+    // CLIMATE CHARTS
     // ---
+    // PXSTRING, Allow WIDE DATA
+    // --- // cjm5
+    if (Log.Debug()) console.log("PXSTRING", pxString, pixelsPerPoint);
     if (pxString !== "auto" && pixelsPerPoint > 0) {
-      console.log(
-        `PXSTRING History: ${pxString} ${width}${
-          isNaN(width) ? "(NaN)" : ""
-        } ${height}${isNaN(height) ? "(NaN)" : ""} ${chartAspect}`
-      );
-      height = Math.floor(width / chartAspect) - oneEm;
-      width = Math.floor(values.length * pixelsPerPoint);
-      chartAspect = width / height;
+      height = Math.round(width / chartAspect) - oneEm * 2;
+      if (Log.Debug()) console.log("Calc: ", width, height, chartAspect);
 
-      // Enforce Container W/H/A
-      chartContainer.style.width = width + "px";
-      // Don't set the Height, it will distort the chart, let it Auto.
-      // Unless the Aspect is NaN because it hasn't rendered yet or is hidden.
-      if (isNaN(chartAspect)) {
-        chartContainer.style.height = config.ChartHeightPunt;
-        // chartAspect = width / height;
-      }
+      if (isNaN(height)) height = config.ChartHeightPuntVh + "vh";
+      if (isNaN(chartAspect)) chartAspect = config.ChartAspectDefault;
+      if (isNaN(width)) width = height * chartAspect;
+      if (isNaN(width))
+        width = "" + Math.round(config.ChartHeightPuntVh * chartAspect) + "vh";
 
-      // Set the Left-Side Label for History Charts
+      if (isNaN(width)) chartContainer.style.width = width;
+      else chartContainer.style.width = width + "px";
+      if (isNaN(height)) chartContainer.style.height = height;
+      else chartContainer.style.height = height + "px";
+      if (Log.Debug())
+        console.log(
+          "Container",
+          chartContainer.style.width,
+          chartContainer.style.height
+        );
+
+      let overWidth = Math.floor(values.length * pixelsPerPoint);
+      chartAspect = NaN; // cjm
+
+      let div = chartContainer.getElementsByTagName("div")[0];
+      if (div) {
+        if (Log.Debug())
+          console.log("overWidth", overWidth, height, chartAspect);
+        div.style.width = overWidth + "px";
+        div.style.height = `calc(${chartContainer.style.height} - 2em)`;
+      } else console.log("[CreateChart] *** ERROR ***: Div Element Not Found");
+
       let label = chartContainer.getElementsByTagName("span")[0];
       if (label) {
         label.innerHTML = key + " - " + values[0].unitCode;
@@ -2533,7 +2553,7 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip>
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
-let WeatherKittyChartBlock = `<canvas></canvas><span>Loading ...<span>`;
+let WeatherKittyChartBlock = `<div><canvas></canvas></div><span>Loading ...<span>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img
