@@ -10,8 +10,8 @@ import {
 
 let CodeKy = false;
 let Boston = false;
-let TestFubarDisplay = false;
-let ClimateTest = false;
+let TestFubarDisplay = true;
+let ClimateTest = true;
 
 WeatherKittyPause(true); // stop the widget and disable the initial load
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);

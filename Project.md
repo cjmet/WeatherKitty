@@ -64,7 +64,11 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
-  - [ ] if PX turn on history chart extra tag / span
+  - Resize Charts When
+    - [ ] Resize Chart Function
+    - [ ] Location Changes
+    - [ ] WindowSize Changes
+    - [ ] Display/Hidden Changes
   - [ ] if change location, reload charts? reload page? resize charts? modular resize for charts?
   - [ ] Px Mx Logic
     - [ ] PX

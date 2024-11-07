@@ -1332,17 +1332,58 @@ export async function CreateChart(
     // ---------------------  Calculate Width and Height ---------------------
 
     // Calculate Width and Height in order to later calculate Aspect Ratio
-    width = window.getComputedStyle(chartDiv).width;
-    height = window.getComputedStyle(chartDiv).height;
+    let containerStyle = window.getComputedStyle(chartContainer);
+    let chartDivStyle = window.getComputedStyle(chartDiv);
+
+    // Refactor to use Math from the outer container.
+
+    // These are px or % or ... em or rem or vw or vh or cm or mm or in or pt or pc
+    width = GetPixels(containerStyle.width);
+    height = GetPixels(containerStyle.height);
     if (Log.Trace()) console.log("Width:1 ", width, "Height: ", height);
 
-    if (!width || !GetPixels(width)) width = chartDiv.getAttribute("width");
-    if (!height || !GetPixels(height)) height = chartDiv.getAttribute("height");
+    // These are numbers
+    if (!width) width = parseFloat(chartContainer.getAttribute("width"));
+    if (!height) height = parseFloat(chartContainer.getAttribute("height"));
     if (Log.Trace()) console.log("Width:2 ", width, "Height: ", height);
 
-    if (!width || !GetPixels(width)) width = window.innerWidth;
-    if (!height || !GetPixels(height)) height = window.innerHeight;
+    // These are numbers
+    if (!width) width = window.innerWidth;
+    if (!height) height = window.innerHeight;
     if (Log.Trace()) console.log("Width:3 ", width, "Height: ", height);
+
+    width =
+      width -
+      AddPixels([
+        containerStyle.paddingLeft,
+        containerStyle.paddingRight,
+        chartDivStyle.marginLeft,
+        chartDivStyle.marginRight,
+        chartDivStyle.borderWidth,
+        chartDivStyle.borderWidth,
+      ]);
+    height =
+      height -
+      AddPixels([
+        containerStyle.paddingTop,
+        containerStyle.paddingBottom,
+        chartDivStyle.marginTop,
+        chartDivStyle.marginBottom,
+        chartDivStyle.borderWidth,
+        chartDivStyle.borderWidth,
+      ]);
+    if (Log.Trace())
+      console.log(
+        `(${containerStyle.width}/${width}) x (${containerStyle.height}/${height}), `,
+        containerStyle.paddingLeft,
+        containerStyle.paddingRight,
+        chartDivStyle.marginLeft,
+        chartDivStyle.marginRight,
+        chartDivStyle.borderWidth,
+        " = ",
+        width,
+        height
+      );
 
     width = parseFloat(width);
     height = parseFloat(height);
@@ -1442,26 +1483,24 @@ export async function CreateChart(
       if (chartSpan) {
         chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
         chartSpan.style.display = "block";
-        console.log("Setting: ", chartSpan);
       }
     } else {
       if (chartSpan) {
         chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
         chartSpan.style.display = "none";
-        console.log("Hiding: ", chartSpan);
       }
     }
 
     // ---
     // /PIXELS PER POINT
-
-    console.log(
-      `[CreateChart] ${key} - Mx/Data:[${maxDataPoints} / ${
-        values.length
-      }];   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:[${width} / ${expandedWidth}]; He:${height}, As:${chartAspect.toFixed(
-        2
-      )}`
-    );
+    if (Log.Debug())
+      console.log(
+        `[CreateChart] ${key} - Mx/Data:[${maxDataPoints} / ${
+          values.length
+        }];   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:[${width} / ${expandedWidth}]; He:${height}, As:${chartAspect.toFixed(
+          2
+        )}`
+      );
 
     let data = [];
     let time = [];
@@ -1545,7 +1584,9 @@ export async function CreateChart(
         newChart.options.aspectRatio = chartAspect;
         newChart.options.maintainAspectRatio = true;
       }
-      await microSleep(1);
+      // give the history charts more time.  In testing I had to add up to a second here a couple of times.
+      if (pixelsPerPoint !== "auto") await microSleep(40);
+      else await microSleep(1);
       await newChart.update();
     } else {
       if (Log.Trace())
@@ -1566,12 +1607,21 @@ export async function CreateChart(
 }
 
 function GetPixels(pxString) {
-  let pixels = 0;
+  let pixels;
   pxString = pxString.toLowerCase();
   if (pxString.includes("px")) {
     pixels = parseFloat(pxString.replace("px", ""));
-  }
+  } else if (Log.Debug()) console.log("*** ERROR *** : GetPixels: ", pxString);
   return pixels;
+}
+
+function AddPixels(array) {
+  let pixels = 0;
+  for (let px of array) {
+    pixels += GetPixels(px);
+  }
+  let result = pixels.toFixed(2);
+  return result;
 }
 
 // Function WeatherSquares
