@@ -64,6 +64,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Weather Kitty - To-Do List
 
+  - [ ] if PX turn on history chart extra tag / span
   - [ ] Px Mx Logic
     - [ ] PX
       - [ ] "auto" - does not resize chart, but is the same size as "default" if asked for calc
@@ -74,7 +75,9 @@ It sounds so neat and simple, and it so very much isn't.
       - [ ] "default" - 510
       - [ ] "max" - CHART_MAX / PX
       - [ ] set - resizes data to fit
+    - [ ] Default Weather = Average, Default History = Truncate
   - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
+  - [ ] OnDisplayStyleChange, OnWindowResizeChange
   - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
     - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 510
       - [ ] Controls Number of Data Points

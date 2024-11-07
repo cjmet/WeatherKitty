@@ -1318,15 +1318,14 @@ export async function CreateChart(
 
     let maxDataPoints, pixelsPerPoint, dataLength, width, height, chartAspect;
     let chartDiv = chartContainer.getElementsByTagName("div")[0];
-    maxDataPoints = chartDiv.getAttribute("maxDataPoints");
+    maxDataPoints = chartContainer.getAttribute("maxDataPoints");
+    pixelsPerPoint = chartContainer.getAttribute("pixelsPerDataPoint");
+    dataLength = chartContainer.getAttribute("trimData");
+
     if (!maxDataPoints) maxDataPoints = "auto";
     maxDataPoints = maxDataPoints.toLowerCase();
-
-    pixelsPerPoint = chartDiv.getAttribute("pixelsPerDataPoint");
     if (!pixelsPerPoint) pixelsPerPoint = "auto";
     pixelsPerPoint = pixelsPerPoint.toLowerCase();
-
-    dataLength = chartDiv.getAttribute("trimData");
     if (!dataLength) dataLength = "truncate";
     dataLength = dataLength.toLowerCase();
 
@@ -1335,18 +1334,15 @@ export async function CreateChart(
     // Calculate Width and Height in order to later calculate Aspect Ratio
     width = window.getComputedStyle(chartDiv).width;
     height = window.getComputedStyle(chartDiv).height;
-    // if (Log.Trace()) // cjm
-    console.log("Width:1 ", width, "Height: ", height);
+    if (Log.Trace()) console.log("Width:1 ", width, "Height: ", height);
 
     if (!width || !GetPixels(width)) width = chartDiv.getAttribute("width");
     if (!height || !GetPixels(height)) height = chartDiv.getAttribute("height");
-    // if (Log.Trace()) // cjm
-    console.log("Width:2 ", width, "Height: ", height);
+    if (Log.Trace()) console.log("Width:2 ", width, "Height: ", height);
 
     if (!width || !GetPixels(width)) width = window.innerWidth;
     if (!height || !GetPixels(height)) height = window.innerHeight;
-    // if (Log.Trace()) // cjm
-    console.log("Width:3 ", width, "Height: ", height);
+    if (Log.Trace()) console.log("Width:3 ", width, "Height: ", height);
 
     width = parseFloat(width);
     height = parseFloat(height);
@@ -1426,16 +1422,46 @@ export async function CreateChart(
     }
     // /TRIM Data
 
-    console.log(
-      `[CreateChart] ${key} - Data:${values.length} / Mx:${maxDataPoints};   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:${width}, He:${height}, As:${chartAspect}`
-    );
-
-    // PIXELS PER POINT
+    // PIXELS PER POINT // cjm-chart
     // ---
     // if px then we need to set width based on (reduced) number of data points
 
+    let expandedWidth = 0;
+    let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
+    let chartSpan = chartContainer.getElementsByTagName("span")[0];
+
+    if (pixelsPerPoint === "default")
+      pixelsPerPoint = config.ChartPixelsPerPointDefault;
+    if (pixelsPerPoint !== "auto") {
+      expandedWidth = values.length * pixelsPerPoint;
+      if (expandedWidth > config.CHARTMAXWIDTH)
+        expandedWidth = config.CHARTMAXWIDTH;
+      chartDiv.style.width = `${expandedWidth}px`;
+      // 1.333em looks pretty good. ... there must be built in margins or padding.
+      chartAspect = expandedWidth / (height - 1.333 * oneEm);
+      if (chartSpan) {
+        chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
+        chartSpan.style.display = "block";
+        console.log("Setting: ", chartSpan);
+      }
+    } else {
+      if (chartSpan) {
+        chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
+        chartSpan.style.display = "none";
+        console.log("Hiding: ", chartSpan);
+      }
+    }
+
     // ---
     // /PIXELS PER POINT
+
+    console.log(
+      `[CreateChart] ${key} - Mx/Data:[${maxDataPoints} / ${
+        values.length
+      }];   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:[${width} / ${expandedWidth}]; He:${height}, As:${chartAspect.toFixed(
+        2
+      )}`
+    );
 
     let data = [];
     let time = [];
@@ -1520,7 +1546,7 @@ export async function CreateChart(
         newChart.options.maintainAspectRatio = true;
       }
       await microSleep(1);
-      newChart.update();
+      await newChart.update();
     } else {
       if (Log.Trace())
         console.log(

@@ -25,7 +25,7 @@ if (TestFubarDisplay) {
   WeatherKittyPause(false);
   WeatherKitty();
   await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  NavClimate();
+  // NavClimate();
 }
 
 // BUTTONS -------------------------------------
