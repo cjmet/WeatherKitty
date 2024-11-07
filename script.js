@@ -11,6 +11,7 @@ import {
 let CodeKy = false;
 let Boston = false;
 let TestFubarDisplay = false;
+let ClimateTest = false;
 
 WeatherKittyPause(true); // stop the widget and disable the initial load
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);
@@ -20,12 +21,12 @@ if (TestFubarDisplay) {
   WeatherKitty();
   NavHome();
   await WeatherKittyWaitOnLoad();
-  NavClimate();
+  if (ClimateTest) NavClimate();
 } else {
   WeatherKittyPause(false);
   WeatherKitty();
   await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  // NavClimate();
+  if (ClimateTest) NavClimate();
 }
 
 // BUTTONS -------------------------------------
