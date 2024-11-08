@@ -1,5 +1,6 @@
 :root {
   --weatherKittyBackgroundOpacity: 0.75;
+  --weatherKittyTranSecDefault: 0.33s;
 }
 
 weather-kitty {
@@ -14,7 +15,6 @@ weather-kitty-forecast {
   position: relative;
   width: 5.67em;
   aspect-ratio: 1 / 1;
-  z-index: 0;
   display: grid; /* Grid (1x1) is working better for this use case than flex  */
 
   padding: 0.1em;
@@ -23,7 +23,6 @@ weather-kitty-forecast {
   text-align: center;
   justify-content: center;
   align-items: end;
-  overflow: hidden;
 
   font-family: Arial, Helvetica, sans-serif;
   color: white;
@@ -32,19 +31,36 @@ weather-kitty-forecast {
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
 }
 
-weather-kitty-geoaddress span {
+weather-kitty-geoaddress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+weather-kitty-geoaddress span,
+weather-kitty-geoaddress label {
   font-family: Arial, Helvetica, sans-serif;
+  font-size: small;
   color: white;
   margin: 0.25em;
   text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
     -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
     -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
 }
+weather-kitty-geoaddress span {
+  display: none;
+}
+
+weather-kitty-geoaddress label {
+  text-align: left;
+  width: 10em;
+  height: 1.2em;
+  overflow: hidden;
+}
 
 weather-kitty-geoaddress button {
   margin: 0;
-  padding: 0 0.15em;
-  font-size: smaller;
+  padding: 0;
+  font-size: x-small;
 }
 
 weather-kitty-current > img,
@@ -60,59 +76,153 @@ weather-kitty-forecast > img {
 }
 
 weather-kitty-tooltip {
-  position: fixed;
+  position: absolute;
   top: 0;
+  right: 0;
   justify-self: center;
   align-self: start;
-
   text-align: left;
-  padding: 0.5em;
+  /* border: black 3px solid; // put this in hover  */
+  /* padding: 0.5em; // put this in hover */
   border-radius: 0.5em;
 
-  transition: all 0.33s;
-  translate: 100vw -100vh;
-  width: 15em;
-  height: auto;
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.75);
-  border: black 3px solid;
+  transition: opacity var(--weatherKittyTranSecDefault);
+  /* translate: 0 0; // removed this */
   opacity: 0;
+
+  width: 0;
+  height: 0;
+  z-index: -10;
+  overflow: hidden;
+
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 weather-kitty:hover,
 weather-kitty-current:hover,
 weather-kitty-forecast:hover {
-  img,
-  span {
-    transition: all 0.33s;
+  weather-kitty-current > img,
+  weather-kitty-forecast > img,
+  weather-kitty-current > span,
+  weather-kitty-forecast > span {
+    transition: opacity var(--weatherKittyTranSecDefault);
     opacity: 0.5;
   }
   weather-kitty-tooltip {
+    border: black 3px solid;
+  }
+  weather-kitty-tooltip,
+  weather-kitty-tooltip span {
     color: white;
-    transition: all 0.33s;
+    transition: opacity var(--weatherKittyTranSecDefault);
     translate: 0 0;
-    width: 15em;
-    height: auto;
+    padding: 0.5em;
+    width: 10.5em;
+    height: max-content;
     opacity: 1;
     z-index: 10;
   }
 }
 
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
+weather-kitty > weather-kitty-current > weather-kitty-tooltip,
 weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
   display: none;
 }
 
-weather-kitty-chart {
-  margin: 1em;
-  border: 1px black solid;
+/* ---------------------------------------------------------------------------- */
+/* Matrix */
+weather-kitty-week {
   border-radius: 1em;
   box-sizing: border-box;
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
+  margin: 1em;
+  text-align: center;
+  text-justify: center;
+  display: flex;
+  justify-content: space-around;
+  overflow-x: scroll;
+  text-wrap: pretty;
+  hyphens: auto;
 }
 
+weather-kitty-week img {
+  margin: 0 0.25em;
+}
+
+weather-kitty-week-card {
+  /* background-color: gainsboro;  */
+  background-color: whitesmoke;
+  border: black 1px solid;
+  border-radius: 1em;
+  margin: 0.25em;
+  max-width: 6em;
+}
+
+weather-kitty-week-title {
+  height: 2.5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+weather-kitty-week-summary {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 0.25em;
+}
+/* ---------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------- */
+/* CHARTS */
+/* --- */
+weather-kitty-chart {
+  position: relative;
+  /* container: chart / size;  */
+  border: red 3px solid;
+  box-sizing: border-box;
+  background-color: whitesmoke;
+  flex: 1 0 auto;
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+weather-kitty-chart > div {
+  position: relative; /* required for chart.js responsiveness */
+  border: green 3px solid;
+  box-sizing: border-box;
+  margin: 0.5em;
+  /* width: calc(100cqw - 1em);
+  height: calc(100cqh - 1em); */
+  width: calc(100% - 1em);
+  height: calc(100% - 2em);
+}
+
+weather-kitty-chart > canvas {
+  border: blue 3px solid;
+  box-sizing: border-box;
+}
+
+weather-kitty-chart > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  margin: 1.5em 0 0 3.5em;
+  color: #606060;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: small;
+  display: none;
+}
+/* --- */
+/* /CHARTS */
+/* ---------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------- */
 /* required use of a container query */
 /* use of padding required, margin still causes issues even with container query */
 weather-kitty-map-forecast,

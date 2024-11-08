@@ -62,28 +62,49 @@ It sounds so neat and simple, and it so very much isn't.
 
 ## To-Do
 
-- [ ] Weather Kitty - To-Do List
+- [ ] work experimental back into dev and main
+- [ ] disable nav while loading?
+- [ ] disable set while loading?
+- [ ] clean up Log.Verbose
+- [ ] clean up Log.Trace
 
-  - [ ] Image Enlarge, Pan, and Zoom ... move to wk.mjs
-  - [ ] Finish maps and Matrix elements
-  - [ ] Alerts, Radar, Products, Weather Maps
-    - [ ] Alerts
-    - [ ] Radar
-    - [ ] Products
-    - [ ] Weather Maps
-    - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
-  - [ ] corsproxy to cache the images locally?
-  - [ ] Custom modular geolocation function(s);
-  - [ ] KvPCache.Open(name), KvPCache.Get(key), KvPCache.Set(key, value, ttl), KvPCache.Clear(name?);
-    - [ ] value = value or null/undefined to delete
-    - [ ] ttl = time to live in (seconds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
-  - [ ] Better Charts
-    - [ ] No Points? Color Coding? Rainbow? Read Danny's Book?
-  - [ ] refactor main weatherkitty api calls to update to better async await and error handling. Maybe use functions and stacks, instead of linear without the best failure logic.
-  - [ ] How can we transition a media query
+### Fixes and Updates
 
-- [ ] Project - To-Do List
-  - [ ] Vite
-  - [ ] React
-  - [ ] Auth / OAuth API
-  - [ ] AWS, Lambda, Hosting, Etc, ...
+- [ ] do not require station location, add that later
+- [ ] loading indicator for the fetch API
+- [ ] Better way to MonitorCharts()
+  - [ ] MutationObserver() API? - This failed to do what I wanted, so I went homegrown.
+- [ ] fetchCache - Locking? Queuing?
+  - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
+- [ ] Work on Parallel Async and Slow Connections
+  - [ ] already worked on optimization some. Lots more work to do.
+  - [ ] ghcnd operations need to be unlinked, and fill in later.
+  - [ ] parallel history charts, or even all charts?
+- [ ] Sec Fix GetLists(s). Partially Done.
+- [ ] WeatherKittyLock() ?
+- [ ] CustomElement API
+- [ ] PouchCache instead of the homegrown mess.
+- [ ] Investigate and Deal with Null and NaN Data?
+
+### Features
+
+- [ ] Features
+  - [ ] City, State by ghcnd
+    - [ ] Prefer Order: USW*, USC*, \*
+    - [ ] state names from ghcnd-states.txt
+    - [ ] modularize AddressByGhcnd
+  - [ ] GNIS API
+  - [ ] Find Nearest if not Exist
+  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
+  - [ ] Aliases: WT**, WV**
+  - [ ] Weather Alerts
+  - [ ] Other Weather Products
+  - [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
+  - [ ] Dynamic Element Create Support, and/or Custom HTML API
+
+### Supplemental - More things to Learn
+
+- [ ] Vite
+- [ ] React
+- [ ] Auth / OAuth API
+- [ ] AWS, Lambda, Hosting, Etc, ...

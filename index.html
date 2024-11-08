@@ -26,9 +26,14 @@
           alt="Angle Hornet Logo"
         />
         <nav id="HamburgerLinks">
-          <a href="#">Link 1</a>
-          <a href="#">Link 2</a>
-          <a href="#">Link 3</a>
+          <a id="NavHome"><span>Home</span></a>
+          <a id="NavWeather">Weather<br />Charts</a>
+          <a id="NavHistory">History<br />Charts</a>
+          <a id="NavClimate">Climate<br />Charts</a>
+          <hr width="50%" />
+          <a id="BostonData">Boston<br />Data</a>
+          <a id="ExpireData">Expire<br />Data</a>
+          <a id="PurgeData">Purge<br />Data</a>
         </nav>
       </div>
     </div>
@@ -41,127 +46,81 @@
       </div>
     </header>
 
-    <script>
-      // ------------------------------------------------------------------
-      // Gemini AI, and then edited
-      function AIshowFullscreenImage(imageElement) {
-        // Create a new image element for the popup
-        let flag = 0;
-        const popupImage = new Image();
-        popupImage.src = imageElement.src;
-
-        // Create a popup container element
-        const popupContainer = document.createElement("div");
-        popupContainer.classList.add("fullscreen-image-container");
-        popupContainer.appendChild(popupImage);
-
-        // Add event listeners for pan and zoom
-        popupImage.addEventListener("mousedown", handleMouseDown);
-        popupImage.addEventListener("mousemove", handleMouseMove);
-        popupImage.addEventListener("mouseup", handleMouseUp);
-        popupImage.addEventListener("wheel", handleWheel);
-        document.addEventListener("keydown", function (event) {
-          if (event.key === "Escape" || event.keyCode === 27) {
-            if (flag++) return; // Prevents double+ close
-            console.log("Escape: Closing fullscreen image");
-            closeFullscreenImage();
-            return;
-          }
-        });
-
-        // Add the popup container to the document body
-        document.body.appendChild(popupContainer);
-
-        // Set the popup container's style to cover the entire screen
-        popupContainer.style.position = "fixed";
-        popupContainer.style.top = "0";
-        popupContainer.style.left = "0";
-        popupContainer.style.width = "100%";
-        popupContainer.style.height = "100%";
-        popupContainer.style.backgroundColor = "rgba(0, 0, 0, 0.8)"; // Optional: Add a semi-transparent background
-        popupContainer.style.display = "flex";
-        popupContainer.style.justifyContent = "center";
-        popupContainer.style.alignItems = "center";
-
-        // Set the popup image's style to fit the container
-        popupImage.style.maxWidth = "100%";
-        popupImage.style.maxHeight = "100%";
-
-        // Track panning and zooming variables
-        let isPanning = false;
-        let panX = 0;
-        let panY = 0;
-        let zoomLevel = 1;
-
-        function handleMouseDown(event) {
-          if (event.detail >= 2) {
-            console.log("Double Click: Closing fullscreen image");
-            closeFullscreenImage();
-            return;
-          }
-          isPanning = true;
-          panX = event.clientX - popupImage.offsetLeft;
-          panY = event.clientY - popupImage.offsetTop;
-        }
-
-        function handleMouseMove(event) {
-          if (isPanning) {
-            const newPanX = event.clientX - panX;
-            const newPanY = event.clientY - panY;
-            popupImage.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${zoomLevel})`;
-          }
-        }
-
-        function handleMouseUp() {
-          isPanning = false;
-        }
-
-        function handleWheel(event) {
-          event.preventDefault();
-          const delta = event.deltaY / 1000;
-          zoomLevel += delta;
-          zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
-          popupImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
-        }
-
-        // Handle closing the popup (e.g., clicking outside the image)
-        popupContainer.addEventListener("click", (event) => {
-          if (event.target !== popupImage) {
-            closeFullscreenImage();
-          }
-        });
-
-        function closeFullscreenImage() {
-          document.body.removeChild(popupContainer);
-        }
-      }
-      // /Gemini AI
-      // ------------------------------------------------------------------
-    </script>
-
     <main id="WeatherKittyMain">
-      <div id="MapsAlpha">
+      <div class="MapsAlpha">
         <weather-kitty-map-forecast></weather-kitty-map-forecast>
         <weather-kitty-map-radar></weather-kitty-map-radar>
         <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <div id="Matrix">Forecast<br />Matrix<br />Placeholder</div>
+      <weather-kitty-week class="WeekAlpha"></weather-kitty-week>
 
-      <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
-      <weather-kitty-chart type="temperature"></weather-kitty-chart>
-      <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
-      <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
-      <weather-kitty-chart type="windChill"></weather-kitty-chart>
+      <!-- ---  -->
 
-      <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
+      <div class="WeatherKittyHomeCharts">
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+      </div>
 
-      <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
+      <!-- ---------------------------------------------- -->
 
-      <weather-kitty-chart type="visibility"></weather-kitty-chart>
+      <div class="WeatherKittyWeatherCharts">
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
+        <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
+        <weather-kitty-chart type="windChill"></weather-kitty-chart>
+        <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
+        <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
+        <weather-kitty-chart type="visibility"></weather-kitty-chart>
+        <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
+        <weather-kitty-chart type="windGust"></weather-kitty-chart>
+      </div>
 
-      <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
-      <weather-kitty-chart type="windGust"></weather-kitty-chart>
+      <!-- ---------------------------------------------- -->
+
+      <div class="WeatherKittyHistoryCharts">
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+        <weather-kitty-chart type="TOBS"></weather-kitty-chart>
+        <weather-kitty-chart type="TAVG"></weather-kitty-chart>
+        <weather-kitty-chart type="TMAX"></weather-kitty-chart>
+        <weather-kitty-chart type="TMIN"></weather-kitty-chart>
+
+        <weather-kitty-chart type="PRCP"></weather-kitty-chart>
+        <weather-kitty-chart type="SNOW"></weather-kitty-chart>
+        <weather-kitty-chart type="SNWD"></weather-kitty-chart>
+        <weather-kitty-chart type="AWND"></weather-kitty-chart>
+        <weather-kitty-chart type="RHAV"></weather-kitty-chart>
+        <weather-kitty-chart type="PSUN"></weather-kitty-chart>
+        <weather-kitty-chart type="TSUN"></weather-kitty-chart>
+
+        <weather-kitty-chart type="WT**"></weather-kitty-chart>
+        <weather-kitty-chart type="WV**"></weather-kitty-chart>
+      </div>
+
+      <div class="WeatherKittyClimateCharts">
+        <weather-kitty-chart
+          type="TEMP"
+          maxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
+        <weather-kitty-chart
+          type="TMAX"
+          maxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
+        <weather-kitty-chart
+          type="TMIN"
+          maxDataPoints="max"
+          pixelsPerDataPoint="default"
+          trimData="avg"
+        ></weather-kitty-chart>
+      </div>
+
+      <!-- --- -->
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
