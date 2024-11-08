@@ -66,6 +66,9 @@ It sounds so neat and simple, and it so very much isn't.
 
   - Resize Charts When
     - [ ] Resize Chart Function
+      - [ ] Alpha
+      - [ ] Beta
+      - [ ] Maybe? Apply the same element.offsetwidth approach to the initial sizing of the charts as well, for more simplicity?
     - [ ] Location Changes
     - [ ] WindowSize Changes
     - [ ] Display/Hidden Changes
