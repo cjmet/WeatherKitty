@@ -32,6 +32,7 @@ if (Test_FubarDisplay) {
   WeatherKitty();
   await WeatherKittyWaitOnLoad(); // wait for the widget to load
   if (Test_Climate) await ClimateTestFunction();
+  else NavHome();
 }
 LoadButtons();
 

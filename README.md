@@ -24,28 +24,31 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 
 ## HTML Elements
 
-<b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
-<b>`<weather-kitty-current>`</b> - Current Conditions
-<b>`<weather-kitty-forecast>`</b> - Forecast
-<b>`<weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
-<b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
-<b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
-<b>`<weather-kitty-map-radar>`</b> - Radar map link.
-<b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
-<b>`<weather-kitty-chart type="keyword">`</b> - Chart
+- <b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
+- <b>`<weather-kitty-current>`</b> - Current Conditions
+- <b>`<weather-kitty-forecast>`</b> - Forecast
+- <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
+- <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
+- <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
+- <b>`<weather-kitty-map-radar>`</b> - Radar map link.
+- <b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
+- <b>`<weather-kitty-chart type="keyword">`</b> - Chart
+- <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
 
 ### CSS Classes and Tags
 
 For ease of editing and customization
 
-`<weather-kitty-tooltip>` - Tooltip tags if you need to style them.
-`.WeatherKitty` - Widget
-`.WeatherKittyBlock` - Current Conditions and Forecast Blocks.
-`.WeatherKittyImage` - Weather Background Images
-`.WeatherKittyText` - Weather Text
-`.WeatherKittyChart` - Weather chart containers
-`.WeatherKittyGeoAddress` - Manual location input container
-... and more. See the dev tools inspector for more classes.
+- `.WeatherKitty` - The main Widget
+- `.WeatherKittyBlock` - Current Conditions and Forecast Blocks.
+- `.WeatherKittyImage` - Weather Background Images
+- `.WeatherKittyText` - Weather Text
+- `.WeatherKittyChart` - Weather chart containers
+- `.WeatherKittyGeoAddress` - Manual location input container
+- `.WeatherKittyMapForecast` - Forecast Map
+- `.WeatherKittyMapRadar` - Radar Map
+- `.WeatherKittyMapAlerts` - Alerts Map
+- and more. See the dev tools inspector for more classes.
 
 ### HTML Element Details
 

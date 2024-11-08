@@ -582,7 +582,6 @@ export async function WeatherKittyIsLoading(message, func) {
   // if WKL(null) then return status of loading
   if (message == null || func == null) {
     let result = config.KvpTimers.size > 0;
-    console.log("[WeatherKittyIsLoading]", config.KvpTimers.size, result);
     return result;
   }
 

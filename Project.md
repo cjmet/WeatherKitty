@@ -22,16 +22,20 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] **Required**
 
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 10 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
-        `I would normally clean up the number of commits`
   - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
+
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+        `Maybe?  I will say this is not my strong suit`
+
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
   - [ ] Add any special instructions for the reviewer to run your project.
+        `There should not be any, beyond the https requirements`
   - [x] Add a 4th feature
   - [x] API: Integrate a third-party API into your project.
     - [x] Read API **or** Write to an API
+          `I have APIs in abundance.`
           &nbsp;
 
 - [x] **Features (Choose 2)**
@@ -52,6 +56,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] Retrieve data from a third-party API and use it to display something within your app.
   - [ ] Create a form and store the submitted values using an external API (e.g. a contact form, survey, etc).
   - [ ] Persist data to an external API and make the stored data accessible in your app (including after reload/refresh).
+        `I'm saving a fair bit of data to custom caching: location, weather, history, and most api calls`
         &nbsp;
 
 - [ ] **Optional Features (Swap with Section 1)**
@@ -62,45 +67,61 @@ It sounds so neat and simple, and it so very much isn't.
 
 ## To-Do
 
-- [ ] work experimental back into dev and main
-- [ ] disable nav while loading?
-- [ ] disable set while loading?
 - [ ] clean up Log.Verbose
 - [ ] clean up Log.Trace
 
+### Questions (may be duplicated below in fixes)
+
+- [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
+- [ ] Async Locking. There are somethings we don't want multiple of running at the same time.
+  - [ ] Event Queuing? It maybe that this is the only time it will be an issue.
+  - [ ] Locking FetchCache and WeatherKitty
+- [ ] True Parallel UI threads for charts. The charts can take considerable time to render.
+  - [ ] Web Workers. This looks good for cpu heavey data, but what about UI and the rendering of the charts?
+  - [ ] I-Frames. This is probably frowned upon, but how else do I get Parallel UI rendering? Even if I did go this way, HOW do I do that?
+- [ ] CPU Optimization. I've already done this some. I've also inserted microsleeps where needed to let the UI render, and that helped.
+  - [ ] Resizing etc while calculating cpu heavy data has been an issue.
+- [ ] Serve static resources (images) from the module / sub-module.
+- [ ] Paths and Git SubModules, and Splitting of ESM modules
+- [ ] Split the giant file into feature.esm, but then how does that work with paths and submodules without a bundler?
+- [ ] WebWorker some of the Data Tasks?
+  - [ ] WebWorker the 4 primary data Tasks and Cache the Post Processed Results. This could be the first step towards modularizing and separating everything.
+
 ### Fixes and Updates
 
-- [ ] do not require station location, add that later
-- [ ] loading indicator for the fetch API
+- [ ] do not require station location, add that later as it takes too long to load on 3G.
+- [ ] loading indicator for the fetch API. Really only needed on 3G.
 - [ ] Better way to MonitorCharts()
   - [ ] MutationObserver() API? - This failed to do what I wanted, so I went homegrown.
-- [ ] fetchCache - Locking? Queuing?
-  - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
+- [ ] Locking
+  - [ ] fetchCache - Locking? Queuing?
+  - [ ] WeatherKitty
+  - [ ] Locking, Queuing, multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
 - [ ] Work on Parallel Async and Slow Connections
   - [ ] already worked on optimization some. Lots more work to do.
   - [ ] ghcnd operations need to be unlinked, and fill in later.
   - [ ] parallel history charts, or even all charts?
 - [ ] Sec Fix GetLists(s). Partially Done.
-- [ ] WeatherKittyLock() ?
 - [ ] CustomElement API
 - [ ] PouchCache instead of the homegrown mess.
-- [ ] Investigate and Deal with Null and NaN Data?
+- [ ] Investigate and Deal with Null and NaN API Data
 
 ### Features
 
-- [ ] Features
-  - [ ] City, State by ghcnd
-    - [ ] Prefer Order: USW*, USC*, \*
-    - [ ] state names from ghcnd-states.txt
-    - [ ] modularize AddressByGhcnd
-  - [ ] GNIS API
-  - [ ] Find Nearest if not Exist
-  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
-  - [ ] Aliases: WT**, WV**
-  - [ ] Weather Alerts
-  - [ ] Other Weather Products
-  - [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
-  - [ ] Dynamic Element Create Support, and/or Custom HTML API
+- [ ] City, State by ghcnd and/or GNIS
+  - [ ] Prefer Order: USW*, USC*, \*
+  - [ ] state names from ghcnd-states.txt
+  - [ ] modularize AddressByGhcnd
+- [ ] GNIS API
+- [ ] Find Nearest if not Exist
+- [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
+- [ ] Aliases: WT**, WV**
+- [ ] Weather Alerts
+- [ ] Modularize so each path (Weather, Obs, History), can finish as independently as possible
+- [ ] Modularize so we can use the data half as an API and Library
+- [ ] Other Weather Products
+- [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
+- [ ] Dynamic Element Create Support, and/or Custom HTML API
 
 ### Supplemental - More things to Learn
 
