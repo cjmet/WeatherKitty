@@ -6,10 +6,12 @@ import {
   WeatherKittyWaitOnLoad,
   WeatherKittyPause,
   sleep,
+  RecalculateAllCharts,
+  microSleep,
 } from "./WeatherKitty.mjs";
 
 let CodeKy = false;
-let Boston = false;
+let Boston = true;
 let TestFubarDisplay = true;
 let ClimateTest = true;
 
@@ -22,6 +24,7 @@ if (TestFubarDisplay) {
   NavHome();
   await WeatherKittyWaitOnLoad();
   if (ClimateTest) NavClimate();
+  await sleep(2);
 } else {
   WeatherKittyPause(false);
   WeatherKitty();
@@ -47,7 +50,7 @@ if (TestFubarDisplay) {
   if (element) element.addEventListener("click", PurgeData);
 }
 
-function NavToClass(classNames) {
+async function NavToClass(classNames) {
   if (!classNames) classNames = [];
   let classList = [
     "MapsAlpha",
@@ -69,26 +72,28 @@ function NavToClass(classNames) {
       element.classList.remove("hidden");
     }
   }
+  await microSleep(1);
+  RecalculateAllCharts();
 }
 
-function NavHome() {
+async function NavHome() {
   console.log("Navigating Home");
-  NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"]);
+  await NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"]);
 }
 
-function NavWeather() {
+async function NavWeather() {
   console.log("Navigating Weather");
-  NavToClass(["WeatherKittyWeatherCharts"]);
+  await NavToClass(["WeatherKittyWeatherCharts"]);
 }
 
-function NavHistory() {
+async function NavHistory() {
   console.log("Navigating History");
-  NavToClass(["WeatherKittyHistoryCharts"]);
+  await NavToClass(["WeatherKittyHistoryCharts"]);
 }
 
-function NavClimate() {
+async function NavClimate() {
   console.log("Navigating Climate");
-  NavToClass(["WeatherKittyClimateCharts"]);
+  await NavToClass(["WeatherKittyClimateCharts"]);
 }
 
 function ExpireData() {

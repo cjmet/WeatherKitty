@@ -81,7 +81,7 @@ let config = {
 
   ChartTrimDefault: { weather: "average", history: "truncate" }, // truncate, reverse, average, none()
   ChartPixelsPerPointDefault: 4, // "Auto", default: 4 or None. 4 looks best visually to me.
-  ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),  // cjm-chart
+  ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),
   ChartAspectDefault: 2.7,
   ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
 
@@ -1463,7 +1463,7 @@ export async function CreateChart(
     }
     // /TRIM Data
 
-    // PIXELS PER POINT // cjm-chart
+    // PIXELS PER POINT
     // ---
     // if px then we need to set width based on (reduced) number of data points
 
@@ -1491,16 +1491,18 @@ export async function CreateChart(
       }
     }
 
-    // ---
-    // /PIXELS PER POINT
     if (Log.Debug())
       console.log(
-        `[CreateChart] ${key} - Mx/Data:[${maxDataPoints} / ${
+        `[Calculate-Chart-Size] ${key} - Mx/Data:[${maxDataPoints} / ${
           values.length
         }];   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:[${width} / ${expandedWidth}]; He:${height}, As:${chartAspect.toFixed(
           2
         )}`
       );
+
+    // ---
+    // /PIXELS PER POINT
+    // cjm-chart
 
     let data = [];
     let time = [];
@@ -1568,8 +1570,9 @@ export async function CreateChart(
           ],
         },
         options: {
-          // aspectRatio: chartAspect,
-          // maintainAspectRatio: true,
+          responsive: true,
+          aspectRatio: chartAspect,
+          maintainAspectRatio: true,
           scales: {
             x: {
               ticks: {
@@ -1580,10 +1583,10 @@ export async function CreateChart(
           },
         },
       });
-      if (chartAspect) {
-        newChart.options.aspectRatio = chartAspect;
-        newChart.options.maintainAspectRatio = true;
-      }
+      // if (chartAspect) {
+      //   newChart.options.aspectRatio = chartAspect;
+      //   newChart.options.maintainAspectRatio = true;
+      // }
       // give the history charts more time.  In testing I had to add up to a second here a couple of times.
       if (pixelsPerPoint !== "auto") await microSleep(40);
       else await microSleep(1);
@@ -1604,6 +1607,42 @@ export async function CreateChart(
     }
     // ------------------------------------------------------------------
   });
+}
+
+export async function RecalculateAllCharts() {
+  console.log("[RecalculateAllCharts]");
+  let chartContainers = document.getElementsByTagName("weather-kitty-chart");
+  for (let container of chartContainers) {
+    RecalculateChartAspect(container);
+  }
+}
+
+// cjm-chart
+async function RecalculateChartAspect(chartContainer) {
+  let type = chartContainer.getAttribute("type");
+  let chartDiv = chartContainer.getElementsByTagName("div")[0];
+  let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
+
+  // testing ...
+  let width = chartDiv.offsetWidth;
+  let height = chartDiv.offsetHeight;
+  if (!width || !height) return;
+
+  height = height - 0.333 * oneEm;
+  let chartAspect = width / height;
+  console.log("RecalculateChartAspect 1: ", type, width, height, chartAspect);
+
+  if (!isNaN(chartAspect)) {
+    let element = chartContainer.getElementsByTagName("canvas")[0];
+    let chart = Chart.getChart(element);
+    if (chart) {
+      chart.options.aspectRatio = chartAspect;
+      chart.options.maintainAspectRatio = true;
+
+      await chart.resize(width, height);
+      await chart.update();
+    }
+  }
 }
 
 function GetPixels(pxString) {
