@@ -1,5 +1,6 @@
 :root {
   --weatherKittyBackgroundOpacity: 0.75;
+  --weatherKittyTranSecDefault: 0.33s;
 }
 
 weather-kitty {
@@ -22,7 +23,6 @@ weather-kitty-forecast {
   text-align: center;
   justify-content: center;
   align-items: end;
-  overflow: hidden;
 
   font-family: Arial, Helvetica, sans-serif;
   color: white;
@@ -81,22 +81,21 @@ weather-kitty-tooltip {
   right: 0;
   justify-self: center;
   align-self: start;
-
   text-align: left;
-  padding: 0.5em;
+  /* border: black 3px solid; // put this in hover  */
+  /* padding: 0.5em; // put this in hover */
   border-radius: 0.5em;
 
-  transition: all 0.33s;
-  translate: 100vw -100vh;
+  transition: opacity var(--weatherKittyTranSecDefault);
+  /* translate: 0 0; // removed this */
   opacity: 0;
 
-  width: 1px;
-  height: 1px;
-
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.75);
-  border: black 3px solid;
+  width: 0;
+  height: 0;
   z-index: -10;
+  overflow: hidden;
+
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 weather-kitty:hover,
@@ -106,15 +105,18 @@ weather-kitty-forecast:hover {
   weather-kitty-forecast > img,
   weather-kitty-current > span,
   weather-kitty-forecast > span {
-    transition: all 0.33s;
+    transition: opacity var(--weatherKittyTranSecDefault);
     opacity: 0.5;
   }
-
+  weather-kitty-tooltip {
+    border: black 3px solid;
+  }
   weather-kitty-tooltip,
   weather-kitty-tooltip span {
     color: white;
-    transition: all 0.33s;
+    transition: opacity var(--weatherKittyTranSecDefault);
     translate: 0 0;
+    padding: 0.5em;
     width: 10.5em;
     height: max-content;
     opacity: 1;

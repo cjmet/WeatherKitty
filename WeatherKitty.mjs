@@ -22,9 +22,10 @@ let LogLevel = {
 };
 let Log = {
   LogLevel: LogLevel.Warn,
-  SetLogLevel(level) {
+  SetLogLevel(level, silent) {
     Log.LogLevel = level;
-    console.log(`[WeatherKittyLog] LogLevel: ${Log.GetLogLevelText()}`);
+    if (!silent)
+      console.log(`[WeatherKittyLog] LogLevel: ${Log.GetLogLevelText()}`);
   },
   GetLogLevelText() {
     for (let key in LogLevel) {
@@ -460,6 +461,10 @@ export async function WeatherKitty() {
 
       await WeatherCharts(chartData);
     }
+    if (config.WeatherKittyIsLoaded < 3) {
+      config.WeatherKittyIsLoaded = 3;
+      MonitorCharts();
+    }
   });
 }
 
@@ -540,6 +545,7 @@ export function SetAddLocationButton(widget) {
   }
   button = RemoveAllEventListeners(button);
   button.addEventListener("click", async () => {
+    if (await WeatherKittyIsLoading()) return;
     let result = await getWeatherLocationByAddressAsync();
     if (result && result.ok) {
       // Override the location cache, and make it permanent.
@@ -576,6 +582,7 @@ export async function WeatherKittyIsLoading(message, func) {
   // if WKL(null) then return status of loading
   if (message == null || func == null) {
     let result = config.KvpTimers.size > 0;
+    console.log("[WeatherKittyIsLoading]", config.KvpTimers.size, result);
     return result;
   }
 
@@ -776,6 +783,7 @@ async function getWeatherLocationByIPAsync() {
   return response;
 }
 
+// SETLOCATION SET LOCATION SETADDRESS SET ADDRESS
 // Function getWeatherLocationByAddressAsync
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
 // City, State, Country, ZipCode, Latitude, Longitude
@@ -1163,8 +1171,11 @@ async function GetObservationChartData(data) {
         }
       }
     }
-    if (Log.Debug()) {
-      let message = "[Observations] ";
+    if (Log.Info()) {
+      let stationID = data[0].properties.station;
+      stationID = stationID.substring(stationID.length - 4);
+
+      let message = `[Observations] ${stationID}, `;
       for (let key of obsArray) {
         let unitCode = data[0].properties[key].unitCode;
         if (unitCode !== null && unitCode !== undefined)
@@ -1225,11 +1236,8 @@ export async function WeatherCharts(chartData) {
 
     if (types.includes(chartType) === false) {
       container.style.display = "none";
-      if (false && Log.Warn())
-        // cjm
-        console.log(
-          `[ProcessCharts] Warning: Chart Type [${chartType}] Not Found`
-        );
+      if (Log.Info())
+        console.log(`[ProcessCharts] Chart Type [${chartType}] Not Found`);
       if (Log.Verbose()) {
         console.log(container);
         console.log(chartData.keys());
@@ -1310,17 +1318,20 @@ export async function CreateChart(
       }
     }
 
-    // cjm-chart
+    // cj-chart
     await microSleep(1); // to let the container render
     // - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
     // - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
-    // - [ ] DataLength: Truncate, ReverseTruncate, Average, None
+    // - [ ] DataLength: Auto, Truncate, ReverseTruncate, Average, None
 
     let maxDataPoints, pixelsPerPoint, dataLength, width, height, chartAspect;
     let chartDiv = chartContainer.getElementsByTagName("div")[0];
+    let containerStyle = window.getComputedStyle(chartContainer);
+    let chartDivStyle = window.getComputedStyle(chartDiv);
     maxDataPoints = chartContainer.getAttribute("maxDataPoints");
     pixelsPerPoint = chartContainer.getAttribute("pixelsPerDataPoint");
     dataLength = chartContainer.getAttribute("trimData");
+    let oneEm = parseFloat(containerStyle.fontSize);
 
     if (!maxDataPoints) maxDataPoints = "auto";
     maxDataPoints = maxDataPoints.toLowerCase();
@@ -1332,46 +1343,60 @@ export async function CreateChart(
     // ---------------------  Calculate Width and Height ---------------------
 
     // Calculate Width and Height in order to later calculate Aspect Ratio
-    let containerStyle = window.getComputedStyle(chartContainer);
-    let chartDivStyle = window.getComputedStyle(chartDiv);
+    // Attribute first, then style, then window
 
-    // Refactor to use Math from the outer container.
+    if (Log.Debug())
+      console.log(
+        "CHART-SIZE: ",
+        key,
+        maxDataPoints,
+        pixelsPerPoint,
+        dataLength
+      );
+    // ELEMENT Div these are numbers
+    if (!width) width = chartDiv.offsetWidth;
+    if (!height) height = chartDiv.offsetHeight;
+    if (width && height) height = height - 0.333 * oneEm;
+    if (Log.Trace()) console.log("CHART-SIZE Div.offset: ", width, height);
 
-    // These are px or % or ... em or rem or vw or vh or cm or mm or in or pt or pc
-    width = GetPixels(containerStyle.width);
-    height = GetPixels(containerStyle.height);
-    if (Log.Trace()) console.log("Width:1 ", width, "Height: ", height);
+    if (!width) {
+      // ATTRIBUTES - These are numbers
+      if (!width) width = parseFloat(chartContainer.getAttribute("width"));
+      if (!height) height = parseFloat(chartContainer.getAttribute("height"));
+      if (Log.Trace()) console.log("CHART-SIZE Attrib: ", width, height);
 
-    // These are numbers
-    if (!width) width = parseFloat(chartContainer.getAttribute("width"));
-    if (!height) height = parseFloat(chartContainer.getAttribute("height"));
-    if (Log.Trace()) console.log("Width:2 ", width, "Height: ", height);
+      // STYLES (Computed)- These are px or % or ... em or rem or vw or vh or cm or mm or in or pt or pc
+      if (!width) width = GetPixels(containerStyle.width);
+      if (!height) height = GetPixels(containerStyle.height);
+      if (Log.Trace()) console.log("CHART-SIZE Style: ", width, height);
 
-    // These are numbers
-    if (!width) width = window.innerWidth;
-    if (!height) height = window.innerHeight;
-    if (Log.Trace()) console.log("Width:3 ", width, "Height: ", height);
-
-    width =
-      width -
-      AddPixels([
-        containerStyle.paddingLeft,
-        containerStyle.paddingRight,
-        chartDivStyle.marginLeft,
-        chartDivStyle.marginRight,
-        chartDivStyle.borderWidth,
-        chartDivStyle.borderWidth,
-      ]);
-    height =
-      height -
-      AddPixels([
-        containerStyle.paddingTop,
-        containerStyle.paddingBottom,
-        chartDivStyle.marginTop,
-        chartDivStyle.marginBottom,
-        chartDivStyle.borderWidth,
-        chartDivStyle.borderWidth,
-      ]);
+      // These are numbers
+      if (!width) width = window.innerWidth;
+      if (!height) height = window.innerHeight;
+      if (Log.Trace()) console.log("CHART-SIZE Window: ", width, height);
+      if (width && height) {
+        width =
+          width -
+          AddPixels([
+            containerStyle.paddingLeft,
+            containerStyle.paddingRight,
+            chartDivStyle.marginLeft,
+            chartDivStyle.marginRight,
+            chartDivStyle.borderWidth,
+            chartDivStyle.borderWidth,
+          ]);
+        height =
+          height -
+          AddPixels([
+            containerStyle.paddingTop,
+            containerStyle.paddingBottom,
+            chartDivStyle.marginTop,
+            chartDivStyle.marginBottom,
+            chartDivStyle.borderWidth,
+            chartDivStyle.borderWidth,
+          ]);
+      }
+    }
     if (Log.Trace())
       console.log(
         `(${containerStyle.width}/${width}) x (${containerStyle.height}/${height}), `,
@@ -1385,8 +1410,8 @@ export async function CreateChart(
         height
       );
 
-    width = parseFloat(width);
-    height = parseFloat(height);
+    // width = parseFloat(width);
+    // height = parseFloat(height);
 
     if (width < 16 || width > config.maxWidth) width = config.defaultWidth;
     if (height < 16 || height > config.maxHeight) height = config.defaultHeight;
@@ -1468,7 +1493,6 @@ export async function CreateChart(
     // if px then we need to set width based on (reduced) number of data points
 
     let expandedWidth = 0;
-    let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
     let chartSpan = chartContainer.getElementsByTagName("span")[0];
 
     if (pixelsPerPoint === "default")
@@ -1479,7 +1503,7 @@ export async function CreateChart(
         expandedWidth = config.CHARTMAXWIDTH;
       chartDiv.style.width = `${expandedWidth}px`;
       // 1.333em looks pretty good. ... there must be built in margins or padding.
-      chartAspect = expandedWidth / (height - 1.333 * oneEm);
+      chartAspect = expandedWidth / height;
       if (chartSpan) {
         chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
         chartSpan.style.display = "block";
@@ -1493,21 +1517,20 @@ export async function CreateChart(
 
     if (Log.Debug())
       console.log(
-        `[Calculate-Chart-Size] ${key} - Mx/Data:[${maxDataPoints} / ${
-          values.length
-        }];   Px:${pixelsPerPoint}, Dx:${dataLength};   Wi:[${width} / ${expandedWidth}]; He:${height}, As:${chartAspect.toFixed(
-          2
-        )}`
+        "Chart-Aspect: ",
+        key,
+        expandedWidth > 0 ? expandedWidth : width,
+        height,
+        chartAspect
       );
-
     // ---
     // /PIXELS PER POINT
-    // cjm-chart
+    // cj-chart
 
     let data = [];
     let time = [];
     await microSleep(1);
-    // cjm-optimize
+    // cj-optimize
     for (let i = 0; i < values.length; i++) {
       data.push(values[i].value);
       let date = new Date(timestamps[i]);
@@ -1528,7 +1551,7 @@ export async function CreateChart(
       time.push(label);
     }
     await microSleep(1);
-    // cjm-optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
+    // cj-optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
     if (!isHistory) {
       // Oldest to Newest
       data = data.reverse();
@@ -1548,6 +1571,7 @@ export async function CreateChart(
     // ------------------------------------------------------------------
     let chart = Chart.getChart(canvas);
 
+    // NO CHART - CREATE NEW CHART
     if (chart === null || chart === undefined) {
       if (Log.Trace())
         console.log(
@@ -1583,15 +1607,12 @@ export async function CreateChart(
           },
         },
       });
-      // if (chartAspect) {
-      //   newChart.options.aspectRatio = chartAspect;
-      //   newChart.options.maintainAspectRatio = true;
-      // }
       // give the history charts more time.  In testing I had to add up to a second here a couple of times.
       if (pixelsPerPoint !== "auto") await microSleep(40);
       else await microSleep(1);
       await newChart.update();
     } else {
+      // CHART EXISTS - UPDATE CHART
       if (Log.Trace())
         console.log(
           `[CreateChart Update] Type: ${key},   Canvas: ${canvas},   Chart: ${chart}`
@@ -1604,33 +1625,58 @@ export async function CreateChart(
           data: data,
         },
       ];
+      if (chartAspect) {
+        chart.options.aspectRatio = chartAspect;
+        chart.options.maintainAspectRatio = true;
+      }
+      await chart.resize(width, height);
+      await chart.update();
     }
     // ------------------------------------------------------------------
   });
 }
 
-export async function RecalculateAllCharts() {
-  console.log("[RecalculateAllCharts]");
+async function MonitorCharts() {
+  let chartList;
+  let i = 0;
+
+  do {
+    await sleep(1);
+    let newList = [];
+    let elements = document.getElementsByTagName("weather-kitty-chart");
+    for (let element of elements) {
+      newList.push(JSON.stringify(window.getComputedStyle(element)));
+    }
+    if (chartList && JSON.stringify(chartList) != JSON.stringify(newList))
+      ReCalcChartAspectAll();
+    chartList = newList;
+  } while (true);
+}
+
+export async function ReCalcChartAspectAll() {
+  if (Log.Debug()) console.log("[ReSizeAllCharts]");
   let chartContainers = document.getElementsByTagName("weather-kitty-chart");
   for (let container of chartContainers) {
     RecalculateChartAspect(container);
   }
 }
 
-// cjm-chart
+// cj-chart
 async function RecalculateChartAspect(chartContainer) {
   let type = chartContainer.getAttribute("type");
   let chartDiv = chartContainer.getElementsByTagName("div")[0];
   let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
 
   // testing ...
+  if (!chartDiv) return;
   let width = chartDiv.offsetWidth;
   let height = chartDiv.offsetHeight;
   if (!width || !height) return;
 
   height = height - 0.333 * oneEm;
   let chartAspect = width / height;
-  console.log("RecalculateChartAspect 1: ", type, width, height, chartAspect);
+  if (Log.Debug())
+    console.log("RecalculateChartAspect: ", type, width, height, chartAspect);
 
   if (!isNaN(chartAspect)) {
     let element = chartContainer.getElementsByTagName("canvas")[0];
@@ -1650,7 +1696,8 @@ function GetPixels(pxString) {
   pxString = pxString.toLowerCase();
   if (pxString.includes("px")) {
     pixels = parseFloat(pxString.replace("px", ""));
-  } else if (Log.Debug()) console.log("*** ERROR *** : GetPixels: ", pxString);
+  } else if (Log.Verbose())
+    console.log("*** ERROR *** : GetPixels: ", pxString);
   return pixels;
 }
 
@@ -2216,7 +2263,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
 
   await microSleep(1);
   dataSets = await HistoryReformatDataSets(dataSets);
-  if (Log.Debug()) {
+  if (Log.Info()) {
     let keys = [];
     for (let key of dataSets.keys()) keys.push(key);
     console.log(`[History] [${station.id}] ${keys.join(", ")}`);
@@ -2431,12 +2478,6 @@ async function HistoryGetStation(station, latitude, longitude) {
   });
 }
 
-// TruncateData(), ReverseTruncateData(), AverageData(), AllData()
-async function TruncateData() {}
-async function ReverseTruncateData() {}
-async function AverageData() {}
-async function AllData() {}
-
 // Function HistoricalGetCsvFile
 async function HistoryGetCsvFile(stationId) {
   return WeatherKittyIsLoading("GetCsvFile", async () => {
@@ -2589,7 +2630,7 @@ function WeatherKittyForecastBlock() {
   return results;
 }
 
-let WeatherKittyWidgetBlock = `<weather-kitty-tooltip style="display:none;">
+let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
     <weather-kitty-geoaddress></weather-kitty-geoaddress>
     <p></p>
   </weather-kitty-tooltip>

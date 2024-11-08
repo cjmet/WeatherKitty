@@ -6,35 +6,38 @@ import {
   WeatherKittyWaitOnLoad,
   WeatherKittyPause,
   sleep,
-  RecalculateAllCharts,
+  ReCalcChartAspectAll,
   microSleep,
+  WeatherKittyIsLoading,
 } from "./WeatherKitty.mjs";
 
-let CodeKy = false;
-let Boston = true;
-let TestFubarDisplay = true;
-let ClimateTest = true;
+let CodeKy = true;
+let DisableWhileLoading = false;
+let Test_Boston = false;
+let Test_Climate = false;
+let Test_FubarDisplay = false;
 
 WeatherKittyPause(true); // stop the widget and disable the initial load
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);
-if (Boston) await SetLocationAddress("USW00014739");
-if (TestFubarDisplay) {
+if (Test_Boston) await SetLocationAddress("USW00014739");
+if (Test_FubarDisplay) {
   WeatherKittyPause(false);
   WeatherKitty();
   NavHome();
   await WeatherKittyWaitOnLoad();
-  if (ClimateTest) NavClimate();
+  if (Test_Climate) await ClimateTestFunction();
   await sleep(2);
 } else {
   WeatherKittyPause(false);
   WeatherKitty();
   await WeatherKittyWaitOnLoad(); // wait for the widget to load
-  if (ClimateTest) NavClimate();
+  if (Test_Climate) await ClimateTestFunction();
 }
+LoadButtons();
 
 // BUTTONS -------------------------------------
 // ---
-{
+function LoadButtons() {
   let element;
   element = document.getElementById("NavHome");
   if (element) element.addEventListener("click", NavHome);
@@ -48,9 +51,26 @@ if (TestFubarDisplay) {
   if (element) element.addEventListener("click", ExpireData);
   element = document.getElementById("PurgeData");
   if (element) element.addEventListener("click", PurgeData);
+  element = document.getElementById("BostonData");
+  if (element)
+    element.addEventListener("click", async () => {
+      await SetLocationAddress("USW00014739");
+      WeatherKitty();
+    });
+  element = document.getElementById("RedrawCharts");
+  if (element) element.addEventListener("click", ReCalcChartAspectAll);
+}
+
+async function ClimateTestFunction() {
+  await NavClimate();
+  await sleep(1);
+  await SetLocationAddress("USC00153629");
+  WeatherKitty();
 }
 
 async function NavToClass(classNames) {
+  if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
+  console.log("NavToClass: ", classNames);
   if (!classNames) classNames = [];
   let classList = [
     "MapsAlpha",
@@ -73,35 +93,32 @@ async function NavToClass(classNames) {
     }
   }
   await microSleep(1);
-  RecalculateAllCharts();
 }
 
 async function NavHome() {
-  console.log("Navigating Home");
   await NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"]);
 }
 
 async function NavWeather() {
-  console.log("Navigating Weather");
   await NavToClass(["WeatherKittyWeatherCharts"]);
 }
 
 async function NavHistory() {
-  console.log("Navigating History");
   await NavToClass(["WeatherKittyHistoryCharts"]);
 }
 
 async function NavClimate() {
-  console.log("Navigating Climate");
   await NavToClass(["WeatherKittyClimateCharts"]);
 }
 
-function ExpireData() {
+async function ExpireData() {
+  if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Expiring Data");
   localStorage.clear();
 }
 
-function PurgeData() {
+async function PurgeData() {
+  if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Purging Data");
   localStorage.clear();
   caches.delete("weather-kitty");

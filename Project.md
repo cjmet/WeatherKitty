@@ -62,85 +62,49 @@ It sounds so neat and simple, and it so very much isn't.
 
 ## To-Do
 
-- [ ] Weather Kitty - To-Do List
+- [ ] work experimental back into dev and main
+- [ ] disable nav while loading?
+- [ ] disable set while loading?
+- [ ] clean up Log.Verbose
+- [ ] clean up Log.Trace
 
-  - Resize Charts When
-    - [ ] Resize Chart Function
-      - [ ] Alpha
-      - [ ] Beta
-      - [ ] Maybe? Apply the same element.offsetwidth approach to the initial sizing of the charts as well, for more simplicity?
-    - [ ] Location Changes
-    - [ ] WindowSize Changes
-    - [ ] Display/Hidden Changes
-  - [ ] if change location, reload charts? reload page? resize charts? modular resize for charts?
-  - [ ] Px Mx Logic
-    - [ ] PX
-      - [ ] "auto" - does not resize chart, but is the same size as "default" if asked for calc
-      - [ ] "default" - 4
-      - [ ] set - resizes to fit data
-    - [ ] MX
-      - [ ] "auto" - MAX / PX
-      - [ ] "default" - 510
-      - [ ] "max" - CHART_MAX / PX
-      - [ ] set - resizes data to fit
-    - [ ] Default Weather = Average, Default History = Truncate
-  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
-  - [ ] OnDisplayStyleChange, OnWindowResizeChange
-  - [ ] HTML Element: Chart DataLength Option, right now history is truncated at 500 records
-    - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 510
-      - [ ] Controls Number of Data Points
-    - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
-      - [ ] Controls Display, Aspect, Etc. "Auto", 4, 1, "Max", etc.
-    - [ ] DataLength: Truncate, ReverseTruncate, Average, None. Default Truncate.
-    - [x] Const MaxWidth = 32000 pixels, more and chart.js breaks.
-    - [ ] Deal with Null and NaN Data
-  - [ ] Global Warming Charts, 1936 to 2024
-    - [ ] Data API
-    - [ ] Set or Override Chart Sizes and Such
-    - [ ] By Year, By Month, By Week
-  - [ ] History Chart Optimization
-    - [ ] Check for charts first, then only pull the charts we need?
-    - [ ] better handling of data types and standardization so we don't have to do so much processing and reprocessing of data
-    - [ ] pass in chart lists so we only process ones we need
-    - [ ] processed data cache in front of the raw fetchcache data?
-  - [ ] Aliases,
-    - [x]temp = TMax, Tmin, Tobs
-    - [ ] WT**, WV**
+### Fixes and Updates
+
+- [ ] do not require station location, add that later
+- [ ] loading indicator for the fetch API
+- [ ] Better way to MonitorCharts()
+  - [ ] MutationObserver() API? - This failed to do what I wanted, so I went homegrown.
+- [ ] fetchCache - Locking? Queuing?
+  - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
+- [ ] Work on Parallel Async and Slow Connections
+  - [ ] already worked on optimization some. Lots more work to do.
+  - [ ] ghcnd operations need to be unlinked, and fill in later.
+  - [ ] parallel history charts, or even all charts?
+- [ ] Sec Fix GetLists(s). Partially Done.
+- [ ] WeatherKittyLock() ?
+- [ ] CustomElement API
+- [ ] PouchCache instead of the homegrown mess.
+- [ ] Investigate and Deal with Null and NaN Data?
+
+### Features
+
+- [ ] Features
   - [ ] City, State by ghcnd
     - [ ] Prefer Order: USW*, USC*, \*
     - [ ] state names from ghcnd-states.txt
     - [ ] modularize AddressByGhcnd
-  - [ ] fetchCache - Locking? Queuing?
-    - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ????
   - [ ] GNIS API
   - [ ] Find Nearest if not Exist
-  - [ ] repeatable weatherkitty?
-  - [ ] Work on Parallel Async and Slow Connections
-    - [ ] already worked on optimization some. Lots more work to do.
-    - [ ] ghcnd operations need to be unlinked, and fill in later.
-    - [ ] parallel history charts, or even all charts?
-  - [ ] disable nav while loading?
-  - [ ] disable set while loading?
-  - [ ] ...
-        &nbsp;
+  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
+  - [ ] Aliases: WT**, WV**
+  - [ ] Weather Alerts
+  - [ ] Other Weather Products
+  - [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
+  - [ ] Dynamic Element Create Support, and/or Custom HTML API
 
-  - [ ] Sec Fix GetLists(s)
-  - [ ] Dynamic Create Support, and/or Custom HTML API
-  - [ ]
-  - [ ] Alerts, Radar, Products, Weather Maps
-    - [ ] Alerts
-    - [ ] Radar
-    - [ ] Products
-    - [ ] Weather Maps
-    - [ ] Weather Map and Forecasts Widget (Large, page/display sized Widget)
-  - [ ] Custom modular geolocation function(s);
-  - [ ] PouchCache? (key, value, ttl)nds or milliseconds?) or -1 for permanent, aka (Number.Max / 2)
-  - [ ] Better Charts
-    - [ ] Color Coding? Rainbow? Read Danny's Book?
-  - [ ] Extra Large Screen Media Query
+### Supplemental - More things to Learn
 
-- [ ] Supplemental - To-Do List
-  - [ ] Vite
-  - [ ] React
-  - [ ] Auth / OAuth API
-  - [ ] AWS, Lambda, Hosting, Etc, ...
+- [ ] Vite
+- [ ] React
+- [ ] Auth / OAuth API
+- [ ] AWS, Lambda, Hosting, Etc, ...
