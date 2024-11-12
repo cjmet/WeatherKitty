@@ -805,6 +805,7 @@ async function getWeatherLocationByAddressAsync(address) {
   }
   if (Log.Trace()) console.log(`[getAddress] "${address}"`);
 
+  address = "" + address;
   let array = address.split(",");
   let street = "";
   let city = "";
@@ -818,7 +819,7 @@ async function getWeatherLocationByAddressAsync(address) {
       let length = name.length;
       if (length != 11) {
         if (Log.Error())
-          console.log("[getAddress] Error: Invalid GHCND Station");
+          console.log("[getAddress] Error: Invalid GHCND Station", address);
         return error;
       }
       //
@@ -1249,7 +1250,7 @@ export async function WeatherCharts(chartData) {
       }
       continue;
     } else {
-      container.style.display = "block";
+      container.style.display = "block"; // chart-display
       if (Log.Trace()) console.log(`[ProcessCharts] Chart Type: ${chartType}`);
     }
     let chart = chartData.get(chartType);
@@ -1333,7 +1334,7 @@ export async function CreateChart(
     let maxDataPoints, pixelsPerPoint, averageData, dataLength;
     let width, height, chartAspect;
     let originalDataLength = values.length;
-    let chartDiv = chartContainer.getElementsByTagName("div")[0];
+    let chartDiv = chartContainer.getElementsByTagName("canvasBounds")[0];
     let containerStyle = window.getComputedStyle(chartContainer);
     let chartDivStyle = window.getComputedStyle(chartDiv);
     let oneEm = parseFloat(containerStyle.fontSize);
@@ -1365,6 +1366,14 @@ export async function CreateChart(
         pixelsPerPoint,
         dataLength
       );
+    // ATTRIBUTES - These are numbers
+    if (!width) width = parseFloat(chartContainer.getAttribute("width"));
+    if (!height) height = parseFloat(chartContainer.getAttribute("height"));
+    if (Log.Trace()) console.log("CHART-SIZE OVERRIDE: ", width, height);
+    chartContainer.style.width = width + "px";
+    chartContainer.style.height = height + "px";
+    width = height = null;
+
     // ELEMENT Div these are numbers
     if (!width) width = chartDiv.offsetWidth;
     if (!height) height = chartDiv.offsetHeight;
@@ -1372,11 +1381,6 @@ export async function CreateChart(
     if (Log.Trace()) console.log("CHART-SIZE Div.offset: ", width, height);
 
     if (!width) {
-      // ATTRIBUTES - These are numbers
-      if (!width) width = parseFloat(chartContainer.getAttribute("width"));
-      if (!height) height = parseFloat(chartContainer.getAttribute("height"));
-      if (Log.Trace()) console.log("CHART-SIZE Attrib: ", width, height);
-
       // STYLES (Computed)- These are px or % or ... em or rem or vw or vh or cm or mm or in or pt or pc
       if (!width) width = GetPixels(containerStyle.width);
       if (!height) height = GetPixels(containerStyle.height);
@@ -1444,13 +1448,14 @@ export async function CreateChart(
     else localPx = parseFloat(pixelsPerPoint);
     if (isNaN(localPx)) localPx = config.ChartPixelsPerPointDefault["default"];
     localPx = Math.abs(localPx);
+    let localMax = Math.floor(config.CHARTMAXWIDTH / localPx);
 
     if (maxDataPoints === "auto") maxDataPoints = Math.floor(width / localPx);
     else if (maxDataPoints === "default")
       maxDataPoints = config.ChartMaxPointsDefault;
-    else if (maxDataPoints === "max")
-      maxDataPoints = Math.floor(config.CHARTMAXWIDTH / localPx);
+    else if (maxDataPoints === "max") maxDataPoints = localMax;
     maxDataPoints = Math.abs(maxDataPoints);
+    if (maxDataPoints > localMax) maxDataPoints = localMax;
 
     // ---
     // /MAX DATA POINTS
@@ -1712,12 +1717,12 @@ export async function CreateChart(
     }
     // /TRIM Data
 
-    // PIXELS PER POINT
+    // PX PIXELS PER POINT
     // ---
     // if px then we need to set width based on (reduced) number of data points
 
     let expandedWidth = 0;
-    let chartSpan = chartContainer.getElementsByTagName("span")[0];
+    let chartSpan = chartContainer.getElementsByTagName("chartSpan")[0];
 
     if (pixelsPerPoint !== "auto") {
       if (pixelsPerPoint in config.ChartPixelsPerPointDefault)
@@ -1727,21 +1732,13 @@ export async function CreateChart(
         expandedWidth = config.CHARTMAXWIDTH;
       chartDiv.style.width = `${expandedWidth}px`;
       // 1em looks pretty good. ... there must be built in margins or padding.
-      chartAspect = expandedWidth / (height - 1 * oneEm);
-      if (chartSpan) {
-        chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
-        chartSpan.style.display = "block";
-      }
-    } else {
-      if (chartSpan) {
-        chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
-        chartSpan.style.display = "none";
-      }
+      chartAspect = expandedWidth / (height - 0 * oneEm);
     }
 
-    // cjm-chart
-    // if (Log.Debug())
-    {
+    if (chartSpan) chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
+
+    if (Log.Debug()) {
+      // cj-debug
       console.log(
         `CHART: ${key}, Mx: ${maxDataPoints}, Px: ${pixelsPerPoint}, Avg:${averageData}, Trim: ${dataLength}`
       );
@@ -1823,7 +1820,8 @@ export async function CreateChart(
           labels: time,
           datasets: [
             {
-              label: labelName,
+              // label: labelName,
+              label: "",
               data: data,
               // "circle", "cross", "crossRot", "dash", "line", "rect", "rectRounded", "rectRot", "star", "triangle", false
               indexAxis: "x",
@@ -1832,13 +1830,15 @@ export async function CreateChart(
           ],
         },
         options: {
-          animation: false, // cjm-optimize, this cut render time in half.
-          // spanGaps: true, // cjm-optimize, only a small performance gain, and it makes some of the charts wonky.
+          animation: false, // cj-optimize, this cut render time in half.
+          // spanGaps: true, // cj-optimize, only a small performance gain, and it makes some of the charts wonky.
+
           responsive: true,
           aspectRatio: chartAspect,
           maintainAspectRatio: true,
           plugins: {
             // decimation: decimation,  // Data is not in the correct format for this to work.
+            legend: { display: false },
           },
           scales: {
             x: {
@@ -1846,7 +1846,7 @@ export async function CreateChart(
               ticks: {
                 maxRotation: 90,
                 minRotation: 60,
-                sampleSize: 100, // cjm-optimize, this cut another 10%-20%
+                sampleSize: 100, // cj-optimize, this cut another 10%-20%
               },
             },
           },
@@ -1908,8 +1908,9 @@ export async function ReCalcChartAspectAll() {
 
 // cj-chart
 async function RecalculateChartAspect(chartContainer) {
+  // chart-display chart-resize chart-recalc
   let type = chartContainer.getAttribute("type");
-  let chartDiv = chartContainer.getElementsByTagName("div")[0];
+  let chartDiv = chartContainer.getElementsByTagName("canvasBounds")[0];
   let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
 
   // testing ...
@@ -1920,8 +1921,9 @@ async function RecalculateChartAspect(chartContainer) {
 
   height = height - 0.333 * oneEm;
   let chartAspect = width / height;
-  // if (Log.Debug()) // cjm
-  console.log("RecalculateChartAspect: ", type, width, height, chartAspect);
+  if (Log.Debug())
+    // cj-debug
+    console.log("RecalculateChartAspect: ", type, width, height, chartAspect);
 
   if (!isNaN(chartAspect)) {
     let element = chartContainer.getElementsByTagName("canvas")[0];
@@ -2883,7 +2885,7 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
-let WeatherKittyChartBlock = `<div><canvas></canvas></div><span>Loading ...<span>`;
+let WeatherKittyChartBlock = `<chartSpan>Loading ...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img

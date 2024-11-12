@@ -177,47 +177,60 @@ weather-kitty-week-summary {
 /* ---------------------------------------------------------------------------- */
 /* CHARTS */
 /* --- */
+
 weather-kitty-chart {
   position: relative;
-  /* container: chart / size;  */
-  border: red 3px solid;
+  flex: 1 0 auto;
+  border: black 3px solid;
+  border-radius: 1em;
+  margin: 0.5em;
   box-sizing: border-box;
   background-color: whitesmoke;
+  width: calc(100% - 1em);
+  height: calc(100% - 1em);
+}
+
+weather-kitty-chart > chartSpan {
+  /* border: purple 3px solid; */
+  box-sizing: border-box;
+  margin: 0 0 -0.5em 0;
+  display: block;
+  width: 100%;
+  /* Gray, *DimGray, DarkSlateGray */
+  color: dimgray;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: small;
+  font-weight: bold;
+  text-align: center;
+  text-justify: center;
+}
+
+weather-kitty-chart > scrollDiv {
+  /* border: green 3px solid; */
+  box-sizing: border-box;
   flex: 1 0 auto;
   display: block;
-  height: 100%;
   width: 100%;
+  height: calc(100% - 0.5em);
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-weather-kitty-chart > div {
-  position: relative; /* required for chart.js responsiveness */
-  border: green 3px solid;
+weather-kitty-chart canvasBounds {
+  /* required for chart.js responsiveness */
+  position: relative;
+  display: flex;
+  /* border: blue 3px solid; */
   box-sizing: border-box;
-  margin: 0.5em;
-  /* width: calc(100cqw - 1em);
-  height: calc(100cqh - 1em); */
-  width: calc(100% - 1em);
-  height: calc(100% - 2em);
+  width: calc(100% - 0em);
+  height: calc(100% - 0em);
 }
 
-weather-kitty-chart > canvas {
-  border: blue 3px solid;
+weather-kitty-chart canvas {
+  /* border: magenta 3px solid; */
   box-sizing: border-box;
 }
 
-weather-kitty-chart > span {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0;
-  margin: 1.5em 0 0 3.5em;
-  color: #606060;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: small;
-  display: none;
-}
 /* --- */
 /* /CHARTS */
 /* ---------------------------------------------------------------------------- */

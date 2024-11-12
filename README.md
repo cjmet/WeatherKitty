@@ -54,7 +54,7 @@ For ease of editing and customization
 
 #### Charts
 
-<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value">`</b>
+<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value">`</b>
 
 ##### Type - <small>required</small>
 
@@ -62,23 +62,32 @@ For ease of editing and customization
 
 ##### MaxDataPoints - <small>optional</small>
 
-- "auto" - sets the value for you.
+- "auto" - sets the value for you, and keeps the charts sized to the viewport.
 - "default" - sets the value to a reasonable number suited for most charts.
 - "max" - sets the value to as many points as the charts can reasonably handle. Approximately 32,000.
-- "value" - sets the value to that specified so long as it is less than "max".
+- "value" - sets the value.
 
 ##### PixelsPerDataPoint - <small>optional</small>
 
 - "auto" - sets the value for you, and keeps the charts sized to the viewport.
-- "default" - bypasses the viewport restrictions on the chart and sizes the charts to a reasonable value to make all data points discernable. About 4 pixels.
-- "value" - bypasses the viewport restrictions on the chart and sets the value to that specified.
+- "default" - the same as "small".
+- "small" - about 4 pixels.
+- "medium" - about 14 pixels.
+- "large" - about 24 pixels.
+- "value" - sets the value.
 
 ##### TrimData - <small>optional</small>
 
 - "truncate" - truncates excess data. the default.
 - "reversetruncate" - same as truncate but backwards.
-- "average" - averages the data to fit.
-- "none" - does not trim the data.
+
+#### width - <small>optional</small>
+
+- "value" - this will override the width, but the chart may still scale to fill the area, or may expand for additional data points.
+
+#### height - <small>optional</small>
+
+- "value" - this will override the width, but the chart may still scale to fill the area.
 
 #### Climate Chart Example
 

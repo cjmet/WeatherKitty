@@ -59,7 +59,7 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: hidden;
 }
 
 #HamburgerLinks {
@@ -71,7 +71,6 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  overflow: auto;
   opacity: 1;
   margin: 0 0.5em;
 }
@@ -248,10 +247,12 @@ body {
     position: fixed;
     border: gray 3px solid;
     top: 0;
-    left: 0;
+    left: -5em;
     width: 0;
     height: 0;
     margin: 0;
+    opacity: 0;
+    z-index: -10;
   }
 
   #HamburgerLinks a,
@@ -266,16 +267,22 @@ body {
   }
 
   #Hamburger:hover {
-    /* padding: 0.25em; */
     #HamburgerRelative {
       background-color: gray;
       border-radius: 1em;
     }
     #HamburgerLinks {
       transition: width 0.15s, height 0.66s;
+      transition: all 0.33s;
+      top: 0;
+      left: 0;
       width: auto;
       height: auto;
+      max-height: 100%;
       opacity: 1;
+      overflow: auto;
+      z-index: 1;
+      direction: rtl;
     }
   }
 
