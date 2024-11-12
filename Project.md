@@ -73,28 +73,12 @@ It sounds so neat and simple, and it so very much isn't.
 
 #### Project Priority 2
 
-- [x] Split Trim and Average into two attributes
-  - [ ] Documentation
-- [x] Avg: None, Fit, Week, Month, Quarter, Year, Decade
-  - [ ] Px:
-    - [ ] "large" 1.5em 24px .... but that makes for huge even standard weather charts.
-    - [ ] "medium" 14px
-    - [ ] "small" 4px
-    - [ ] Documentation
-- [ ] Add "Avg X" to the history title, and probably chart title as well.
-- [ ] Trim: Truncate, or ReverseTruncate, ... none is not an option
-  - [ ] switch
-  - [ ] Documentation
-- [ ] TMXN: Average of Max and Min where available, and check for sync, and barp if too many out of sync.
-  - [ ] Documentation
 - [ ] SetInterval MonitorCharts
   - [ ] WeatherKitty Locking
   - [ ] Monitor Locking
 - [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
-
   - [ ] Jquery UI Scrollbar?
   - [ ] Roll your Own?
-
 - [ ] clean up Log.Verbose
 - [ ] clean up Log.Trace
 

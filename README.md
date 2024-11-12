@@ -96,8 +96,13 @@ For ease of editing and customization
 <b>Chart Types</b>:
 
 - elevation, temperature, dewpoint, windDirection, windSpeed, windGust, barometricPressure, seaLevelPressure, visibility, maxTemperatureLast24Hours, minTemperatureLast24Hours, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, windChill, heatIndex, ...
-- TMAX, TMIN, PRCP, SNOW, SNWD, PGTM, WDFG, WSFG, WESD, FRGT, THIC, ACMH, ACSH, PSUN, TSUN, WDFM, WSFM, AWND, FMTM, TAVG, ADPT, ASLP, ASTP, AWBT, RHAV, RHMN, RHMX, TEMP, ...
-  ... and more. See the live dev console for more info.
+- TMAX, TMIN, PRCP, SNOW, SNWD, PGTM, WDFG, WSFG, WESD, FRGT, THIC, ACMH, ACSH, PSUN, TSUN, WDFM, WSFM, AWND, FMTM, TAVG, ADPT, ASLP, ASTP, AWBT, RHAV, RHMN, RHMX, TEMP, TMXN, ...
+- ... and more. See the live dev console for more info.
+
+##### Chart Aliases
+
+- TEMP - tries to determine the larger temperature dataset for a station, which is hopefully the most relevant.
+- TMXN - average of TMAX and TMIN _IF_ the datasets match
 
 ## Credits, License, and Usage Summary
 

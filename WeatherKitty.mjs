@@ -181,7 +181,9 @@ async function WeatherKittyStart() {
       if (Log.Warn()) {
         console.log("[WeatherKittyStart] Loading From: ", path);
         if (PAUSE)
-          console.log("[WeatherKitty] Warning: PAUSED: Initial Load Disabled.");
+          console.log(
+            "[WeatherKitty] Warning: Temporarily PAUSED and Initial Load Disabled."
+          );
       }
       config.WeatherKittyPath = path;
     }
@@ -299,7 +301,7 @@ export async function WeatherKitty() {
     if (config.WeatherKittyIsLoaded < 2) return;
     config.WeatherWidgetIsLoaded = true;
     if (config.PAUSE) {
-      if (Log.Warn()) console.log("[WeatherKitty] Warning: PAUSED");
+      if (Log.Warn()) console.log("[WeatherKitty] Warning: Temporarily PAUSED");
       return;
     }
     // in theory this should be ok. otherwise await it.
@@ -1735,14 +1737,24 @@ export async function CreateChart(
       chartAspect = expandedWidth / (height - 0 * oneEm);
     }
 
-    if (chartSpan) chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
+    // cjm-chart
+    {
+      let preFix = `${isHistory ? "History" : ""}${
+        averageData != "none" ? `(${averageData})` : ""
+      }`;
+      if (preFix.length > 0) preFix += ":";
+      if (chartSpan)
+        chartSpan.innerHTML = `${preFix} ${key} - ${values[0].unitCode}`;
+    }
 
+    // cjm-debug
     if (Log.Debug()) {
-      // cj-debug
       console.log(
         `CHART: ${key}, Mx: ${maxDataPoints}, Px: ${pixelsPerPoint}, Avg:${averageData}, Trim: ${dataLength}`
       );
-      console.log(`Data: ${originalDataLength}, Trimmed: ${values.length}`);
+      console.log(
+        `SourceData: ${originalDataLength}, ResultData: ${values.length}`
+      );
       console.log(
         `Width: ${
           expandedWidth > 0 ? expandedWidth : width
@@ -2532,34 +2544,51 @@ async function HistoryReformatDataSets(dataSets) {
     mapSets.set(key, dataSet);
   }
 
-  // Create Aliases
+  // Create ALIAS
   // Create an Alias "TEMP" that used TOBS, TAVG, or an Average of TMAX and TMIN, in that order
   // Only average if TMAX and TMIN are the same length and start at the same time
+  // cjm-TMXN
+
   let tMax = mapSets.get("TMAX");
   let tMin = mapSets.get("TMIN");
   if (
-    !mapSets.has("TAVG") &&
     tMax &&
     tMin &&
     tMax.values.length === tMin.values.length &&
     tMax.timestamps[0] === tMin.timestamps[0]
   ) {
+    if (Log.Verbose())
+      console.log(
+        "TMAX and TMIN are the same length and start at the same time"
+      );
     let tMax = mapSets.get("TMAX").values;
     let tMin = mapSets.get("TMIN").values;
     let temp = mapSets.get("TMAX").values;
-    console.log("Temp", tMax, tMin);
     for (let i = 0; i < tMax.length; i++) {
       let avg = (tMax[i].value + tMin[i].value) / 2;
       temp[i].value = avg;
     }
-    mapSets.set("TAVG", temp);
+    if (Log.Verbose()) console.log("TMXN setting:", temp.length);
+    let clone = mapSets.get("TMAX");
+    clone.values = temp;
+    mapSets.set("TMXN", clone);
   }
   // /Average
-
-  if (mapSets.has("TOBS")) {
-    mapSets.set("TEMP", mapSets.get("TOBS"));
-  } else if (mapSets.has("TAVG")) {
-    mapSets.set("TEMP", mapSets.get("TAVG"));
+  // TEMP = largest value array of TOBS, TAVG, TMAX, TMIN, TMXN
+  {
+    let KEY = null;
+    let SIZE = 0;
+    let keys = ["TOBS", "TAVG", "TMXN", "TMAX", "TMIN"];
+    for (let key of keys) {
+      let temp = mapSets.get(key)?.values?.length;
+      if (Log.Verbose()) console.log("TEMP", key, temp);
+      if (temp > SIZE) {
+        SIZE = temp;
+        KEY = key;
+      }
+    }
+    if (Log.Debug()) console.log("TEMP-Result", KEY, SIZE);
+    if (KEY != null) mapSets.set("TEMP", mapSets.get(KEY));
   }
 
   // WT**, WV** - Weather Types

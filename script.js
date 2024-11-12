@@ -20,7 +20,8 @@ let Test_FubarDisplay = false;
 
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load
-await SetLocationAddress("USC00153629");
+// await SetLocationAddress("USC00153629"); // Harlan
+await SetLocationAddress("USW00014739"); // Boston
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);
 if (!Test_FubarDisplay) {
   WeatherKittyPause(false);
@@ -35,6 +36,7 @@ if (Test_FubarDisplay) {
   await WeatherKittyWaitOnLoad();
 }
 LoadButtons();
+NavClimate();
 console.log("Demo Loaded");
 
 // BUTTONS -------------------------------------
