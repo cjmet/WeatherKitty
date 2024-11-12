@@ -81,7 +81,13 @@ let config = {
   CHARTMAXWIDTH: 32000, // this is a constant, more will crash chart.js and/or the browser
 
   ChartTrimDefault: { weather: "average", history: "truncate" }, // truncate, reverse, average, none()
-  ChartPixelsPerPointDefault: 4, // "Auto", default: 4 or None. 4 looks best visually to me.
+  ChartPixelsPerPointDefault: {
+    auto: 4,
+    default: 4,
+    small: 4,
+    medium: 14,
+    large: 24,
+  },
   ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),
   ChartAspectDefault: 2.7,
   ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
@@ -122,7 +128,7 @@ let config = {
       config.ChartMaxPointsDefault === "calc"
     )
       config.ChartMaxPointsDefault = Math.floor(
-        config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault
+        config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault["default"]
       );
     if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
     if (config.longCacheTime < 60000) config.longCacheTime = 60000;
@@ -1317,25 +1323,32 @@ export async function CreateChart(
       }
     }
 
-    // cj-chart
-    await microSleep(1); // to let the container render
+    // CHART ATTRIBUTES cjm-chart
     // - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
     // - [ ] PixelsPerPoint, default: 4 or None. 4 looks best visually to me.
     // - [ ] DataLength: Auto, Truncate, ReverseTruncate, Average, None
+    // - [ ] AverageData: None, Fit, Week, Month, Quarter, Year
+    await microSleep(1); // to let the container render
 
-    let maxDataPoints, pixelsPerPoint, dataLength, width, height, chartAspect;
+    let maxDataPoints, pixelsPerPoint, averageData, dataLength;
+    let width, height, chartAspect;
+    let originalDataLength = values.length;
     let chartDiv = chartContainer.getElementsByTagName("div")[0];
     let containerStyle = window.getComputedStyle(chartContainer);
     let chartDivStyle = window.getComputedStyle(chartDiv);
+    let oneEm = parseFloat(containerStyle.fontSize);
+
     maxDataPoints = chartContainer.getAttribute("maxDataPoints");
     pixelsPerPoint = chartContainer.getAttribute("pixelsPerDataPoint");
     dataLength = chartContainer.getAttribute("trimData");
-    let oneEm = parseFloat(containerStyle.fontSize);
+    averageData = chartContainer.getAttribute("averageData");
 
     if (!maxDataPoints) maxDataPoints = "auto";
     maxDataPoints = maxDataPoints.toLowerCase();
     if (!pixelsPerPoint) pixelsPerPoint = "auto";
     pixelsPerPoint = pixelsPerPoint.toLowerCase();
+    if (!averageData) averageData = "none";
+    averageData = averageData.toLowerCase();
     if (!dataLength) dataLength = "truncate";
     dataLength = dataLength.toLowerCase();
 
@@ -1425,17 +1438,16 @@ export async function CreateChart(
     // ---
     // if mx then we need to set mx based on input parameters
 
-    let localPx =
-      pixelsPerPoint === "auto" || pixelsPerPoint === "default"
-        ? config.ChartPixelsPerPointDefault
-        : pixelsPerPoint;
-    localPx = parseFloat(localPx);
-    if (isNaN(localPx)) localPx = config.ChartPixelsPerPointDefault;
+    let localPx;
+    if (pixelsPerPoint in config.ChartPixelsPerPointDefault)
+      localPx = config.ChartPixelsPerPointDefault[pixelsPerPoint];
+    else localPx = parseFloat(pixelsPerPoint);
+    if (isNaN(localPx)) localPx = config.ChartPixelsPerPointDefault["default"];
     localPx = Math.abs(localPx);
 
     if (maxDataPoints === "auto") maxDataPoints = Math.floor(width / localPx);
     else if (maxDataPoints === "default")
-      maxDataPoints = config.ChartMaxDataPointsDefault;
+      maxDataPoints = config.ChartMaxPointsDefault;
     else if (maxDataPoints === "max")
       maxDataPoints = Math.floor(config.CHARTMAXWIDTH / localPx);
     maxDataPoints = Math.abs(maxDataPoints);
@@ -1443,18 +1455,14 @@ export async function CreateChart(
     // ---
     // /MAX DATA POINTS
 
-    // TRIM Data if needed
-    {
-      if (values.length > maxDataPoints) {
-        if (dataLength.substring(0, 5) === "trunc") {
-          if (Log.Trace()) console.log("TRUNCATE");
-          values = values.slice(values.length - maxDataPoints);
-          timestamps = timestamps.slice(timestamps.length - maxDataPoints);
-        } else if (dataLength.includes("rev")) {
-          if (Log.Trace()) console.log("REVERSE TRUNCATE");
-          values = values.slice(0, maxDataPoints);
-          timestamps = timestamps.slice(0, maxDataPoints);
-        } else if (dataLength === "average" || dataLength.includes("avg")) {
+    // AVERAGE DATA .. then Trim
+    // - [ ] AverageData: None, Fit, Week, Month, Quarter, Year
+    switch (averageData) {
+      case "fit":
+      case "auto":
+      case "avg":
+      case "average":
+        {
           if (Log.Trace()) console.log("AVERAGE");
           let avgValues = [];
           let avgTimestamps = [];
@@ -1480,8 +1488,225 @@ export async function CreateChart(
 
           values = avgValues;
           timestamps = avgTimestamps;
-        } else {
-          if (Log.Trace()) console.log("None");
+        }
+        break;
+      case "wk":
+      case "week": {
+        // Github Copilot AI,  based on my original human code block above , and then edited again by human
+        let avgValues = [];
+        let avgTimestamps = [];
+        let weekData = {};
+
+        for (let i = 0; i < values.length; i++) {
+          let date = new Date(timestamps[i]);
+          // let week = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`; // this isn't the type of week I want.
+          // get day number from the beginning of the year
+          let year = date.getFullYear();
+          let dayOfYear = Math.ceil((date - new Date(year, 0, 1)) / 86400000);
+          let weekOfYear = dayOfYear / 7;
+          weekOfYear = Math.floor(weekOfYear);
+          let week = weekOfYear + year * 52;
+
+          if (!weekData[week]) {
+            if (Log.Verbose()) console.log("Week: ", week);
+            weekData[week] = { sum: 0, count: 0, timestamp: timestamps[i] };
+          }
+
+          weekData[week].sum += values[i].value;
+          weekData[week].count++;
+        }
+
+        for (let week in weekData) {
+          avgValues.push({
+            value: weekData[week].sum / weekData[week].count,
+            unitCode: values[0].unitCode,
+          });
+          avgTimestamps.push(weekData[week].timestamp);
+        }
+
+        values = avgValues;
+        timestamps = avgTimestamps;
+        break;
+      }
+      // Github Copilot AI, ... AI did a better job this time.
+      // All of this will have to be modified later if I want it to match chart.js data format
+      case "mth":
+      case "month": {
+        let avgValues = [];
+        let avgTimestamps = [];
+        let monthData = {};
+
+        for (let i = 0; i < values.length; i++) {
+          let date = new Date(timestamps[i]);
+          let month = `${date.getFullYear()}-${date.getMonth() + 1}`;
+
+          if (!monthData[month]) {
+            monthData[month] = { sum: 0, count: 0, timestamp: timestamps[i] };
+          }
+
+          monthData[month].sum += values[i].value;
+          monthData[month].count++;
+        }
+
+        for (let month in monthData) {
+          avgValues.push({
+            value: monthData[month].sum / monthData[month].count,
+            unitCode: values[0].unitCode,
+          });
+          avgTimestamps.push(monthData[month].timestamp);
+        }
+
+        values = avgValues;
+        timestamps = avgTimestamps;
+        break;
+      }
+      case "qtr":
+      case "quarter": {
+        // Github Copilot AI,
+        let avgValues = [];
+        let avgTimestamps = [];
+        let quarterData = {};
+
+        for (let i = 0; i < values.length; i++) {
+          let date = new Date(timestamps[i]);
+          let quarter = `${date.getFullYear()}-Q${Math.floor(
+            date.getMonth() / 3
+          )}`;
+
+          if (!quarterData[quarter]) {
+            if (Log.Verbose()) console.log("Quarter: ", timestamps[i], quarter);
+            quarterData[quarter] = {
+              sum: 0,
+              count: 0,
+              timestamp: timestamps[i],
+            };
+          }
+
+          quarterData[quarter].sum += values[i].value;
+          quarterData[quarter].count++;
+        }
+
+        for (let quarter in quarterData) {
+          avgValues.push({
+            value: quarterData[quarter].sum / quarterData[quarter].count,
+            unitCode: values[0].unitCode,
+          });
+          avgTimestamps.push(quarterData[quarter].timestamp);
+        }
+
+        values = avgValues;
+        timestamps = avgTimestamps;
+        break;
+      }
+      case "yr":
+      case "year": {
+        // Github Copilot AI,
+        let avgValues = [];
+        let avgTimestamps = [];
+        let yearData = {};
+
+        for (let i = 0; i < values.length; i++) {
+          let date = new Date(timestamps[i]);
+          let year = `${date.getFullYear()}`;
+
+          if (!yearData[year]) {
+            if (Log.Verbose()) console.log("Year: ", timestamps[i], year);
+            yearData[year] = {
+              sum: 0,
+              count: 0,
+              timestamp: timestamps[i],
+            };
+          }
+
+          yearData[year].sum += values[i].value;
+          yearData[year].count++;
+        }
+
+        for (let year in yearData) {
+          if (Log.Verbose())
+            console.log(
+              "Year: ",
+              year,
+              yearData[year].sum / yearData[year].count
+            );
+          avgValues.push({
+            value: yearData[year].sum / yearData[year].count,
+            unitCode: values[0].unitCode,
+          });
+          avgTimestamps.push(yearData[year].timestamp);
+        }
+
+        values = avgValues;
+        timestamps = avgTimestamps;
+        break;
+      }
+      case "decade":
+      case "10yr": {
+        // Github Copilot AI,
+        let avgValues = [];
+        let avgTimestamps = [];
+        let decadeData = {};
+
+        for (let i = 0; i < values.length; i++) {
+          let date = new Date(timestamps[i]);
+          let decade = `${Math.floor(date.getFullYear() / 10) * 10}`;
+
+          if (!decadeData[decade]) {
+            decadeData[decade] = { sum: 0, count: 0, timestamp: timestamps[i] };
+          }
+
+          decadeData[decade].sum += values[i].value;
+          decadeData[decade].count++;
+        }
+
+        for (let decade in decadeData) {
+          avgValues.push({
+            value: decadeData[decade].sum / decadeData[decade].count,
+            unitCode: values[0].unitCode,
+          });
+          avgTimestamps.push(decadeData[decade].timestamp);
+        }
+
+        values = avgValues;
+        timestamps = avgTimestamps;
+        break;
+      }
+      case "none":
+        break;
+      default:
+        if (Log.Error())
+          console.log(
+            "*** ERROR *** : Invalid Value for AverageData",
+            averageData
+          );
+        break;
+    }
+
+    // TRIM Data if needed
+    if (values.length > maxDataPoints) {
+      switch (dataLength) {
+        case "trunc":
+        case "truncate":
+          ``;
+          {
+            if (Log.Trace()) console.log("TRUNCATE");
+            values = values.slice(values.length - maxDataPoints);
+            timestamps = timestamps.slice(timestamps.length - maxDataPoints);
+            break;
+          }
+        case "rev":
+        case "reverse": {
+          if (Log.Trace()) console.log("REVERSE TRUNCATE");
+          values = values.slice(0, maxDataPoints);
+          timestamps = timestamps.slice(0, maxDataPoints);
+          break;
+        }
+        default: {
+          if (Log.Error())
+            console.log(
+              "*** ERROR *** : Invalid Value for TrimData",
+              dataLength
+            );
         }
       }
     }
@@ -1494,15 +1719,15 @@ export async function CreateChart(
     let expandedWidth = 0;
     let chartSpan = chartContainer.getElementsByTagName("span")[0];
 
-    if (pixelsPerPoint === "default")
-      pixelsPerPoint = config.ChartPixelsPerPointDefault;
     if (pixelsPerPoint !== "auto") {
+      if (pixelsPerPoint in config.ChartPixelsPerPointDefault)
+        pixelsPerPoint = config.ChartPixelsPerPointDefault[pixelsPerPoint];
       expandedWidth = values.length * pixelsPerPoint;
       if (expandedWidth > config.CHARTMAXWIDTH)
         expandedWidth = config.CHARTMAXWIDTH;
       chartDiv.style.width = `${expandedWidth}px`;
-      // 1.333em looks pretty good. ... there must be built in margins or padding.
-      chartAspect = expandedWidth / height;
+      // 1em looks pretty good. ... there must be built in margins or padding.
+      chartAspect = expandedWidth / (height - 1 * oneEm);
       if (chartSpan) {
         chartSpan.innerHTML = `${key} - ${values[0].unitCode}`;
         chartSpan.style.display = "block";
@@ -1514,17 +1739,21 @@ export async function CreateChart(
       }
     }
 
-    if (Log.Debug())
+    // cjm-chart
+    // if (Log.Debug())
+    {
       console.log(
-        "Chart-Aspect: ",
-        key,
-        expandedWidth > 0 ? expandedWidth : width,
-        height,
-        chartAspect
+        `CHART: ${key}, Mx: ${maxDataPoints}, Px: ${pixelsPerPoint}, Avg:${averageData}, Trim: ${dataLength}`
       );
+      console.log(`Data: ${originalDataLength}, Trimmed: ${values.length}`);
+      console.log(
+        `Width: ${
+          expandedWidth > 0 ? expandedWidth : width
+        }, Height: ${height}, Aspect: ${chartAspect}`
+      );
+    }
     // ---
     // /PIXELS PER POINT
-    // cj-chart
 
     let data = [];
     let time = [];
@@ -1570,6 +1799,15 @@ export async function CreateChart(
     // ------------------------------------------------------------------
     let chart = Chart.getChart(canvas);
 
+    // cj-chart
+    // Decimation-Test
+    // const decimation = {
+    //   enabled: true,
+    //   // algorithm: "min-max",
+    //   algorithm: "lttb",
+    //   samples: 50,
+    // };
+
     // NO CHART - CREATE NEW CHART
     if (chart === null || chart === undefined) {
       if (Log.Trace())
@@ -1588,19 +1826,27 @@ export async function CreateChart(
               label: labelName,
               data: data,
               // "circle", "cross", "crossRot", "dash", "line", "rect", "rectRounded", "rectRot", "star", "triangle", false
+              indexAxis: "x",
               pointStyle: false,
             },
           ],
         },
         options: {
+          animation: false, // cjm-optimize, this cut render time in half.
+          // spanGaps: true, // cjm-optimize, only a small performance gain, and it makes some of the charts wonky.
           responsive: true,
           aspectRatio: chartAspect,
           maintainAspectRatio: true,
+          plugins: {
+            // decimation: decimation,  // Data is not in the correct format for this to work.
+          },
           scales: {
             x: {
+              // type: "time", // Data is not in the correct format for this to work.
               ticks: {
                 maxRotation: 90,
                 minRotation: 60,
+                sampleSize: 100, // cjm-optimize, this cut another 10%-20%
               },
             },
           },
@@ -1674,8 +1920,8 @@ async function RecalculateChartAspect(chartContainer) {
 
   height = height - 0.333 * oneEm;
   let chartAspect = width / height;
-  if (Log.Debug())
-    console.log("RecalculateChartAspect: ", type, width, height, chartAspect);
+  // if (Log.Debug()) // cjm
+  console.log("RecalculateChartAspect: ", type, width, height, chartAspect);
 
   if (!isNaN(chartAspect)) {
     let element = chartContainer.getElementsByTagName("canvas")[0];

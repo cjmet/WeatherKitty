@@ -67,25 +67,56 @@ It sounds so neat and simple, and it so very much isn't.
 
 ## To-Do
 
+### Project Priority 1
+
+- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+
+#### Project Priority 2
+
+- [x] Split Trim and Average into two attributes
+  - [ ] Documentation
+- [x] Avg: None, Fit, Week, Month, Quarter, Year, Decade
+  - [ ] Px:
+    - [ ] "large" 1.5em 24px .... but that makes for huge even standard weather charts.
+    - [ ] "medium" 14px
+    - [ ] "small" 4px
+    - [ ] Documentation
+- [ ] Add "Avg X" to the history title, and probably chart title as well.
+- [ ] Trim: Truncate, or ReverseTruncate, ... none is not an option
+  - [ ] switch
+  - [ ] Documentation
+- [ ] TMXN: Average of Max and Min where available, and check for sync, and barp if too many out of sync.
+  - [ ] Documentation
+- [ ] SetInterval MonitorCharts
+  - [ ] WeatherKitty Locking
+  - [ ] Monitor Locking
+- [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
+
+  - [ ] Jquery UI Scrollbar?
+  - [ ] Roll your Own?
+
 - [ ] clean up Log.Verbose
 - [ ] clean up Log.Trace
 
+### Project Priority 3
+
+- [ ] HTML Element API
+- [ ] Vite
+- [ ] Node Package
+- [ ] CDN
+- [ ] Separate (optional) API / Widget Libraries
+- [ ] Express Server
+
+### Project Priority 4
+
+- [ ] Chart.js Decimation: Wrong data format. Change this later as part of Phase 2
+- [ ] Chart.js Data-Chunking: Wrong Program Architecture. Change this later as part of Phase 2
+- [ ] Chart.js Webworker: This is possible, but I don't like what you give up for what you gain.
+- [ ] Cache the Processed Data? That may require a Re-Write?
+
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
-- [ ] Async Locking. There are somethings we don't want multiple of running at the same time.
-  - [ ] Event Queuing? It maybe that this is the only time it will be an issue.
-  - [ ] Locking FetchCache and WeatherKitty
-- [ ] True Parallel UI threads for charts. The charts can take considerable time to render.
-  - [ ] Web Workers. This looks good for cpu heavey data, but what about UI and the rendering of the charts?
-  - [ ] I-Frames. This is probably frowned upon, but how else do I get Parallel UI rendering? Even if I did go this way, HOW do I do that?
-- [ ] CPU Optimization. I've already done this some. I've also inserted microsleeps where needed to let the UI render, and that helped.
-  - [ ] Resizing etc while calculating cpu heavy data has been an issue.
-- [ ] Serve static resources (images) from the module / sub-module.
-- [ ] Paths and Git SubModules, and Splitting of ESM modules
-- [ ] Split the giant file into feature.esm, but then how does that work with paths and submodules without a bundler?
-- [ ] WebWorker some of the Data Tasks?
-  - [ ] WebWorker the 4 primary data Tasks and Cache the Post Processed Results. This could be the first step towards modularizing and separating everything.
+- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
 
 ### Fixes and Updates
 
@@ -126,6 +157,42 @@ It sounds so neat and simple, and it so very much isn't.
 ### Supplemental - More things to Learn
 
 - [ ] Vite
+- [ ] Express, Express API
 - [ ] React
 - [ ] Auth / OAuth API
 - [ ] AWS, Lambda, Hosting, Etc, ...
+
+## Notes
+
+```
+// Assuming you have a large dataset:
+const largeDataset = [/* ... */];
+
+// Initial chunk size:
+const chunkSize = 100;
+
+// Initial data for the chart:
+const initialData = largeDataset.slice(0, chunkSize);
+
+// Create the chart with initial data:
+const ctx = document.getElementById('myChart').getContext('2d');
+const myChart = new Chart(ctx, {
+    // ... chart configuration with initialData
+});
+
+// Function to load more data and update the chart:
+function loadMoreData() {
+    const nextChunk = largeDataset.slice(myChart.data.labels.length, myChart.data.labels.length + chunkSize);
+    myChart.data.labels.push(...nextChunk.map(item => item.label));
+    myChart.data.datasets[0].data.push(...nextChunk.map(item => item.value));
+    myChart.update();
+}
+
+// Trigger data loading on scroll or other user interactions:
+window.addEventListener('scroll', () => {
+    // Check if the user has scrolled near the bottom of the chart
+    if (window.scrollY + window.innerHeight >= document.body.offsetHeight - 100) {
+        loadMoreData();
+    }
+});
+```
