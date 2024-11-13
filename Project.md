@@ -65,20 +65,28 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] Implement modern interactive UI features (e.g. table/data sorting, autocomplete, drag-and-drop, calendar-date-picker, etc).
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
 
+<!-- ---------------------------------------------------------------------- -->
+
+---
+
 ## To-Do
+
+### Questions (may be duplicated below in fixes)
+
+- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+- [ ] How to know if MonitorCharts is still running? Class? Query the class?
+  - [ ] SetInterval MonitorCharts
+    - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
+    - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
 ### Project Priority 1
 
-- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
-
-#### Project Priority 2
-
-- [ ] SetInterval MonitorCharts
-  - [ ] WeatherKitty Locking
-  - [ ] Monitor Locking
 - [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
   - [ ] Jquery UI Scrollbar?
   - [ ] Roll your Own?
+
+#### Project Priority 2
+
 - [ ] clean up Log.Verbose
 - [ ] clean up Log.Trace
 
@@ -98,26 +106,9 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Chart.js Webworker: This is possible, but I don't like what you give up for what you gain.
 - [ ] Cache the Processed Data? That may require a Re-Write?
 
-### Questions (may be duplicated below in fixes)
-
-- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
-
 ### Fixes and Updates
 
-- [ ] do not require station location, add that later as it takes too long to load on 3G.
-- [ ] loading indicator for the fetch API. Really only needed on 3G.
-- [ ] Better way to MonitorCharts()
-  - [ ] MutationObserver() API? - This failed to do what I wanted, so I went homegrown.
-- [ ] Locking
-  - [ ] fetchCache - Locking? Queuing?
-  - [ ] WeatherKitty
-  - [ ] Locking, Queuing, multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
-- [ ] Work on Parallel Async and Slow Connections
-  - [ ] already worked on optimization some. Lots more work to do.
-  - [ ] ghcnd operations need to be unlinked, and fill in later.
-  - [ ] parallel history charts, or even all charts?
 - [ ] Sec Fix GetLists(s). Partially Done.
-- [ ] CustomElement API
 - [ ] PouchCache instead of the homegrown mess.
 - [ ] Investigate and Deal with Null and NaN API Data
 
@@ -129,7 +120,6 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] modularize AddressByGhcnd
 - [ ] GNIS API
 - [ ] Find Nearest if not Exist
-- [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
 - [ ] Aliases: WT**, WV**
 - [ ] Weather Alerts
 - [ ] Modularize so each path (Weather, Obs, History), can finish as independently as possible

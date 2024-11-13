@@ -304,6 +304,7 @@ export async function WeatherKitty() {
       if (Log.Warn()) console.log("[WeatherKitty] Warning: Temporarily PAUSED");
       return;
     }
+    // console.log("[WeatherKitty] Loading Weather Kitty");
     // in theory this should be ok. otherwise await it.
     // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
     WeatherMaps(
@@ -325,7 +326,11 @@ export async function WeatherKitty() {
     // DATA --------------------------------------------------------------
     // Get/Update the Weather Data
     let weather = await getWeatherAsync();
-    let historyStation = await HistoryGetStation();
+    let historyStation = null;
+    let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this to the stationID as well.
+    console.log("[WeatherKitty] ChartTypes: ", ChartTypes);
+    if (ChartTypes.History.length > 0)
+      historyStation = await HistoryGetStation(); // cjm-optimize - Only get the station if we need it.
 
     // Observation Text
     {
@@ -437,7 +442,9 @@ export async function WeatherKitty() {
     // Charting
     // barometricPressure, dewpoint, ...
     // check for chart types, if we don't need them, don't pull the data.
-    let ChartTypes = await WeatherKittyGetChartTypes();
+    // Moving this above so we can apply it to stationID as well.
+    // let ChartTypes = await WeatherKittyGetChartTypes();
+    // ---
     if (Log.Trace())
       console.log(
         `[WeatherKitty] ChartTypes[${ChartTypes.length}]: `,
@@ -474,6 +481,7 @@ export async function WeatherKitty() {
       MonitorCharts();
     }
   });
+  // console.log("[WeatherKitty] Exiting Weather Kitty");
 }
 
 async function WeatherKittyGetChartTypes() {

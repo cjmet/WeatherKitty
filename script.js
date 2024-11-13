@@ -11,6 +11,10 @@ import {
   getWeatherLocationAsync,
 } from "./WeatherKitty.mjs";
 
+// --- -------------------------------------
+// MAIN
+// ---
+
 // Default True
 let CodeKy = false;
 
@@ -20,8 +24,8 @@ let Test_FubarDisplay = false;
 
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load
-// await SetLocationAddress("USC00153629"); // Harlan
-await SetLocationAddress("USW00014739"); // Boston
+// await SetLocationAddress("USC00153629"); // Harlan // cjm
+await SetLocationAddress("USW00014739"); // Boston  // cjm
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);
 if (!Test_FubarDisplay) {
   WeatherKittyPause(false);
@@ -36,8 +40,78 @@ if (Test_FubarDisplay) {
   await WeatherKittyWaitOnLoad();
 }
 LoadButtons();
-NavClimate();
 console.log("Demo Loaded");
+
+// ---
+// /MAIN
+// --- -----------------------------------------
+
+// --- -------------------------------------
+// SCROLLER
+// ---
+
+const scrollContainer = document.querySelector(".scroll-container");
+const scrollContent = document.querySelector(".scroll-content");
+const scrollTrack = document.querySelector(".scroll-track");
+const scrollThumb = document.querySelector(".scroll-thumb");
+
+let isDragging = false;
+let scrollOffset = 0;
+
+scrollThumb.addEventListener("mousedown", (e) => {
+  console.log("mousedown");
+  isDragging = true;
+  scrollOffset = e.clientY - scrollThumb.offsetTop;
+});
+
+document.addEventListener("mouseup", () => {
+  console.log("mouseup");
+  isDragging = false;
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (isDragging) {
+    console.log("mousemove");
+    const thumbTop = e.clientY - scrollOffset;
+    const maxTop = scrollTrack.offsetHeight - scrollThumb.offsetHeight;
+    scrollThumb.style.top = Math.min(Math.max(0, thumbTop), maxTop) + "px";
+
+    const scrollRatio = thumbTop / maxTop;
+    const maxScrollTop =
+      scrollContent.scrollHeight - scrollContainer.offsetHeight;
+    // scrollContent.scrollTop = maxScrollTop * scrollRatio;
+  }
+});
+
+let startY = 0;
+let scrollTop = 0;
+// Touch events for mobile
+scrollThumb.addEventListener("touchstart", (e) => {
+  isDragging = true;
+  startY = e.touches[0].clientY;
+  scrollTop = scrollContent.scrollTop;
+});
+
+document.addEventListener("touchend", () => {
+  isDragging = false;
+});
+
+document.addEventListener("touchmove", (e) => {
+  console.log("touchmove");
+  if (isDragging) {
+    const deltaY = e.touches[0].clientY - startY;
+    const newScrollTop = scrollTop + deltaY;
+    scrollContent.scrollTop = newScrollTop * 100;
+    // Update the scrollbar thumb position based on the new scrollTop
+    scrollThumb.style.top = `${
+      (newScrollTop / scrollContent.scrollHeight) * 100
+    }%`;
+  }
+});
+
+// ---
+// /SCROLLER
+// --- -----------------------------------------
 
 // BUTTONS -------------------------------------
 // ---
@@ -56,6 +130,9 @@ function LoadButtons() {
   element = document.getElementById("PurgeData");
   if (element) element.addEventListener("click", PurgeData);
 }
+
+// FUNCTIONS -------------------------------------
+// ---
 
 async function NavToClass(classNames) {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
@@ -118,6 +195,7 @@ async function NavHistory() {
   await NavToClass(["WeatherKittyHistoryCharts"]);
 }
 
+// Always go to Boston for "Boston Climate Data"
 async function NavClimate() {
   let locData = await getWeatherLocationAsync();
   let id = locData.id;

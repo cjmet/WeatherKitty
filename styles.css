@@ -350,3 +350,45 @@ body {
   opacity: 0.5;
   display: none;
 }
+
+.scroll-container {
+  border: red 3px solid;
+  box-sizing: border-box;
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.scroll-content {
+  border: green 3px solid;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90%;
+  height: auto;
+  overflow: scroll;
+}
+
+.scroll-track {
+  border: blue 3px solid;
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 64px;
+  height: 100%;
+  background-color: #ccc;
+}
+
+.scroll-thumb {
+  border: magenta 3px solid;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 64px;
+  background-color: #333;
+  cursor: pointer;
+}
