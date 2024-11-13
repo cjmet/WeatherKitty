@@ -63,6 +63,7 @@ body {
 }
 
 #HamburgerLinks {
+  transition: all 0.33s;
   grid-area: nav;
   border: none;
   border-radius: 1em;
@@ -272,8 +273,6 @@ body {
       border-radius: 1em;
     }
     #HamburgerLinks {
-      transition: width 0.15s, height 0.66s;
-      transition: all 0.33s;
       top: 0;
       left: 0;
       width: auto;
@@ -366,7 +365,7 @@ body {
   top: 0;
   left: 0;
   width: 90%;
-  height: auto;
+  height: 100%;
   overflow: scroll;
 }
 
@@ -376,7 +375,7 @@ body {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 64px;
+  width: 4em;
   height: 100%;
   background-color: #ccc;
 }
@@ -387,8 +386,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 64px;
-  height: 64px;
+  width: 4em;
+  height: 4em;
   background-color: #333;
   cursor: pointer;
 }

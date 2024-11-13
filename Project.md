@@ -82,6 +82,7 @@ It sounds so neat and simple, and it so very much isn't.
 ### Project Priority 1
 
 - [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
+  - [ ] Mobile Button, 3em to 5em, avg 4em
   - [ ] Jquery UI Scrollbar?
   - [ ] Roll your Own?
 

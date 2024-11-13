@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- WeatherKitty.html Version 240829.15  -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
@@ -65,12 +64,12 @@
 
       <div class="WeatherKittyWeatherCharts">
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
-        <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
-        <weather-kitty-chart type="temperature"></weather-kitty-chart>
         <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
         <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
-        <weather-kitty-chart type="windChill"></weather-kitty-chart>
         <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
+        <weather-kitty-chart type="windChill"></weather-kitty-chart>
+        <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
+        <weather-kitty-chart type="seaLevelPressure"></weather-kitty-chart>
         <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
         <weather-kitty-chart type="visibility"></weather-kitty-chart>
         <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
@@ -81,6 +80,7 @@
 
       <div class="WeatherKittyHistoryCharts">
         <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+        <weather-kitty-chart type="TMXN"></weather-kitty-chart>
         <weather-kitty-chart type="TOBS"></weather-kitty-chart>
         <weather-kitty-chart type="TAVG"></weather-kitty-chart>
         <weather-kitty-chart type="TMAX"></weather-kitty-chart>
@@ -89,8 +89,22 @@
         <weather-kitty-chart type="PRCP"></weather-kitty-chart>
         <weather-kitty-chart type="SNOW"></weather-kitty-chart>
         <weather-kitty-chart type="SNWD"></weather-kitty-chart>
+        <weather-kitty-chart type="FRGT"></weather-kitty-chart>
+        <weather-kitty-chart type="THIC"></weather-kitty-chart>
+
+        <weather-kitty-chart type="ACMH"></weather-kitty-chart>
+        <weather-kitty-chart type="ACSH"></weather-kitty-chart>
+        <weather-kitty-chart type="WDFN"></weather-kitty-chart>
+        <weather-kitty-chart type="WSFM"></weather-kitty-chart>
+
         <weather-kitty-chart type="AWND"></weather-kitty-chart>
+        <weather-kitty-chart type="AWBT"></weather-kitty-chart>
+        <weather-kitty-chart type="ADPT"></weather-kitty-chart>
+        <weather-kitty-chart type="ASLP"></weather-kitty-chart>
+        <weather-kitty-chart type="ASTP"></weather-kitty-chart>
         <weather-kitty-chart type="RHAV"></weather-kitty-chart>
+        <weather-kitty-chart type="RHMN"></weather-kitty-chart>
+        <weather-kitty-chart type="RHMX"></weather-kitty-chart>
         <weather-kitty-chart type="PSUN"></weather-kitty-chart>
         <weather-kitty-chart type="TSUN"></weather-kitty-chart>
 
@@ -98,45 +112,47 @@
         <weather-kitty-chart type="WV**"></weather-kitty-chart>
       </div>
 
+      <!-- ---------------------------------------------- -->
+
       <div class="WeatherKittyClimateCharts">
         <weather-kitty-chart
-          type="TEMP"
+          style="background-color: rgba(255, 255, 0, 0.0667)"
+          type="TMXN"
+          maxDataPoints="max"
+          pixelsPerDataPoint="medium"
+          averageData="month"
+        ></weather-kitty-chart>
+
+        <hr width="50%" />
+        
+        <weather-kitty-chart
+          type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="default"
           averageData="avg"
         ></weather-kitty-chart>
         <weather-kitty-chart
-          type="TMAX"
-          maxDataPoints="max"
-          pixelsPerDataPoint="default"
-          averageData="avg"
-        ></weather-kitty-chart>
-        <weather-kitty-chart
-          type="TMIN"
-          maxDataPoints="max"
-          pixelsPerDataPoint="default"
-          averageData="avg"
-        ></weather-kitty-chart>
-        <weather-kitty-chart
-          type="TMIN"
+          type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="default"
           averageData="week"
         ></weather-kitty-chart>
+      <div class="WeatherKittyClimateCharts">
         <weather-kitty-chart
-          type="TMIN"
+          style="background-color: rgba(255, 255, 0, 0.0667)"
+          type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="medium"
           averageData="month"
         ></weather-kitty-chart>
         <weather-kitty-chart
-          type="TMIN"
+          type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="large"
           averageData="quarter"
         ></weather-kitty-chart>
         <weather-kitty-chart
-          type="TMIN"
+          type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="large"
           averageData="year"
