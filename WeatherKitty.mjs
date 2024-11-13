@@ -360,7 +360,7 @@ export async function WeatherKitty() {
       let img = weather.observationData.features[0].properties.icon;
       let altimg = config.WeatherKittyObsImage;
       let precip =
-        weather.forecastData.properties.periods[0].probabilityOfPrecipitation
+        weather?.forecastData?.properties.periods[0].probabilityOfPrecipitation
           .value;
 
       let text = `${shortText}`;
@@ -892,6 +892,13 @@ async function getWeatherLocationByAddressAsync(address) {
         if (Log.Trace()) console.log("[getAddress] Results:", result);
         return CreateResponse(result);
       }
+      // cjm - insert city, state ghcnd search here
+      let city = array[0].trim();
+      let state = array[1].trim();
+      let result = await HistoryGetStation(null, null, null, city, state);
+      if (result && result.latitude && result.longitude) {
+        return CreateResponse(result);
+      }
       street = array[0].trim();
       zip = array[1].trim();
       break;
@@ -1096,7 +1103,7 @@ async function getWeatherAsync() {
       null,
       config.forecastCacheTime
     );
-    if (response.ok) {
+    if (response && response.ok) {
       let data = await response.json();
       forecastData = data;
       if (Log.Verbose()) console.log("[getWeatherAsync] ", data);
@@ -2691,12 +2698,12 @@ let HistoryDataConversion = {
 // Function HistoricalGetStation  // cjm
 async function HistoryGetStation(station, latitude, longitude, city, state) {
   return WeatherKittyIsLoading("GetStation", async () => {
-    if (Log.Verbose())
-      // cjm
-      console.log(
-        `[HistoricalGetStation] Entry: ${station} - ${latitude}, ${longitude}, ${city}, ${state}`
-      );
-    // CJM
+    // if state is not 2-letter-state, then fix it ... ghcnd-states ... // cjm
+    // if (Log.Verbose()) // cjm
+    console.log(
+      `[HistoricalGetStation] Entry: ${station} - ${latitude}, ${longitude}, ${city}, ${state}`
+    );
+    // ----
     // if (station == null && (latitude == null || longitude == null)) {
     //   let location = await getWeatherLocationAsync();
     //   if (location && location?.latitude && location?.longitude) {
@@ -2717,11 +2724,13 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
     //     console.log("[HistoricalGetStation] *** ERROR *** : Location Error ");
     //   return null;
     // }
-    // /CJM
+    // ----
 
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+
+    if (state && state.length != 2) state = await HistoryGetState(state);
 
     let response = await fetchCache(
       "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
@@ -2823,7 +2832,9 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
       // TestFL: USW000xxxxx
       else if (
         city &&
-        !state &&
+        (!state ||
+          // Easy fix to include state!
+          (state && state.toLowerCase() == location.state.toLowerCase())) &&
         location.name.toLowerCase().includes(city.toLowerCase()) &&
         location.id.substring(0, 2) === "US"
       ) {
@@ -2858,6 +2869,13 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
     // if (Log.Trace()) //cjm
     console.log(`[HistoricalGetStation] Result: `, result);
     return result;
+  });
+}
+
+async function HistoryGetState(state) {
+  // cjm
+  return WeatherKittyIsLoading("GetState", async () => {
+    throw new Error("Not Implemented");
   });
 }
 

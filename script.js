@@ -42,6 +42,7 @@ if (Test_FubarDisplay) {
 LoadButtons();
 // WeatherKittyErrorText("Demo Loaded");
 console.log("Demo Loaded");
+await SetLocationAddress("Harlan, Ky");
 
 // ---
 // /MAIN
