@@ -9,6 +9,7 @@ import {
   sleep,
   WeatherKittyIsLoading,
   getWeatherLocationAsync,
+  WeatherKittyErrorText,
 } from "./WeatherKitty.mjs";
 
 // --- -------------------------------------
@@ -16,7 +17,8 @@ import {
 // ---
 
 // Default True
-let CodeKy = true;
+let CodeKy = false;
+// Log.SetLogLevel(LogLevel.Debug);
 
 // Default False
 let DisableWhileLoading = false;
@@ -38,6 +40,7 @@ if (Test_FubarDisplay) {
   await WeatherKittyWaitOnLoad();
 }
 LoadButtons();
+// WeatherKittyErrorText("Demo Loaded");
 console.log("Demo Loaded");
 
 // ---
@@ -126,7 +129,7 @@ async function NavHistory() {
   await NavToClass(["WeatherKittyHistoryCharts"]);
 }
 
-// Always go to Boston for "Boston Climate Data"
+// Always go to Boston for "Boston Climate Data", StationId "USW00014739"
 async function NavClimate() {
   let locData = await getWeatherLocationAsync();
   let id = locData.id;

@@ -46,56 +46,20 @@
     </header>
 
     <main id="WeatherKittyMain">
-      <!-- ---  -->
-
-      <div class="scroll-container">
-        <div class="scroll-content">
-          <h1 width="1000px" style="width: 1000px">
-            (1) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-          <h1>
-            (2) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-          <h1>
-            (3) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-          <h1>
-            (4) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-          <h1>
-            (5) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-          <h1>
-            (6) The quick brown fox jumps over the lazy dog. The lazy dog sleeps
-            under the big oak tree. The big oak tree grows tall and strong. The
-            tall and strong oak tree provides shade for the lazy dog.
-          </h1>
-
-          <p>...</p>
-        </div>
-        <div class="scroll-track">
-          <div class="scroll-thumb"></div>
-        </div>
+      <div class="MapsAlpha">
+        <weather-kitty-map-forecast></weather-kitty-map-forecast>
+        <weather-kitty-map-radar></weather-kitty-map-radar>
+        <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <!-- <div class="WeatherKittyHomeCharts">
-        <weather-kitty-chart
-          type="TEMP"
-          maxDataPoints="default"
-          pixelsPerDataPoint="default"
-        ></weather-kitty-chart>
-      </div> -->
-      <!-- --- -->
+      <weather-kitty-week class="WeekAlpha"></weather-kitty-week>
+
+      <!-- ---  -->
+
+      <div class="WeatherKittyHomeCharts">
+        <weather-kitty-chart type="temperature"></weather-kitty-chart>
+        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
+      </div>
     </main>
 
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>

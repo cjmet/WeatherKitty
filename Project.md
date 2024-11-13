@@ -79,12 +79,11 @@ It sounds so neat and simple, and it so very much isn't.
     - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
     - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
-### Project Priority 1
+### Project Current Work
 
-- [ ] Scrollbar size on mobile. Scrolling of 32k wide history charts.
-  - [ ] Mobile Button, 3em to 5em, avg 4em
-  - [ ] Jquery UI Scrollbar?
-  - [ ] Roll your Own?
+- [ ] "City, State", "State", "Search" by ghcnd
+  - [ ] Prefer Order: USW*, USC*, \*
+  - [ ] state names from ghcnd-states.txt
 
 #### Project Priority 2
 
@@ -97,6 +96,7 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Vite
 - [ ] Node Package
 - [ ] CDN
+- [ ] Modularize
 - [ ] Separate (optional) API / Widget Libraries
 - [ ] Express Server
 
@@ -107,27 +107,19 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Chart.js Webworker: This is possible, but I don't like what you give up for what you gain.
 - [ ] Cache the Processed Data? That may require a Re-Write?
 
-### Fixes and Updates
+### Additional Features or Fixes To Add
 
-- [ ] Sec Fix GetLists(s). Partially Done.
-- [ ] PouchCache instead of the homegrown mess.
-- [ ] Investigate and Deal with Null and NaN API Data
-
-### Features
-
-- [ ] City, State by ghcnd and/or GNIS
-  - [ ] Prefer Order: USW*, USC*, \*
-  - [ ] state names from ghcnd-states.txt
-  - [ ] modularize AddressByGhcnd
+- [ ] modularize AddressByGhcnd
 - [ ] GNIS API
 - [ ] Find Nearest if not Exist
 - [ ] Aliases: WT**, WV**
 - [ ] Weather Alerts
-- [ ] Modularize so each path (Weather, Obs, History), can finish as independently as possible
-- [ ] Modularize so we can use the data half as an API and Library
 - [ ] Other Weather Products
 - [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
+- [ ] PouchCache instead of the homegrown mess.
+- [ ] Investigate and Deal with Null and NaN API Data
 - [ ] Dynamic Element Create Support, and/or Custom HTML API
+- [ ] Sec Fix GetLists(s). Partially Done.
 
 ### Supplemental - More things to Learn
 
