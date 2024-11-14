@@ -54,7 +54,7 @@ For ease of editing and customization
 
 #### Charts
 
-<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value">`</b>
+<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value" noData="value">`</b>
 
 ##### Type - <small>required</small>
 
@@ -81,15 +81,19 @@ For ease of editing and customization
 - "truncate" - truncates excess data. the default.
 - "reversetruncate" - same as truncate but backwards.
 
-#### width - <small>optional</small>
+##### noData - <small>optional</small>
+
+- "hide" - will hide the chart when no data is available.
+
+##### width - <small>optional</small>
 
 - "value" - this will override the width, but the chart may still scale to fill the area, or may expand for additional data points.
 
-#### height - <small>optional</small>
+##### height - <small>optional</small>
 
 - "value" - this will override the width, but the chart may still scale to fill the area.
 
-#### Climate Chart Example
+##### Climate Chart Example
 
 <b>`<weather-kitty-chart type="TEMP" MaxDataPoints="max" pixelsPerDataPoint="default" trimData="avg">`</b>
 

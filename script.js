@@ -10,14 +10,17 @@ import {
   WeatherKittyIsLoading,
   getWeatherLocationAsync,
   WeatherKittyErrorText,
+  getWeatherLocationByAddressAsync,
+  HistoryGetStation,
 } from "./WeatherKitty.mjs";
+let assertText = document.getElementById("assert");
 
 // --- -------------------------------------
 // MAIN
 // ---
 
 // Default True
-let CodeKy = false;
+let CodeKy = true;
 
 // Default False
 let DisableWhileLoading = false;
@@ -26,7 +29,7 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Info);
+if (CodeKy) Log.SetLogLevel(LogLevel.Debug); // cjm
 if (!Test_FubarDisplay) {
   WeatherKittyPause(false);
   WeatherKitty();
@@ -40,7 +43,6 @@ if (!Test_FubarDisplay) {
 }
 LoadButtons();
 console.log("Demo Loaded");
-await SetLocationAddress("Boston, Ky"); // cjm
 
 // ---
 // /MAIN
@@ -58,6 +60,8 @@ function LoadButtons() {
   if (element) element.addEventListener("click", NavHistory);
   element = document.getElementById("NavClimate");
   if (element) element.addEventListener("click", NavClimate);
+  element = document.getElementById("NavTest");
+  if (element) element.addEventListener("click", NavTest);
   element = document.getElementById("ExpireData");
   if (element) element.addEventListener("click", ExpireData);
   element = document.getElementById("PurgeData");
@@ -144,4 +148,58 @@ async function PurgeData() {
   console.log("Purging Data");
   localStorage.clear();
   caches.delete("weather-kitty");
+}
+
+// -------------------------------------
+// TESTING
+// ---
+
+function assert(condition, message) {
+  if (!assertText) return;
+  if (!condition) {
+    // ✅, ☑️, ❌
+    let msg = `<br>❌ <span style="color: red;">${message}</span>`;
+    assertText.innerHTML += msg;
+    console.error("Assertion Failed: ", message);
+  } else {
+    let msg = `<br>☑️ ${message}`;
+    assertText.innerHTML += msg;
+  }
+}
+
+async function testStationIdAddress(address, expected) {
+  let result = null;
+  let response = await getWeatherLocationByAddressAsync(address);
+  if (response && response.ok) {
+    result = await response.json();
+    if (result && !result.id)
+      result = await HistoryGetStation(null, result.latitude, result.longitude);
+  }
+  assert(result?.id === expected, `StationId "${address}"`);
+}
+
+export async function NavTest() {
+  if (!assertText) return;
+
+  Log.SetLogLevel(LogLevel.Warn);
+
+  // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
+
+  await Promise.all([
+    testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
+    testStationIdAddress("asdf"),
+    testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
+    testStationIdAddress("US1KYFY0009", "US1KYFY0009"),
+    testStationIdAddress("100, 40507", undefined),
+    testStationIdAddress("100 main, 40831", "USC00150450"),
+    testStationIdAddress("100 main, 40507", "US1KYFY0009"),
+    testStationIdAddress("100 main, lexington, ky", "US1KYFY0009"),
+    testStationIdAddress("boston, ma", "USW00014739"),
+    testStationIdAddress("lexington, ky", "USW00093820"),
+    testStationIdAddress("100 main, Miami, Fl", undefined),
+    testStationIdAddress("USC00085653", "USC00085653"),
+    testStationIdAddress("111 NW 1st St, Miami, FL", "USC00085653"),
+    testStationIdAddress("38.04638208053878, -84.49714266224647", "US1KYFY0009"),
+  ]);
+  if (CodeKy) Log.SetLogLevel(LogLevel.Info);
 }

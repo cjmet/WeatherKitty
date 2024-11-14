@@ -84,10 +84,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] fix state and zip to not try numbers.
 - [ ] test "100 main, 40831" - DOH!
 - [ ] "City, State", "State", "Search" by ghcnd
   - [ ] Testing
-- [ ] Log.Test() == Warn is probably the most useful with the current setup
 - [ ] Check and fix overflow in widgets. "Chance Rain Showers Then mostly Cloud 35\*F - 50%"
 - [ ] Add a "NO DATA" label, and change hidden to an optional Attribute HideNoDAta="false"
 - [ ] add a query for GetAvailableChartTypes()
