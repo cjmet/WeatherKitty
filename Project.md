@@ -81,9 +81,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work
 
+- [ ] test "100 main, 40831" - DOH!
 - [ ] "City, State", "State", "Search" by ghcnd
-  - [ ] Prefer Order: USW*, USC*, \*
-  - [ ] state names from ghcnd-states.txt
+  - [ ] Testing
+- [ ] Check and fix overflow in widgets. "Chance Rain Showers Then mostly Cloud 35\*F - 50%"
 
 #### Project Priority 2
 

@@ -18,6 +18,7 @@ let LogLevel = {
   Info: 3,
   Warn: 4,
   Error: 5,
+  Test: 9,
   Off: 10,
 };
 let Log = {
@@ -50,6 +51,9 @@ let Log = {
   },
   Error: () => {
     return LogLevel.Error >= Log.LogLevel;
+  },
+  Test: () => {
+    return LogLevel.Test >= Log.LogLevel;
   },
 };
 export { Log, LogLevel };
@@ -841,7 +845,7 @@ async function getWeatherLocationByAddressAsync(address) {
     );
 
   if (address === null || address === "") {
-    if (Log.Trace()) console.log("[getAddress] No Address Provided.");
+    if (Log.Test()) console.log("[getAddress] No Address Provided.");
     return null;
   }
   if (Log.Verbose()) console.log(`[getAddress] "${address}"`);
@@ -862,6 +866,7 @@ async function getWeatherLocationByAddressAsync(address) {
         // It might be a station ID, so check it.
         let result = await HistoryGetStation(station);
         if (result && result.latitude && result.longitude) {
+          if (Log.Test()) console.log("[getAddress] Results:", result);
           return CreateResponse(result);
         }
       }
@@ -876,6 +881,7 @@ async function getWeatherLocationByAddressAsync(address) {
       let city = station;
       let result = await HistoryGetStation(null, null, null, city);
       if (result && result.latitude && result.longitude) {
+        if (Log.Test()) console.log("[getAddress] Results:", result);
         return CreateResponse(result);
       }
 
@@ -884,19 +890,31 @@ async function getWeatherLocationByAddressAsync(address) {
       return error;
       break;
     }
-    case 2:
-      let latitude = parseFloat(array[0].trim());
-      let longitude = parseFloat(array[1].trim());
-      if (!isNaN(latitude) && !isNaN(longitude)) {
+    case 2: // cjm2
+      let word1 = array[0].trim();
+      let word2 = array[1].trim();
+      let latitude = parseFloat(word1);
+      let longitude = parseFloat(word2);
+      if (
+        !isNaN(latitude) &&
+        !isNaN(longitude) &&
+        "" + latitude === word1 &&
+        "" + longitude === word2 &&
+        latitude >= 18 &&
+        latitude <= 72 &&
+        longitude >= -180 &&
+        longitude <= -66
+      ) {
         let result = { latitude: latitude, longitude: longitude };
-        if (Log.Trace()) console.log("[getAddress] Results:", result);
+        if (Log.Test()) console.log("[getAddress] Results:", result);
         return CreateResponse(result);
       }
-      // cjm - insert city, state ghcnd search here
+      // insert city, state ghcnd search here
       let city = array[0].trim();
       let state = array[1].trim();
       let result = await HistoryGetStation(null, null, null, city, state);
       if (result && result.latitude && result.longitude) {
+        if (Log.Test()) console.log("[getAddress] Results:", result);
         return CreateResponse(result);
       }
       street = array[0].trim();
@@ -934,7 +952,8 @@ async function getWeatherLocationByAddressAsync(address) {
     let data = await response.json();
     if (Log.Verbose()) console.log("[getAddress] Data: ", data);
     if (data.result.addressMatches.length <= 0) {
-      if (Log.Warn()) console.log("[getAddress] WARNING: No Address Matches");
+      if (Log.Warn())
+        console.log("[getAddress] WARNING: No Address Matches: ", address);
       return error;
     }
     let result = {
@@ -945,9 +964,10 @@ async function getWeatherLocationByAddressAsync(address) {
       latitude: data.result.addressMatches[0].coordinates.y,
       longitude: data.result.addressMatches[0].coordinates.x,
     };
-    if (Log.Trace()) console.log("[getAddress] Results:", result);
+    if (Log.Test()) console.log("[getAddress] Results:", result);
     return CreateResponse(result);
   }
+  if (Log.Test()) console.log("[getAddress] Default:", result);
   return response;
 }
 
@@ -2698,40 +2718,20 @@ let HistoryDataConversion = {
 // Function HistoricalGetStation  // cjm
 async function HistoryGetStation(station, latitude, longitude, city, state) {
   return WeatherKittyIsLoading("GetStation", async () => {
-    // if state is not 2-letter-state, then fix it ... ghcnd-states ... // cjm
-    // if (Log.Verbose()) // cjm
-    console.log(
-      `[HistoricalGetStation] Entry: ${station} - ${latitude}, ${longitude}, ${city}, ${state}`
-    );
-    // ----
-    // if (station == null && (latitude == null || longitude == null)) {
-    //   let location = await getWeatherLocationAsync();
-    //   if (location && location?.latitude && location?.longitude) {
-    //     latitude = location.latitude;
-    //     longitude = location.longitude;
-    //     if (Log.Verbose()) console.log("[HistoricalGetStation] ", location);
-    //   } else {
-    //     if (Log.Error())
-    //       console.log(
-    //         "[HistoricalGetStation] *** ERROR *** : Location Error ",
-    //         location
-    //       );
-    //     return null;
-    //   }
-    // }
-    // if (station == null && (latitude == null || longitude == null)) {
-    //   if (Log.Error())
-    //     console.log("[HistoricalGetStation] *** ERROR *** : Location Error ");
-    //   return null;
-    // }
-    // ----
+    if (Log.Verbose())
+      console.log(
+        `[HistoricalGetStation] Entry: ${station} - ${latitude}, ${longitude}, ${city}, ${state}`
+      );
+
+    // if state is not 2-letter-state, then try to fix it ... ghcnd-states ...
+    if (state && state.length != 2) {
+      let result = await HistoryGetState(state);
+      if (result && result.length == 2) state = result;
+    }
 
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
-
-    if (state && state.length != 2) state = await HistoryGetState(state);
-
     let response = await fetchCache(
       "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
       null,
@@ -2866,16 +2866,79 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
       }
     }
 
-    // if (Log.Trace()) //cjm
-    console.log(`[HistoricalGetStation] Result: `, result);
+    if (Log.Trace()) console.log(`[HistoricalGetStation] Result: `, result);
     return result;
   });
 }
 
 async function HistoryGetState(state) {
-  // cjm
   return WeatherKittyIsLoading("GetState", async () => {
-    throw new Error("Not Implemented");
+    // cjm
+
+    if (!state) {
+      if (Log.Error())
+        console.log(
+          "[HistoricalGetState] *** ERROR *** : Input Argument Error"
+        );
+      return null;
+    }
+    state = state.trim().toLowerCase();
+
+    let response = await fetchCache(
+      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+      null,
+      config.archiveCacheTime
+    );
+
+    let lines;
+    if (response?.ok) {
+      let result = await response.text();
+      lines = result.split("\n");
+      if (lines?.length <= 0 || lines[0].length <= 6) {
+        if (Log.Error())
+          console.log(
+            `[HistoricalGetState] *** ERROR*** : Invalid Data or No Data,  ${response?.status}, ${response?.statusText}`
+          );
+        return null;
+      }
+      if (Log.Verbose())
+        console.log(
+          `[HistoricalGetState] lines: ${lines.length}, result: ${result.length}`
+        );
+      if (Log.Verbose()) {
+        let firstLines = lines.slice(0, 5);
+        let lastLines = lines.slice(-5);
+        console.log(firstLines, lastLines);
+      }
+    } else {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetState] *** ERROR*** : HTTP-Error,  ${response?.ok}, ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+
+    for (let line of lines) {
+      if (!line || line.length <= 6) continue;
+      let [stateCode, stateName] = line.split(" ");
+      stateCode = stateCode.trim().toLowerCase();
+      stateName = stateName.trim().toLowerCase();
+
+      if (stateCode.includes(state) || stateName.includes(state)) {
+        if (Log.Verbose())
+          console.log(
+            "[HistoricalGetState] Match: ",
+            state,
+            " := ",
+            stateCode,
+            stateName
+          );
+        return stateCode;
+      }
+    }
+
+    if (Log.Debug()) console.log("[HistoricalGetState] No Match: ", state);
+    return null;
   });
 }
 
