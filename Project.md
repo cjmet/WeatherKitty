@@ -73,18 +73,24 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
+- [ ] We broke the editor, additional features are on-hold until after VITE.
+  - [ ] Over 3,000 lines breaks prettier
 - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+- [ ] CodeKy Project Completeness Review
 - [ ] How to know if MonitorCharts is still running? Class? Query the class?
   - [ ] SetInterval MonitorCharts
     - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
     - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
-### Project Current Work
+### Project Current Work and Fixes
 
 - [ ] test "100 main, 40831" - DOH!
 - [ ] "City, State", "State", "Search" by ghcnd
   - [ ] Testing
+- [ ] Log.Test() == Warn is probably the most useful with the current setup
 - [ ] Check and fix overflow in widgets. "Chance Rain Showers Then mostly Cloud 35\*F - 50%"
+- [ ] Add a "NO DATA" label, and change hidden to an optional Attribute HideNoDAta="false"
+- [ ] add a query for GetAvailableChartTypes()
 
 #### Project Priority 2
 
@@ -125,6 +131,9 @@ It sounds so neat and simple, and it so very much isn't.
 ### Supplemental - More things to Learn
 
 - [ ] Vite
+      [ ] EsLint
+- [ ] Vitest
+  - [ ] Alternate: Mocha with Chai, JsDom and Cheerio, Headless Chrome
 - [ ] Express, Express API
 - [ ] React
 - [ ] Auth / OAuth API

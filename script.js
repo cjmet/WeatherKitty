@@ -18,31 +18,29 @@ import {
 
 // Default True
 let CodeKy = false;
-// Log.SetLogLevel(LogLevel.Debug);
 
 // Default False
 let DisableWhileLoading = false;
 let Test_FubarDisplay = false;
 
+// ---
 let savedLocation = null;
-WeatherKittyPause(true); // stop the widget and disable the initial load
+WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
 if (CodeKy) Log.SetLogLevel(LogLevel.Info);
 if (!Test_FubarDisplay) {
   WeatherKittyPause(false);
   WeatherKitty();
   await WeatherKittyWaitOnLoad();
   NavHome();
-}
-if (Test_FubarDisplay) {
+} else if (Test_FubarDisplay) {
   WeatherKittyPause(false);
-  NavHome();
+  NavHome(); // this forces render of hidden elements, and makes a mess of them.
   WeatherKitty();
   await WeatherKittyWaitOnLoad();
 }
 LoadButtons();
-// WeatherKittyErrorText("Demo Loaded");
 console.log("Demo Loaded");
-await SetLocationAddress("Boston, Ky");
+await SetLocationAddress("Boston, Ky"); // cjm
 
 // ---
 // /MAIN
@@ -71,7 +69,6 @@ function LoadButtons() {
 
 async function NavToClass(classNames) {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
-  // console.log("NavToClass: ", classNames);
   if (!classNames) classNames = [];
   let classList = [
     "MapsAlpha",
@@ -102,14 +99,8 @@ async function SaveLocation() {
 
 async function RestoreLocation() {
   let locData = await getWeatherLocationAsync();
-  if (
-    savedLocation &&
-    locData &&
-    JSON.stringify(savedLocation) !== JSON.stringify(locData)
-  ) {
-    await SetLocationAddress(
-      `${savedLocation.latitude}, ${savedLocation.longitude}`
-    );
+  if (savedLocation && locData && JSON.stringify(savedLocation) !== JSON.stringify(locData)) {
+    await SetLocationAddress(`${savedLocation.latitude}, ${savedLocation.longitude}`);
     WeatherKitty();
   }
   savedLocation = null;
