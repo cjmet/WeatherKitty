@@ -16,7 +16,7 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
   - GeoIP and GeoAddress have limited API Usage, additional usage may require an API Key, License, or Subscription.
   </details>
 
-- Install as a git submodule
+- Install as a git submodule. I'll make this a node module later.
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 - Add WeatherKitty.mjs to your scripts in your html file
 - Insert one of the weather-kitty html elements into your html.
@@ -24,34 +24,37 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 
 ## HTML Elements
 
-<b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
-<b>`<weather-kitty-current>`</b> - Current Conditions
-<b>`<weather-kitty-forecast>`</b> - Forecast
-<b>`<weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
-<b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
-<b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
-<b>`<weather-kitty-map-radar>`</b> - Radar map link.
-<b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
-<b>`<weather-kitty-chart type="keyword">`</b> - Chart
+- <b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
+- <b>`<weather-kitty-current>`</b> - Current Conditions
+- <b>`<weather-kitty-forecast>`</b> - Forecast
+- <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input.
+- <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
+- <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
+- <b>`<weather-kitty-map-radar>`</b> - Radar map link.
+- <b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
+- <b>`<weather-kitty-chart type="keyword">`</b> - Chart
+- <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
 
 ### CSS Classes and Tags
 
 For ease of editing and customization
 
-`<weather-kitty-tooltip>` - Tooltip tags if you need to style them.
-`.WeatherKitty` - Widget
-`.WeatherKittyBlock` - Current Conditions and Forecast Blocks.
-`.WeatherKittyImage` - Weather Background Images
-`.WeatherKittyText` - Weather Text
-`.WeatherKittyChart` - Weather chart containers
-`.WeatherKittyGeoAddress` - Manual location input container
-... and more. See the dev tools inspector for more classes.
+- `.WeatherKitty` - The main Widget
+- `.WeatherKittyBlock` - Current Conditions and Forecast Blocks.
+- `.WeatherKittyImage` - Weather Background Images
+- `.WeatherKittyText` - Weather Text
+- `.WeatherKittyChart` - Weather chart containers
+- `.WeatherKittyGeoAddress` - Manual location input container
+- `.WeatherKittyMapForecast` - Forecast Map
+- `.WeatherKittyMapRadar` - Radar Map
+- `.WeatherKittyMapAlerts` - Alerts Map
+- and more. See the dev tools inspector for more classes.
 
 ### HTML Element Details
 
 #### Charts
 
-<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value">`</b>
+<b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value" noData="value">`</b>
 
 ##### Type - <small>required</small>
 
@@ -59,33 +62,51 @@ For ease of editing and customization
 
 ##### MaxDataPoints - <small>optional</small>
 
-- "auto" - sets the value for you.
+- "auto" - sets the value for you, and keeps the charts sized to the viewport.
 - "default" - sets the value to a reasonable number suited for most charts.
 - "max" - sets the value to as many points as the charts can reasonably handle. Approximately 32,000.
-- "value" - sets the value to that specified so long as it is less than "max".
+- "value" - sets the value.
 
 ##### PixelsPerDataPoint - <small>optional</small>
 
 - "auto" - sets the value for you, and keeps the charts sized to the viewport.
-- "default" - bypasses the viewport restrictions on the chart and sizes the charts to a reasonable value to make all data points discernable. About 4 pixels.
-- "value" - bypasses the viewport restrictions on the chart and sets the value to that specified.
+- "default" - the same as "small".
+- "small" - about 4 pixels.
+- "medium" - about 14 pixels.
+- "large" - about 24 pixels.
+- "value" - sets the value.
 
 ##### TrimData - <small>optional</small>
 
 - "truncate" - truncates excess data. the default.
 - "reversetruncate" - same as truncate but backwards.
-- "average" - averages the data to fit.
-- "none" - does not trim the data.
 
-#### Climate Chart Example
+##### noData - <small>optional</small>
+
+- "hide" - will hide the chart when no data is available.
+
+##### width - <small>optional</small>
+
+- "value" - this will override the width, but the chart may still scale to fill the area, or may expand for additional data points.
+
+##### height - <small>optional</small>
+
+- "value" - this will override the width, but the chart may still scale to fill the area.
+
+##### Climate Chart Example
 
 <b>`<weather-kitty-chart type="TEMP" MaxDataPoints="max" pixelsPerDataPoint="default" trimData="avg">`</b>
 
 <b>Chart Types</b>:
 
 - elevation, temperature, dewpoint, windDirection, windSpeed, windGust, barometricPressure, seaLevelPressure, visibility, maxTemperatureLast24Hours, minTemperatureLast24Hours, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, windChill, heatIndex, ...
-- TMAX, TMIN, PRCP, SNOW, SNWD, PGTM, WDFG, WSFG, WESD, FRGT, THIC, ACMH, ACSH, PSUN, TSUN, WDFM, WSFM, AWND, FMTM, TAVG, ADPT, ASLP, ASTP, AWBT, RHAV, RHMN, RHMX, TEMP, ...
-  ... and more. See the live dev console for more info.
+- TMAX, TMIN, PRCP, SNOW, SNWD, PGTM, WDFG, WSFG, WESD, FRGT, THIC, ACMH, ACSH, PSUN, TSUN, WDFM, WSFM, AWND, FMTM, TAVG, ADPT, ASLP, ASTP, AWBT, RHAV, RHMN, RHMX, TEMP, TMXN, ...
+- ... and more. Set Log.SetLogLevel(LogLevel.Info); and then see the live dev console for more info. I'll add a GetAvailableChartTypes() later.
+
+##### Chart Aliases
+
+- TEMP - tries to determine the larger temperature dataset for a station, which is hopefully the most relevant.
+- TMXN - average of TMAX and TMIN where available
 
 ## Credits, License, and Usage Summary
 

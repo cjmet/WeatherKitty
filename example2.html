@@ -10,15 +10,23 @@
     <header style="display: flex">
       <weather-kitty class="WeatherKitty">
         <weather-kitty-current class="WeatherKittyBlock">
-          <img src="https://default-image.jpg" class="WeatherKittyImage" />
-          <span class="WeatherKittyText"></span>
+          <weather-kitty-tooltip>
+            <weather-kitty-geoaddress></weather-kitty-geoaddress>
+            <p></p>
+          </weather-kitty-tooltip>
+          <img src="./img/WeatherKittyC.jpeg" class="WeatherKittyImage"/>
+          <clip><span class="WeatherKittyText">Loading . . .</span><clip>
         </weather-kitty-current>
 
         <div style="width: 5.66em">Custom HTML Code Block Example</div>
 
         <weather-kitty-forecast class="WeatherKittyBlock">
-          <img src="https://default-image.jpg" class="WeatherKittyImage" />
-          <span class="WeatherKittyText"></span>
+          <weather-kitty-tooltip>
+            <weather-kitty-geoaddress></weather-kitty-geoaddress>
+            <p></p>
+          </weather-kitty-tooltip>
+          <img src="./img/WeatherKittyE7.jpeg" class="WeatherKittyImage" />
+          <clip><span class="WeatherKittyText">Loading . . .</span></clip>
         </weather-kitty-forecast>
         <weather-kitty-tooltip>
           <weather-kitty-geoaddress></weather-kitty-geoaddress>

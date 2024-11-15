@@ -22,16 +22,20 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] **Required**
 
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 10 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
-        `I would normally clean up the number of commits`
   - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
+
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+        `Maybe?  I will say this is not my strong suit`
+
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
-  - [ ] Add any special instructions for the reviewer to run your project.
+  - [x] Add any special instructions for the reviewer to run your project.
+        `There should not be any, beyond the https requirements`
   - [x] Add a 4th feature
   - [x] API: Integrate a third-party API into your project.
     - [x] Read API **or** Write to an API
+          `I have APIs in abundance.`
           &nbsp;
 
 - [x] **Features (Choose 2)**
@@ -43,6 +47,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] Create a function that accepts two or more input parameters and returns a value that is calculated or determined by the inputs. Basic math functions don’t count (e.g. addition, etc).
   - [x] Visualize data in a user friendly way. (e.g. graph, chart, etc)
   - [ ] Create 3 or more unit tests for your application (and document how to run them)
+        `I made a handful of homegrown tests for addresses.`
   - [x] Convert ~~user~~ input between two formats and display the result. (e.g. Fahrenheit to Celcius, kilograms to pounds, etc)
   - [x] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
         &nbsp;
@@ -52,59 +57,115 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] Retrieve data from a third-party API and use it to display something within your app.
   - [ ] Create a form and store the submitted values using an external API (e.g. a contact form, survey, etc).
   - [ ] Persist data to an external API and make the stored data accessible in your app (including after reload/refresh).
+        `I'm saving a fair bit of data to custom caching: location, weather, history, and most api calls`
         &nbsp;
 
 - [ ] **Optional Features (Swap with Section 1)**
   - [ ] Create a node.js web server using a modern framework such as **Express.js** or **Fastify**. Serve at least one route that your app uses (must serve more than just the index.html file).
   - [ ] Interact with a database to store and retrieve information (e.g. MySQL, MongoDB, etc).
   - [ ] Implement modern interactive UI features (e.g. table/data sorting, autocomplete, drag-and-drop, calendar-date-picker, etc).
+        `I added a popup pan and zoom to the map images, and a scaled accelerated drag to touch events for large charts.`
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
+
+<!-- ---------------------------------------------------------------------- -->
+
+---
 
 ## To-Do
 
-- [ ] work experimental back into dev and main
-- [ ] disable nav while loading?
-- [ ] disable set while loading?
-- [ ] clean up Log.Verbose
-- [ ] clean up Log.Trace
+### Questions (may be duplicated below in fixes)
 
-### Fixes and Updates
+- [ ] We broke the editor, additional features are on-hold until after VITE.
+  - [ ] Over 3,000 lines breaks prettier
+- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+- [ ] CodeKy Project Completeness Review
+- [ ] How to know if MonitorCharts is still running? Class? Query the class?
+  - [ ] SetInterval MonitorCharts and use global memory storage?
+    - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
+    - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
-- [ ] do not require station location, add that later
-- [ ] loading indicator for the fetch API
-- [ ] Better way to MonitorCharts()
-  - [ ] MutationObserver() API? - This failed to do what I wanted, so I went homegrown.
-- [ ] fetchCache - Locking? Queuing?
-  - [ ] Locking and/or multiplex/return promises or clones of promises? or a Queue and Promise Engine, or ...
-- [ ] Work on Parallel Async and Slow Connections
-  - [ ] already worked on optimization some. Lots more work to do.
-  - [ ] ghcnd operations need to be unlinked, and fill in later.
-  - [ ] parallel history charts, or even all charts?
+### Project Current Work and Fixes
+
+- [ ] clear() and purge() functions.
+
+#### Project Priority 2
+
+- [ ] ...
+
+### Project Priority 3
+
+- [ ] Vite
+- [ ] Node Package
+- [ ] CDN
+- [ ] Modularize
+- [ ] HTML Element API
+- [ ] Separate (optional) API / Widget Libraries
+- [ ] Express Server
+
+### Project Priority 4
+
+- [ ] Chart.js Decimation: Wrong data format. Change this later as part of Phase 2
+- [ ] Chart.js Data-Chunking: Wrong Program Architecture. Change this later as part of Phase 2
+- [ ] Chart.js Webworker: This is possible, but I don't like what you give up for what you gain.
+- [ ] Cache the Processed Data? That may require a Re-Write?
+
+### Additional Features or Fixes To Add
+
 - [ ] Sec Fix GetLists(s). Partially Done.
-- [ ] WeatherKittyLock() ?
-- [ ] CustomElement API
+- [ ] add a query for GetAvailableChartTypes()
+- [ ] modularize AddressByGhcnd
+- [ ] GNIS API
+- [ ] Find Nearest if not Exist
+- [ ] Aliases: WT**, WV**
+- [ ] Weather Alerts
+- [ ] Other Weather Products
+- [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
 - [ ] PouchCache instead of the homegrown mess.
-- [ ] Investigate and Deal with Null and NaN Data?
-
-### Features
-
-- [ ] Features
-  - [ ] City, State by ghcnd
-    - [ ] Prefer Order: USW*, USC*, \*
-    - [ ] state names from ghcnd-states.txt
-    - [ ] modularize AddressByGhcnd
-  - [ ] GNIS API
-  - [ ] Find Nearest if not Exist
-  - [ ] AvgByDay, AvgByWeek, AvgByMonth, AvgByYear averages
-  - [ ] Aliases: WT**, WV**
-  - [ ] Weather Alerts
-  - [ ] Other Weather Products
-  - [ ] Better Charts: Color Coding? Rainbow? Read Danny's Book?
-  - [ ] Dynamic Element Create Support, and/or Custom HTML API
+- [ ] Investigate and Deal with Null and NaN API Data
+- [ ] Dynamic Element Create Support, and/or Custom HTML API
 
 ### Supplemental - More things to Learn
 
 - [ ] Vite
+      [ ] EsLint
+- [ ] Vitest
+  - [ ] Alternate: Mocha with Chai, JsDom and Cheerio, Headless Chrome
+- [ ] Express, Express API
 - [ ] React
-- [ ] Auth / OAuth API
-- [ ] AWS, Lambda, Hosting, Etc, ...
+- [ ] Auth / OAuth API: Firebase, Passport.js, ...
+- [ ] AWS, Lambda, MongoDb, Hosting, Etc, ...
+
+## Misc Notes
+
+```
+// Assuming you have a large dataset:
+const largeDataset = [/* ... */];
+
+// Initial chunk size:
+const chunkSize = 100;
+
+// Initial data for the chart:
+const initialData = largeDataset.slice(0, chunkSize);
+
+// Create the chart with initial data:
+const ctx = document.getElementById('myChart').getContext('2d');
+const myChart = new Chart(ctx, {
+    // ... chart configuration with initialData
+});
+
+// Function to load more data and update the chart:
+function loadMoreData() {
+    const nextChunk = largeDataset.slice(myChart.data.labels.length, myChart.data.labels.length + chunkSize);
+    myChart.data.labels.push(...nextChunk.map(item => item.label));
+    myChart.data.datasets[0].data.push(...nextChunk.map(item => item.value));
+    myChart.update();
+}
+
+// Trigger data loading on scroll or other user interactions:
+window.addEventListener('scroll', () => {
+    // Check if the user has scrolled near the bottom of the chart
+    if (window.scrollY + window.innerHeight >= document.body.offsetHeight - 100) {
+        loadMoreData();
+    }
+});
+```
