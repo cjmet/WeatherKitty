@@ -311,12 +311,13 @@ export async function WeatherKitty() {
       let altimg = config.WeatherKittyObsImage;
       let precip = weather?.forecastData?.properties.periods[0].probabilityOfPrecipitation.value;
 
-      // cjm-debug
+      // cj-debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
-      // precip = 10;
+      // temp = 109;
+      // precip = 100;
 
       let text = `${shortText}<br>`;
-      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
+      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°f`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`;
 
@@ -333,12 +334,13 @@ export async function WeatherKitty() {
       let altimg = config.WeatherKittyForeImage;
       let precip = weather.forecastData.properties.periods[0].probabilityOfPrecipitation.value;
 
-      // cjm-debug
+      // cj-debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
-      // precip = 10;
+      // temp = 109;
+      // precip = 100;
 
       let text = `${shortText}<br>`;
-      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
+      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°f`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`;
 
@@ -1119,40 +1121,42 @@ async function GetObservationChartData(data) {
 
 // Function Process Chart Elements
 export async function WeatherCharts(chartData) {
-  if (chartData == null) {
-    if (Log.Warn()) console.log("[WeatherCharts] Warning: No Chart Data Available");
-    return;
-  }
-
-  let types = [];
-  for (let value of chartData.keys()) {
-    types.push(value);
-  }
-
-  let containerArray = document.getElementsByTagName("weather-kitty-chart");
-  for (let container of containerArray) {
-    await microSleep(1);
-    let chartType = container.getAttribute("type");
-    if (chartType === null || chartType === undefined) {
-      if (Log.Error())
-        console.log("[ProcessCharts] *** ERROR ***: Chart Type Not Defined", container);
-
-      continue;
+  await WeatherKittyIsLoading("charts", async () => {
+    if (chartData == null) {
+      if (Log.Warn()) console.log("[WeatherCharts] Warning: No Chart Data Available");
+      return;
     }
 
-    // NO-DATA  CHART-NO-DATA // cj-no-data
-    if (types.includes(chartType) === false) {
-      if (container.getAttribute("NoData")?.toLowerCase() === "hide")
-        container.style.display = "none";
-      if (Log.Debug()) console.log(`[ProcessCharts] Chart Type [${chartType}] Not Found`);
-      // continue;
-    } else {
-      container.style.display = "block"; // chart-display
+    let types = [];
+    for (let value of chartData.keys()) {
+      types.push(value);
     }
-    let chart = chartData.get(chartType);
 
-    CreateChart(container, chartType, chart?.values, chart?.timestamps, null, chart?.history);
-  }
+    let containerArray = document.getElementsByTagName("weather-kitty-chart");
+    for (let container of containerArray) {
+      await microSleep(1);
+      let chartType = container.getAttribute("type");
+      if (chartType === null || chartType === undefined) {
+        if (Log.Error())
+          console.log("[ProcessCharts] *** ERROR ***: Chart Type Not Defined", container);
+
+        continue;
+      }
+
+      // NO-DATA  CHART-NO-DATA // cj-no-data
+      if (types.includes(chartType) === false) {
+        if (container.getAttribute("NoData")?.toLowerCase() === "hide")
+          container.style.display = "none";
+        if (Log.Debug()) console.log(`[ProcessCharts] Chart Type [${chartType}] Not Found`);
+        // continue;
+      } else {
+        container.style.display = "block"; // chart-display
+      }
+      let chart = chartData.get(chartType);
+
+      CreateChart(container, chartType, chart?.values, chart?.timestamps, null, chart?.history);
+    }
+  });
 }
 
 // Function CreateChart
@@ -1675,6 +1679,7 @@ export async function CreateChart(
       await chart.update();
     }
     // ------------------------------------------------------------------
+    if (chartContainer) RecalculateChartAspect(chartContainer);
   });
 }
 
@@ -1753,10 +1758,8 @@ async function WeatherSquares(elementId, replacementText, replacementImgUrl, alt
   if (elements == undefined || elements == null || elements.length === 0) return;
 
   for (let element of elements) {
-    console.log(element);
-
     let weatherImg = element.querySelector("weather-kitty-current >  img");
-    let textDiv = element.querySelector("weather-kitty-current > clip > span"); // cjm-clip-span
+    let textDiv = element.querySelector("weather-kitty-current > clip > span"); // cj-clip-span
     if (weatherImg === null) {
       weatherImg = element.querySelector("weather-kitty-forecast > img");
       textDiv = element.querySelector("weather-kitty-forecast > clip  > span");
@@ -1794,20 +1797,21 @@ export function Fahrenheit(temperature, temperatureUnit) {
 }
 
 // Function Elapsed Time
-function wkElapsedTime(startTime) {
+export function wkElapsedTime(startTime) {
   let endTime = new Date();
   // let elapsed = Math.abs(endTime - startTime);
-  let elapsed = endTime - startTime;
-  let seconds = (elapsed / 1000).toFixed(2);
-  let minutes = (seconds / 60).toFixed(2);
-  let hours = (minutes / 60).toFixed(2);
+  // let elapsed = endTime - startTime;
+  let elapsed = startTime - endTime;
+  let seconds = (elapsed / 1000).toFixed(0);
+  let minutes = (seconds / 60).toFixed(0);
+  let hours = (minutes / 60).toFixed(0);
 
   seconds = seconds % 60;
   minutes = minutes % 60;
 
-  if (hours > 1) return `${hours}h`;
-  if (minutes > 1) return `${minutes}m`;
-  if (seconds > 1) return `${seconds}s`;
+  if (Math.abs(hours) > 1) return `${hours}h`;
+  if (Math.abs(minutes) > 1) return `${minutes}m`;
+  if (Math.abs(seconds) > 1) return `${seconds}s`;
 
   return `${elapsed}ms`;
 }
@@ -2055,6 +2059,15 @@ const specialUrlTable = {
   "/weatherkittycache/address": getWeatherLocationByAddressAsync,
 };
 
+export function ExpireData() {
+  localStorage.clear("ttlCache");
+}
+
+export async function PurgeData() {
+  localStorage.clear("ttlCache");
+  caches.delete("weather-kitty");
+}
+
 export async function clearCache(url, verbose) {
   let cache = await caches.open("weather-kitty");
   await cache.delete(url);
@@ -2068,6 +2081,31 @@ export async function setCache(url, response, ttl, verbose) {
 
   let cache = await caches.open("weather-kitty");
   await cache.put(url, response);
+}
+
+let rateLimitCache = new Map();
+async function RateLimitFetch(url, ttl) {
+  ttl = ttl * 0.667; // force sleep .667, then randomize .667, for average of 1
+  // cj-rate-limit
+  const base = new URL(url).origin;
+  let elapsed = 0;
+  let now = 0;
+  do {
+    now = Date.now();
+    let lastFetch = rateLimitCache.get(base);
+    if (lastFetch == null) {
+      rateLimitCache.set(base, now);
+      if (Log.Verbose()) console.log(`[RateLimitFetch] ${base} [locking]`);
+      return;
+    }
+    elapsed = now - lastFetch;
+    let delta = ttl - elapsed;
+    if (Log.Info()) console.log(`[RateLimitFetch] ${base} [rate-limit]`);
+    await microSleep(delta + Math.random() * ttl);
+  } while (elapsed < ttl);
+  if (Log.Trace()) console.log(`[RateLimitFetch] ${base} [releasing]`);
+  now = Date.now();
+  rateLimitCache.set(base, now);
 }
 
 export async function fetchCache(url, options, ttl, verbose) {
@@ -2098,6 +2136,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (url in specialUrlTable) {
     fetchResponse = await specialUrlTable[url](url, options, ttl);
   } else {
+    await RateLimitFetch(url, 1000); // cj-rate-limit
     fetchResponse = await fetch(url, options);
   }
   if (fetchResponse && fetchResponse.ok) {
@@ -2244,22 +2283,26 @@ async function HistoryReformatDataSets(dataSets) {
 
   let tMax = mapSets.get("TMAX");
   let tMin = mapSets.get("TMIN");
-  if (
-    tMax &&
-    tMin &&
-    tMax.values.length === tMin.values.length &&
-    tMax.timestamps[0] === tMin.timestamps[0]
-  ) {
-    let tMax = mapSets.get("TMAX").values;
-    let tMin = mapSets.get("TMIN").values;
-    let temp = mapSets.get("TMAX").values;
-    for (let i = 0; i < tMax.length; i++) {
-      let avg = (tMax[i].value + tMin[i].value) / 2;
-      temp[i].value = avg;
+  if (tMax && tMin && tMax.timestamps.length > 1 && tMin.timestamps.length > 1) {
+    let temp = { history: tMax.history, values: [], timestamps: [] };
+    // cj-TMXN - Synchronize TMAX and TMIN for mismatched sizes.
+    let m = 0;
+    let n = 0;
+    let i = 0;
+    do {
+      if (tMax.timestamps[m] === tMin.timestamps[n]) {
+        let avg = Math.round((tMax.values[m].value + tMin.values[n].value) / 2);
+        temp.values[i] = { value: avg, unitCode: tMax.values[m].unitCode };
+        temp.timestamps[i] = tMax.timestamps[m];
+        i++;
+        m++;
+        n++;
+      } else if (tMax.timestamps[m] < tMin.timestamps[n]) m++;
+      else n++;
+    } while (m < tMax.timestamps.length && n < tMin.timestamps.length);
+    if (temp.values.length > 1) {
+      mapSets.set("TMXN", temp);
     }
-    let clone = mapSets.get("TMAX");
-    clone.values = temp;
-    mapSets.set("TMXN", clone);
   }
   // /Average
   // TEMP = largest value array of TOBS, TAVG, TMAX, TMIN, TMXN
@@ -2649,7 +2692,7 @@ function WeatherKittyCurrentBlock() {
     <p></p>
   </weather-kitty-tooltip>
   <img src="${config.WeatherKittyObsImage}" class="WeatherKittyImage"/>
-  <clip><span class="WeatherKittyText">Loading . . .</span><clip>`; // cjm-clip-span
+  <clip><span class="WeatherKittyText">Loading . . .</span><clip>`; // cj-clip-span
   return results;
 }
 
@@ -2659,7 +2702,7 @@ function WeatherKittyForecastBlock() {
     <p></p>
   </weather-kitty-tooltip>
   <img src="${config.WeatherKittyForeImage}" class="WeatherKittyImage" />
-  <clip><span class="WeatherKittyText">Loading . . .</span></clip>`; // cjm-clip-span
+  <clip><span class="WeatherKittyText">Loading . . .</span></clip>`; // cj-clip-span
   return results;
 }
 

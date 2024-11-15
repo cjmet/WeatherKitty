@@ -30,7 +30,7 @@ It sounds so neat and simple, and it so very much isn't.
 
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
-  - [ ] Add any special instructions for the reviewer to run your project.
+  - [x] Add any special instructions for the reviewer to run your project.
         `There should not be any, beyond the https requirements`
   - [x] Add a 4th feature
   - [x] API: Integrate a third-party API into your project.
@@ -47,6 +47,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] Create a function that accepts two or more input parameters and returns a value that is calculated or determined by the inputs. Basic math functions don’t count (e.g. addition, etc).
   - [x] Visualize data in a user friendly way. (e.g. graph, chart, etc)
   - [ ] Create 3 or more unit tests for your application (and document how to run them)
+        `I made a handful of homegrown tests for addresses.`
   - [x] Convert ~~user~~ input between two formats and display the result. (e.g. Fahrenheit to Celcius, kilograms to pounds, etc)
   - [x] Calculate and display data based on an external factor (ex: get the current date, and display how many days remaining until some event)
         &nbsp;
@@ -63,6 +64,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] Create a node.js web server using a modern framework such as **Express.js** or **Fastify**. Serve at least one route that your app uses (must serve more than just the index.html file).
   - [ ] Interact with a database to store and retrieve information (e.g. MySQL, MongoDB, etc).
   - [ ] Implement modern interactive UI features (e.g. table/data sorting, autocomplete, drag-and-drop, calendar-date-picker, etc).
+        `I added a popup pan and zoom to the map images, and a scaled accelerated drag to touch events for large charts.`
   - [ ] Develop your project using a common JavaScript framework such as React, Angular, or Vue.
 
 <!-- ---------------------------------------------------------------------- -->
@@ -78,29 +80,25 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
 - [ ] CodeKy Project Completeness Review
 - [ ] How to know if MonitorCharts is still running? Class? Query the class?
-  - [ ] SetInterval MonitorCharts
+  - [ ] SetInterval MonitorCharts and use global memory storage?
     - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
     - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
 ### Project Current Work and Fixes
 
-- [ ] GeoAddress to middle for mobile, display full icons, smaller text
-  - [ ] if it gets too small hide the logo.
-- [ ] fix the widget width/height issue, and centering of text issue.
-- [ ] add a query for GetAvailableChartTypes()
+- [ ] clear() and purge() functions.
 
 #### Project Priority 2
 
-- [ ] clean up Log.Verbose
-- [ ] clean up Log.Trace
+- [ ] ...
 
 ### Project Priority 3
 
-- [ ] HTML Element API
 - [ ] Vite
 - [ ] Node Package
 - [ ] CDN
 - [ ] Modularize
+- [ ] HTML Element API
 - [ ] Separate (optional) API / Widget Libraries
 - [ ] Express Server
 
@@ -113,6 +111,8 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Additional Features or Fixes To Add
 
+- [ ] Sec Fix GetLists(s). Partially Done.
+- [ ] add a query for GetAvailableChartTypes()
 - [ ] modularize AddressByGhcnd
 - [ ] GNIS API
 - [ ] Find Nearest if not Exist
@@ -123,7 +123,6 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] PouchCache instead of the homegrown mess.
 - [ ] Investigate and Deal with Null and NaN API Data
 - [ ] Dynamic Element Create Support, and/or Custom HTML API
-- [ ] Sec Fix GetLists(s). Partially Done.
 
 ### Supplemental - More things to Learn
 
@@ -133,10 +132,10 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] Alternate: Mocha with Chai, JsDom and Cheerio, Headless Chrome
 - [ ] Express, Express API
 - [ ] React
-- [ ] Auth / OAuth API
-- [ ] AWS, Lambda, Hosting, Etc, ...
+- [ ] Auth / OAuth API: Firebase, Passport.js, ...
+- [ ] AWS, Lambda, MongoDb, Hosting, Etc, ...
 
-## Notes
+## Misc Notes
 
 ```
 // Assuming you have a large dataset:

@@ -9,9 +9,10 @@ import {
   sleep,
   WeatherKittyIsLoading,
   getWeatherLocationAsync,
-  WeatherKittyErrorText,
   getWeatherLocationByAddressAsync,
   HistoryGetStation,
+  ExpireData,
+  PurgeData,
 } from "./WeatherKitty.mjs";
 let assertText = document.getElementById("assert");
 
@@ -29,20 +30,13 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Info); // cjm
-if (!Test_FubarDisplay) {
-  WeatherKittyPause(false);
-  WeatherKitty();
-  await WeatherKittyWaitOnLoad();
-  NavHome();
-} else if (Test_FubarDisplay) {
-  WeatherKittyPause(false);
-  NavHome(); // this forces render of hidden elements, and makes a mess of them.
-  WeatherKitty();
-  await WeatherKittyWaitOnLoad();
-}
+if (CodeKy) Log.SetLogLevel(LogLevel.Info);
+WeatherKittyPause(false);
+if (Test_FubarDisplay) NavHome(); // this order forces render of hidden elements, and makes a mess of them, hence the extensive testing and refactoring.
+WeatherKitty();
+await WeatherKittyWaitOnLoad();
+NavHome();
 LoadButtons();
-console.log("Demo Loaded");
 
 // ---
 // /MAIN
@@ -63,9 +57,9 @@ function LoadButtons() {
   element = document.getElementById("NavTest");
   if (element) element.addEventListener("click", NavTest);
   element = document.getElementById("ExpireData");
-  if (element) element.addEventListener("click", ExpireData);
+  if (element) element.addEventListener("click", ExpireDataFunc);
   element = document.getElementById("PurgeData");
-  if (element) element.addEventListener("click", PurgeData);
+  if (element) element.addEventListener("click", PurgeDataFunc);
 }
 
 // FUNCTIONS -------------------------------------
@@ -137,17 +131,16 @@ async function NavClimate() {
   await NavToClass(["WeatherKittyClimateCharts"]);
 }
 
-async function ExpireData() {
+async function ExpireDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Expiring Data");
-  localStorage.clear();
+  ExpireData();
 }
 
-async function PurgeData() {
+async function PurgeDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Purging Data");
-  localStorage.clear();
-  caches.delete("weather-kitty");
+  PurgeData();
 }
 
 // -------------------------------------

@@ -13,7 +13,7 @@ weather-kitty-current,
 weather-kitty-forecast {
   box-sizing: border-box;
   position: relative;
-  width: 5.95em;
+  width: 6em;
   aspect-ratio: 1 / 1;
   display: grid; /* Grid (1x1) is working better for this use case than flex  */
   grid-template-rows: 1fr;
@@ -37,7 +37,6 @@ weather-kitty-forecast {
 weather-kitty-current > clip,
 weather-kitty-forecast > clip {
   position: relative;
-  /* border: red 3px solid; */
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -48,10 +47,10 @@ weather-kitty-forecast > clip {
 
 weather-kitty-current > clip > span,
 weather-kitty-forecast > clip > span {
-  /* border: green 3px solid; */
   position: absolute;
   bottom: 0;
   left: 0;
+  width: 100%;
 }
 
 weather-kitty-geoaddress {
@@ -107,8 +106,6 @@ weather-kitty-tooltip {
   justify-self: center;
   align-self: start;
   text-align: left;
-  /* border: black 3px solid; // put this in hover  */
-  /* padding: 0.5em; // put this in hover */
   border-radius: 0.5em;
 
   transition: opacity var(--weatherKittyTranSecDefault);
@@ -128,8 +125,8 @@ weather-kitty-current:hover,
 weather-kitty-forecast:hover {
   weather-kitty-current > img,
   weather-kitty-forecast > img,
-  weather-kitty-current > span,
-  weather-kitty-forecast > span {
+  weather-kitty-current > clip > span,
+  weather-kitty-forecast > clip > span {
     transition: opacity var(--weatherKittyTranSecDefault);
     opacity: 0.5;
   }
@@ -216,7 +213,6 @@ weather-kitty-chart {
 }
 
 weather-kitty-chart > chartSpan {
-  /* border: purple 3px solid; */
   box-sizing: border-box;
   margin: 0 0 -0.5em 0;
   display: block;
@@ -245,14 +241,12 @@ weather-kitty-chart canvasBounds {
   /* required for chart.js responsiveness */
   position: relative;
   display: flex;
-  /* border: blue 3px solid; */
   box-sizing: border-box;
   width: calc(100% - 0em);
   height: calc(100% - 0em);
 }
 
 weather-kitty-chart canvas {
-  /* border: magenta 3px solid; */
   box-sizing: border-box;
 }
 

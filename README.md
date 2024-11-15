@@ -16,7 +16,7 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
   - GeoIP and GeoAddress have limited API Usage, additional usage may require an API Key, License, or Subscription.
   </details>
 
-- Install as a git submodule
+- Install as a git submodule. I'll make this a node module later.
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
 - Add WeatherKitty.mjs to your scripts in your html file
 - Insert one of the weather-kitty html elements into your html.
@@ -27,7 +27,7 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 - <b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
 - <b>`<weather-kitty-current>`</b> - Current Conditions
 - <b>`<weather-kitty-forecast>`</b> - Forecast
-- <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input. Currently powered by corsproxy.io
+- <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input.
 - <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
 - <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
 - <b>`<weather-kitty-map-radar>`</b> - Radar map link.
@@ -101,12 +101,12 @@ For ease of editing and customization
 
 - elevation, temperature, dewpoint, windDirection, windSpeed, windGust, barometricPressure, seaLevelPressure, visibility, maxTemperatureLast24Hours, minTemperatureLast24Hours, precipitationLastHour, precipitationLast3Hours, precipitationLast6Hours, relativeHumidity, windChill, heatIndex, ...
 - TMAX, TMIN, PRCP, SNOW, SNWD, PGTM, WDFG, WSFG, WESD, FRGT, THIC, ACMH, ACSH, PSUN, TSUN, WDFM, WSFM, AWND, FMTM, TAVG, ADPT, ASLP, ASTP, AWBT, RHAV, RHMN, RHMX, TEMP, TMXN, ...
-- ... and more. See the live dev console for more info.
+- ... and more. Set Log.SetLogLevel(LogLevel.Info); and then see the live dev console for more info. I'll add a GetAvailableChartTypes() later.
 
 ##### Chart Aliases
 
 - TEMP - tries to determine the larger temperature dataset for a station, which is hopefully the most relevant.
-- TMXN - average of TMAX and TMIN _IF_ the datasets match
+- TMXN - average of TMAX and TMIN where available
 
 ## Credits, License, and Usage Summary
 
