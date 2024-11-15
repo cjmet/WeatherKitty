@@ -311,6 +311,10 @@ export async function WeatherKitty() {
       let altimg = config.WeatherKittyObsImage;
       let precip = weather?.forecastData?.properties.periods[0].probabilityOfPrecipitation.value;
 
+      // cjm-debug
+      // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
+      // precip = 10;
+
       let text = `${shortText}`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
@@ -328,6 +332,10 @@ export async function WeatherKitty() {
       let img = weather.forecastData.properties.periods[0].icon;
       let altimg = config.WeatherKittyForeImage;
       let precip = weather.forecastData.properties.periods[0].probabilityOfPrecipitation.value;
+
+      // cjm-debug
+      // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
+      // precip = 10;
 
       let text = `${shortText}`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
@@ -554,7 +562,10 @@ export async function WeatherKittyIsLoading(message, func) {
 
   config.KvpTimers.set(message, Date.now());
   SetLoadingIndicatorMessage(config.KvpTimers);
+  if (Log.Debug()) console.log("[WeatherKittyIsLoading]", message);
   let result = await func();
+  if (Log.Debug())
+    console.log(`[WeatherKittyIsLoading]`, message, wkElapsedTime(config.KvpTimers.get(message)));
   config.KvpTimers.delete(message);
   SetLoadingIndicatorMessage(config.KvpTimers);
 
@@ -1129,7 +1140,7 @@ export async function WeatherCharts(chartData) {
       continue;
     }
 
-    // NO-DATA  CHART-NO-DATA // cjm
+    // NO-DATA  CHART-NO-DATA // cj-no-data
     if (types.includes(chartType) === false) {
       if (container.getAttribute("NoData")?.toLowerCase() === "hide")
         container.style.display = "none";
@@ -1156,7 +1167,7 @@ export async function CreateChart(
   WeatherKittyIsLoading(`${key}`, async () => {
     if (values == null || values.length == 0 || values[0].value === undefined) {
       if (Log.Trace()) console.log(`[CreateChart] ${key}: values are empty`);
-      // return; // cjm
+      // return; // cj-no-data - I'm going to allow NO_DATA Charts to render blank. oops.
     }
     if (
       timestamps === null ||
@@ -1167,7 +1178,7 @@ export async function CreateChart(
       if (Log.Trace()) {
         console.log(`[CreateChart] ${key}: timestamps are empty`);
       }
-      // return; // cjm
+      // return; // cj-no-data - I'm going to allow NO_DATA Charts to render blank. oops.
     }
     if (chartContainer === null || chartContainer === undefined || chartContainer.length === 0) {
       console.log("[CreateChart] *** ERROR *** chartContainer is Null! ");
@@ -1546,7 +1557,7 @@ export async function CreateChart(
       }`;
       if (preFix.length > 0) preFix += ":";
       if (chartSpan)
-        chartSpan.innerHTML = `${preFix} ${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cjm
+        chartSpan.innerHTML = `${preFix} ${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
     }
 
     // ---
@@ -1601,7 +1612,7 @@ export async function CreateChart(
 
     // NO CHART - CREATE NEW CHART
     if (chart === null || chart === undefined) {
-      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cjm
+      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
       labelName = labelName.replace("wmoUnit:", "");
       await microSleep(1);
       let newChart = new Chart(canvas, {
@@ -1648,7 +1659,7 @@ export async function CreateChart(
       await newChart.update();
     } else {
       // CHART EXISTS - UPDATE CHART
-      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cjm
+      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
       chart.data.labels = time;
       chart.data.datasets = [
         {
@@ -1742,11 +1753,13 @@ async function WeatherSquares(elementId, replacementText, replacementImgUrl, alt
   if (elements == undefined || elements == null || elements.length === 0) return;
 
   for (let element of elements) {
-    let weatherImg = element.querySelector("weather-kitty-current > img");
-    let textDiv = element.querySelector("weather-kitty-current > span");
+    console.log(element);
+
+    let weatherImg = element.querySelector("weather-kitty-current >  img");
+    let textDiv = element.querySelector("weather-kitty-current > clip > span"); // cjm-clip-span
     if (weatherImg === null) {
       weatherImg = element.querySelector("weather-kitty-forecast > img");
-      textDiv = element.querySelector("weather-kitty-forecast > span");
+      textDiv = element.querySelector("weather-kitty-forecast > clip  > span");
     }
     textDiv.innerHTML = replacementText;
 
@@ -1775,7 +1788,7 @@ export function Fahrenheit(temperature, temperatureUnit) {
   if (temperatureUnit === "f" || temperatureUnit === "°f") fahrenheit = Math.round(temperature);
   else if (temperatureUnit == "c" || temperatureUnit === "°c")
     fahrenheit = Math.round((temperature * 9) / 5 + 32);
-  else if (Log.Trace()) console.log(`Warning: Invalid Temperature Unit: ${temperatureUnit}`);
+  else if (Log.Verbose()) console.log(`Warning: Invalid Temperature Unit: ${temperatureUnit}`);
 
   return fahrenheit;
 }
@@ -2636,7 +2649,7 @@ function WeatherKittyCurrentBlock() {
     <p></p>
   </weather-kitty-tooltip>
   <img src="${config.WeatherKittyObsImage}" class="WeatherKittyImage"/>
-  <span class="WeatherKittyText">Loading . . .</span>`;
+  <clip><span class="WeatherKittyText">Loading . . .</span><clip>`; // cjm-clip-span
   return results;
 }
 
@@ -2646,7 +2659,7 @@ function WeatherKittyForecastBlock() {
     <p></p>
   </weather-kitty-tooltip>
   <img src="${config.WeatherKittyForeImage}" class="WeatherKittyImage" />
-  <span class="WeatherKittyText">Loading . . .</span>`;
+  <clip><span class="WeatherKittyText">Loading . . .</span></clip>`; // cjm-clip-span
   return results;
 }
 

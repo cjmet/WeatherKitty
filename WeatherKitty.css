@@ -13,9 +13,11 @@ weather-kitty-current,
 weather-kitty-forecast {
   box-sizing: border-box;
   position: relative;
-  width: 5.67em;
+  width: 5.95em;
   aspect-ratio: 1 / 1;
   display: grid; /* Grid (1x1) is working better for this use case than flex  */
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
 
   padding: 0.1em;
   text-wrap: pretty;
@@ -26,9 +28,30 @@ weather-kitty-forecast {
 
   font-family: Arial, Helvetica, sans-serif;
   color: white;
-  text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
-    -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
-    -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
+  text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black, -0.05em 0.05em 0 black,
+    0.05em -0.05em 0 black, 0.1em 0.1em 0 black, -0.1em -0.1em 0 black, -0.1em 0.1em 0 black,
+    0.1em -0.1em 0 black;
+}
+
+/* // cjm  */
+weather-kitty-current > clip,
+weather-kitty-forecast > clip {
+  position: relative;
+  /* border: red 3px solid; */
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+weather-kitty-current > clip > span,
+weather-kitty-forecast > clip > span {
+  /* border: green 3px solid; */
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
 weather-kitty-geoaddress {
@@ -42,9 +65,9 @@ weather-kitty-geoaddress label {
   font-size: small;
   color: white;
   margin: 0.25em;
-  text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black,
-    -0.05em 0.05em 0 black, 0.05em -0.05em 0 black, 0.1em 0.1em 0 black,
-    -0.1em -0.1em 0 black, -0.1em 0.1em 0 black, 0.1em -0.1em 0 black;
+  text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black, -0.05em 0.05em 0 black,
+    0.05em -0.05em 0 black, 0.1em 0.1em 0 black, -0.1em -0.1em 0 black, -0.1em 0.1em 0 black,
+    0.1em -0.1em 0 black;
 }
 weather-kitty-geoaddress span {
   display: none;

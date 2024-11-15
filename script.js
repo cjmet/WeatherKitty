@@ -29,7 +29,7 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Debug); // cjm
+if (CodeKy) Log.SetLogLevel(LogLevel.Info); // cjm
 if (!Test_FubarDisplay) {
   WeatherKittyPause(false);
   WeatherKitty();
