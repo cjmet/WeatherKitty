@@ -315,7 +315,7 @@ export async function WeatherKitty() {
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
       // precip = 10;
 
-      let text = `${shortText}`;
+      let text = `${shortText}<br>`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`;
@@ -337,7 +337,7 @@ export async function WeatherKitty() {
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
       // precip = 10;
 
-      let text = `${shortText}`;
+      let text = `${shortText}<br>`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`;

@@ -139,6 +139,10 @@ body {
   font-size: small;
 }
 
+#GeoAddressHeader {
+  display: none;
+}
+
 #WeatherKittySpacer {
   flex-grow: 1;
 }
@@ -314,10 +318,30 @@ body {
   #WeatherKittyHeader h1 {
     font-size: 0;
   }
-  .WeatherKittyGeoAddress > span {
-    font-size: 0.9em;
-    height: 1.2em;
-    overflow: hidden;
+  #GeoAddressHeader {
+    border: red 1px solid; /* cjm */
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: end;
+    .WeatherKittyGeoAddress > span {
+      border: blue 1px solid; /* cjm */
+      flex: 1 1 auto;
+      font-size: 0.9em;
+      text-wrap: pretty;
+      /* height: 1.2em; */
+      overflow: hidden;
+    }
+    button {
+      border: green 3px solid;
+      box-sizing: border-box;
+    }
+  }
+
+  #GeoAddressWidget {
+    display: none;
   }
 }
 

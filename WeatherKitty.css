@@ -65,6 +65,8 @@ weather-kitty-geoaddress label {
   font-size: small;
   color: white;
   margin: 0.25em;
+  height: 1.2em; /* // cjm set height: and overflow to truncate text-wrap; */
+  overflow: hidden;
   text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black, -0.05em 0.05em 0 black,
     0.05em -0.05em 0 black, 0.1em 0.1em 0 black, -0.1em -0.1em 0 black, -0.1em 0.1em 0 black,
     0.1em -0.1em 0 black;

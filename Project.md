@@ -86,6 +86,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] GeoAddress to middle for mobile, display full icons, smaller text
   - [ ] if it gets too small hide the logo.
+- [ ] fix the widget width/height issue, and centering of text issue.
 - [ ] add a query for GetAvailableChartTypes()
 
 #### Project Priority 2
