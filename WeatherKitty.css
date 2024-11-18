@@ -4,7 +4,7 @@
 }
 
 weather-kitty {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   display: flex;
   position: relative;
 }
@@ -155,6 +155,7 @@ weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
 /* ---------------------------------------------------------------------------- */
 /* Matrix */
 weather-kitty-week {
+  flex: 1 0 auto;
   border-radius: 1em;
   box-sizing: border-box;
   margin: 1em;

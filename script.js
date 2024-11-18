@@ -21,7 +21,7 @@ let assertText = document.getElementById("assert");
 // ---
 
 // Default True
-let CodeKy = true;
+let CodeKy = false;
 
 // Default False
 let DisableWhileLoading = false;

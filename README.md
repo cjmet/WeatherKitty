@@ -8,8 +8,9 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 
 ## Usage
 
+- **Required**: Secure https and Location are Required.
 - Valid for locations in the United States Only. The primary API is from the **United States** National Weather Service.
-- Secure https and Location are **Required**.
+
   <details>
 
   - location can be provided by browser permissions, GeoIP, or GeoAddress.

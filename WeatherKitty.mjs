@@ -319,7 +319,7 @@ export async function WeatherKitty() {
       let text = `${shortText}<br>`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°f`;
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
-        text += ` - ${precip}%`;
+        text += ` - ${precip}%`; // There just isn't room for an ellipse or symbol if the deg/precip is 100% &hellip;
 
       WeatherSquares("weather-kitty-current", text, img, altimg);
     }
@@ -424,7 +424,7 @@ export async function WeatherKitty() {
       }
 
       // append the history data
-      if (ChartTypes?.History.length > 0 && historyData.size > 0 && chartData?.size > 0) {
+      if (ChartTypes?.History.length > 0 && historyData?.size > 0 && chartData?.size > 0) {
         for (let key of historyData.keys()) {
           chartData.set(key, historyData.get(key));
         }
@@ -447,6 +447,8 @@ export function WeatherKittyErrorText(message) {
   for (let element of elements) {
     let span = element.getElementsByTagName("span")[0];
     if (span) span.innerHTML = message;
+    let label = element.getElementsByTagName("label")[0];
+    if (label) label.innerHTML = message;
   }
 }
 
@@ -2110,6 +2112,7 @@ async function RateLimitFetch(url, ttl) {
 
 export async function fetchCache(url, options, ttl, verbose) {
   if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
+  let error = new Response("Address Error", { status: 400, ok: false });
 
   // url, options, ttl, expires, expired, response
   // get expire from localStorage ... I'm avoiding IndexDB for now
@@ -2120,7 +2123,16 @@ export async function fetchCache(url, options, ttl, verbose) {
   else ttlCache[url] = 0;
 
   let expired = expires < Date.now();
-  let cache = await caches.open("weather-kitty");
+  let cache;
+  try {
+    cache = await caches.open("weather-kitty");
+  } catch (error) {
+    config.PAUSE = true;
+    if (Log.Error()) console.log(`[fetchCache] Error: ${error}`);
+    WeatherKittyErrorText(`ERR: https required Cache Error ${error}`);
+    alert(`ERROR: https Cache Error ${error}.   Https is REQUIRED`);
+    throw error;
+  }
   let response = await cache.match(url);
 
   if (response && response.ok && !expired) {
@@ -2137,14 +2149,30 @@ export async function fetchCache(url, options, ttl, verbose) {
     fetchResponse = await specialUrlTable[url](url, options, ttl);
   } else {
     await RateLimitFetch(url, 1000); // cj-rate-limit
-    fetchResponse = await fetch(url, options);
+    try {
+      console.log(`[fetchCache] fetch: ${url}`); // cjm
+      fetchResponse = await fetch(url, options);
+    } catch (error) {
+      WeatherKittyErrorText(`${error}`);
+      if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${error}`);
+      let ErrorResponse = new Response("Fetch Error", { status: 500, ok: false, text: error });
+      return ErrorResponse;
+    }
   }
+
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
     if (Log.Info() || verbose)
       console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
-    await cache.put(url, responseClone);
+    try {
+      await cache.put(url, responseClone);
+    } catch (error) {
+      if (Log.Error()) console.log(`[fetchCache] Cache Error: ${error}`);
+      WeatherKittyErrorText(`${error}`);
+      let ErrorResponse = new Response("Cache Error", { status: 500, ok: false, text: error });
+      return ErrorResponse;
+    }
     ttlCache[url] = expires;
     localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
     return fetchResponse;
@@ -2187,7 +2215,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
   if (station?.id && station?.id.length == 11) {
   } else {
     if (Log.Error())
-      console.log(`[GetHistoryChartData] *** ERROR *** : Station Error [${station.id}]`);
+      console.log(`[GetHistoryChartData] *** ERROR *** : Station Error [${station?.id}]`);
     return;
   }
 
@@ -2364,6 +2392,9 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
       if (result && result.length == 2) state = result;
     }
 
+    // ERROR BLOCK ghcnd-stations.txt // cjm
+    // Why does the mobile version die on SSL and CORS errors while desktop works just fine?
+    // ---
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
@@ -2372,6 +2403,31 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
       null,
       config.archiveCacheTime
     );
+
+    if (!response || !response?.ok || response?.status !== 200) {
+      response = await fetchCache(
+        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        null,
+        config.archiveCacheTime
+      );
+    }
+
+    if (!response || !response?.ok || response?.status !== 200) {
+      response = await corsCache(
+        "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        null,
+        config.archiveCacheTime
+      );
+    }
+
+    if (!response || !response?.ok || response?.status !== 200) {
+      response = await corsCache(
+        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        null,
+        config.archiveCacheTime
+      );
+    }
+    // /ERROR BLOCK
 
     let lines;
     if (response?.ok) {
@@ -2382,7 +2438,6 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
           console.log(
             `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
           );
-
         return null;
       }
     } else {
@@ -2390,6 +2445,7 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
         console.log(
           `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
         );
+      return null;
     }
 
     let data = [];
@@ -2488,6 +2544,8 @@ async function HistoryGetState(state) {
     }
     state = state.trim().toLowerCase();
 
+    // "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+    // "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
     let response = await fetchCache(
       "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
       null,
@@ -2534,12 +2592,61 @@ async function HistoryGetCsvFile(stationId) {
     //https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
+    // https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.dly
     let idString = stationId.toLowerCase().substring(11 - 8);
 
-    let url = `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`;
-    let response = await fetchCache(url, null, config.longCacheTime);
+    // ERROR BLOCK .gz // cjm
+    // (same as above) Why does the mobile version die on SSL and CORS errors while desktop works just fine?
+    let response;
     let fileData;
 
+    if (!fileData || !response || !response?.ok || response?.status !== 200) {
+      response = await fetchCache(
+        `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        null,
+        config.longCacheTime
+      );
+      console.log("RESPONSE", response);
+      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
+    }
+
+    if (!fileData || !response || !response?.ok || response?.status !== 200) {
+      response = await corsCache(
+        `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        null,
+        config.longCacheTime
+      );
+      console.log("RESPONSE", response);
+      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
+    }
+
+    if (!fileData || !response || !response?.ok || response?.status !== 200) {
+      response = await fetchCache(
+        `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        null,
+        config.longCacheTime
+      );
+      console.log("RESPONSE", response);
+      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
+    }
+
+    if (!fileData || !response || !response?.ok || response?.status !== 200) {
+      response = await corsCache(
+        `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        null,
+        config.longCacheTime
+      );
+      console.log("RESPONSE", response);
+      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
+    }
+
+    return fileData;
+  });
+}
+
+async function DecompressCsvFile(response) {
+  return WeatherKittyIsLoading("Decompressing", async () => {
+    let fileData;
     // let sleep = await new Promise((r) => setTimeout(r, 1000));
     let blob_compressed;
     let blob_uncompressed;
@@ -2575,6 +2682,8 @@ async function HistoryGetCsvFile(stationId) {
         result = stringData;
       } catch (e) {
         console.log("*** ERROR *** - Decompression Error: " + e);
+        WeatherKittyErrorText(`Decompression Error: ${e}`);
+        return null;
       }
 
       fileData = result.split("\n");

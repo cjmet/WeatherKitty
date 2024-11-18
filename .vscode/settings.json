@@ -3,8 +3,11 @@
         "CHARTMAXWIDTH",
         "dewpoint",
         "Fastify",
+        "fflate",
         "Fubar",
         "geoaddress",
+        "ghcnd",
+        "hellip",
         "ipapi"
     ]
 }

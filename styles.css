@@ -17,7 +17,8 @@ body {
 }
 
 #Logo img {
-  height: 6em;
+  height: 5em;
+  max-resolution: 0.5em;
   align-self: center;
   justify-self: center;
 }
@@ -33,7 +34,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* padding: 0 0 0 0.25em; */
   z-index: 2;
 }
 
@@ -52,7 +52,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  z-index: 1;
+  z-index: 2;
 }
 
 #HamburgerRelative {
@@ -107,7 +107,6 @@ body {
   top: 0;
   background-color: #333;
   color: white;
-  /* padding: 0 0.25em; */
   text-align: left;
 
   display: flex;
@@ -130,6 +129,7 @@ body {
   align-content: end;
   justify-content: end;
   justify-items: end;
+  margin: 0.25em 0.25em 0 0;
 }
 
 #WeatherKittyHeaderDiv weather-kitty-geoaddress {
@@ -171,8 +171,8 @@ body {
   flex-direction: column;
   overflow: auto;
 
-  /* background-image: url("./img/Background01g2.png");
-  background-size: 100%; */
+  background-image: url("./img/Background01g2.png");
+  background-size: 100%;
 }
 
 .WeatherKittyHomeCharts,
@@ -240,7 +240,6 @@ body {
     border: black 3px solid;
     border-left: none;
     border-right: none;
-    z-index: 1;
   }
 
   #HamburgerImg {
@@ -310,6 +309,48 @@ body {
 
   weather-kitty {
     font-size: small;
+  }
+
+  #GeoAddressWidget {
+    display: none;
+  }
+
+  #WeatherKittyHeader h1 {
+    flex: 1 0 auto;
+  }
+
+  #GeoAddressHeader {
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: end;
+    span {
+      box-sizing: border-box;
+      height: min-content;
+      max-height: 3.55em;
+      margin: 0 0.25em 0 0;
+      /* flex: 1 0 auto; */
+      width: 100%;
+      font-size: 0.9em;
+      text-wrap: wrap;
+      text-overflow: ellipsis;
+      text-align: end;
+      text-justify: end;
+      hyphens: auto;
+      overflow: hidden;
+    }
+    button {
+      box-sizing: border-box;
+      margin: 0 0.25em;
+    }
+  }
+}
+
+@media (max-width: 600px) and (max-height: 450px) {
+  #WeatherKittyHeader h1 {
+    font-size: 0;
   }
 }
 
