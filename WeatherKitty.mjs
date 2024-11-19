@@ -2402,7 +2402,6 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
     // http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
-    // https://www.ncei.noaa.gov/pub/data/ghcn/daily/
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
     let response;

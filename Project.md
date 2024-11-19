@@ -78,13 +78,16 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Increase Chart Margins and remove Chart Vertical Override.
+- [ ] Increase Chart Margins and remove Chart Vertical Override, or if less than 1:1 scroll page instead of over-ride.
+- [ ] un-sticky the header for mobile.
+- [ ] browser full-screen for mobile?
 - [ ] Map Zoom on Mobile.
 - [ ] Hardware Dev Machine
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
   - [ ] probably need to do the same thing to ghcnd-states.txt
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
+  - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip
 
 #### Project Priority 2
 
