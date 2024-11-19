@@ -703,7 +703,7 @@ async function getWeatherLocationByIPAsync() {
   // ip-api.com/json  http n/c  75000     2500      45
   // ipapi.com                  100       ---       ---
   // ipapi.co/json              30000     967       0.5
-  let locationUrl = "http://ipapi.co/json/";
+  let locationUrl = "https://ipapi.co/json/";
   let response = await fetchCache(locationUrl, null, config.longCacheTime);
 
   // City, State, Country, ZipCode, Latitude, Longitude
@@ -900,6 +900,7 @@ async function getWeatherAsync() {
 
   // Notes
   // -----
+  // https://noaa-ghcn-pds.s3.amazonaws.com/index.html - just added
   // https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312
   // https://api.weather.gov/gridpoints/JKL/65,16/stations
   // https://api.weather.gov/stations/${Station_ID}/observations
@@ -2112,7 +2113,7 @@ async function RateLimitFetch(url, ttl) {
 
 export async function fetchCache(url, options, ttl, verbose) {
   if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
-  let error = new Response("Address Error", { status: 400, ok: false });
+  let error = new Response("Fetch Error", { status: 400, ok: false });
 
   // url, options, ttl, expires, expired, response
   // get expire from localStorage ... I'm avoiding IndexDB for now
@@ -2129,7 +2130,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   } catch (error) {
     config.PAUSE = true;
     if (Log.Error()) console.log(`[fetchCache] Error: ${error}`);
-    WeatherKittyErrorText(`ERR: https required Cache Error ${error}`);
+    WeatherKittyErrorText(`ERR: https required ${error}`);
     alert(`ERROR: https Cache Error ${error}.   Https is REQUIRED`);
     throw error;
   }
@@ -2153,7 +2154,7 @@ export async function fetchCache(url, options, ttl, verbose) {
       console.log(`[fetchCache] fetch: ${url}`); // cjm
       fetchResponse = await fetch(url, options);
     } catch (error) {
-      WeatherKittyErrorText(`${error}`);
+      // WeatherKittyErrorText(`${error}`); // cjm ... this didn't work out.
       if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${error}`);
       let ErrorResponse = new Response("Fetch Error", { status: 500, ok: false, text: error });
       return ErrorResponse;
@@ -2221,6 +2222,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
 
   let fileData;
   fileData = await HistoryGetCsvFile(station.id);
+
   if (fileData && fileData?.length > 0) {
   } else {
     if (Log.Error())
@@ -2228,7 +2230,6 @@ async function HistoryGetChartData(station, latitude, longitude) {
     return;
   }
 
-  // ... what's next ???
   // ... Process the File Data into Data Sets
   // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
   // USW00014739,19360101,TMAX, 17,,,0,2400
@@ -2245,6 +2246,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
       throw new Error(
         `[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type [${station.id}]`
       );
+    if (id == "ID") continue;
     if (id != null && id.length > 0) {
       if (dataSets[type] == null) {
         dataSets[type] = {};
@@ -2268,7 +2270,7 @@ async function HistoryGetChartData(station, latitude, longitude) {
       } else {
         if (Log.Error())
           console.log(
-            `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}]`
+            `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}] ${val} ${date}`
           );
       }
     } else if (lineCount === fileData.length) {
@@ -2396,37 +2398,39 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
     // Why does the mobile version die on SSL and CORS errors while desktop works just fine?
     // ---
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
+    // https://docs.opendata.aws/noaa-ghcn-pds/readme.html
+    // http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
-    let response = await fetchCache(
+    // https://www.ncei.noaa.gov/pub/data/ghcn/daily/
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
+    let response;
+    let urls = [
+      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
       "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-      null,
-      config.archiveCacheTime
-    );
+      "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+    ];
 
-    if (!response || !response?.ok || response?.status !== 200) {
-      response = await fetchCache(
-        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-        null,
-        config.archiveCacheTime
-      );
+    for (let url of urls) {
+      console.log("FETCHCACHE: ", url);
+      response = await fetchCache(url, null, config.archiveCacheTime);
+      console.log("RESPONSE:", response);
+      if (!response || !response?.ok || response?.status !== 200) {
+        response = await corsCache(url, null, config.archiveCacheTime);
+        console.log("RESPONSE:", response);
+      }
+      if (response && response?.ok && response?.status === 200) break;
     }
 
     if (!response || !response?.ok || response?.status !== 200) {
-      response = await corsCache(
-        "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-        null,
-        config.archiveCacheTime
-      );
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`
+        );
+      return null;
     }
 
-    if (!response || !response?.ok || response?.status !== 200) {
-      response = await corsCache(
-        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-        null,
-        config.archiveCacheTime
-      );
-    }
     // /ERROR BLOCK
 
     let lines;
@@ -2544,13 +2548,23 @@ async function HistoryGetState(state) {
     }
     state = state.trim().toLowerCase();
 
+    // https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt
     // "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
     // "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
-    let response = await fetchCache(
+
+    let urls = [
+      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt",
       "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
-      null,
-      config.archiveCacheTime
-    );
+      "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+    ];
+
+    for (let url of urls) {
+      let response = await fetchCache(url, null, config.archiveCacheTime);
+      if (!response || !response?.ok || response?.status !== 200) {
+        response = await corsCache(url, null, config.archiveCacheTime);
+      }
+      if (response && response?.ok && response?.status === 200) break;
+    }
 
     let lines;
     if (response?.ok) {
@@ -2593,51 +2607,45 @@ async function HistoryGetCsvFile(stationId) {
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.csv.gz
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.dly
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
     let idString = stationId.toLowerCase().substring(11 - 8);
 
     // ERROR BLOCK .gz // cjm
     // (same as above) Why does the mobile version die on SSL and CORS errors while desktop works just fine?
     let response;
     let fileData;
+    let urls = [
+      `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
+      `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
+      `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+      `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+    ];
 
-    if (!fileData || !response || !response?.ok || response?.status !== 200) {
-      response = await fetchCache(
-        `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-        null,
-        config.longCacheTime
-      );
-      console.log("RESPONSE", response);
-      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
-    }
+    for (let url of urls) {
+      console.log("FETCHCACHE: ", url);
+      response = await fetchCache(url, null, config.archiveCacheTime);
+      console.log("RESPONSE:", response);
+      if (response?.ok && response?.status === 200) {
+        if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
+        else if (url.substring(url.length - 4) === ".csv") {
+          fileData = await response.text(); // cjm
+          fileData = fileData.split("\n");
+        }
+      }
 
-    if (!fileData || !response || !response?.ok || response?.status !== 200) {
-      response = await corsCache(
-        `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-        null,
-        config.longCacheTime
-      );
-      console.log("RESPONSE", response);
-      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
-    }
-
-    if (!fileData || !response || !response?.ok || response?.status !== 200) {
-      response = await fetchCache(
-        `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-        null,
-        config.longCacheTime
-      );
-      console.log("RESPONSE", response);
-      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
-    }
-
-    if (!fileData || !response || !response?.ok || response?.status !== 200) {
-      response = await corsCache(
-        `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-        null,
-        config.longCacheTime
-      );
-      console.log("RESPONSE", response);
-      if (response?.ok && response?.status === 200) fileData = await DecompressCsvFile(response);
+      if (!response || !response?.ok || response?.status !== 200) {
+        response = await corsCache(url, null, config.archiveCacheTime);
+        console.log("RESPONSE:", response);
+        if (response?.ok && response?.status === 200) {
+          if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
+          else if (url.substring(url.length - 4) === ".csv") {
+            fileData = await response.text(); // cjm
+            fileData = fileData.split("\n");
+          }
+        }
+      }
+      if (fileData && response && response?.ok && response?.status === 200) break;
     }
 
     return fileData;

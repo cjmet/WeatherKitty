@@ -78,6 +78,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] Increase Chart Margins and remove Chart Vertical Override.
 - [ ] Map Zoom on Mobile.
 - [ ] Hardware Dev Machine
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
