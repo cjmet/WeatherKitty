@@ -79,10 +79,13 @@ It sounds so neat and simple, and it so very much isn't.
 ### Project Current Work and Fixes
 
 - [ ] Increase Chart Margins and remove Chart Vertical Override, or if less than 1:1 scroll page instead of over-ride.
+  - [ ] Maps and Matrix need the same margins
 - [ ] un-sticky the header for mobile.
+- [ ] fix scrolling, or hide up once scrolled?
 - [ ] browser full-screen for mobile?
 - [ ] Map Zoom on Mobile.
 - [ ] Hardware Dev Machine
+- [ ] More tests for API status and server status
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
   - [ ] probably need to do the same thing to ghcnd-states.txt
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing

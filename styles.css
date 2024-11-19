@@ -25,7 +25,7 @@ body {
 
 #Logo {
   grid-area: logo;
-  position: sticky;
+  /* position: sticky; */ /* cjm */
   top: 0;
   border: black 3px solid;
   border-right: none;
@@ -103,7 +103,7 @@ body {
   border-left: none;
   box-sizing: border-box;
   grid-area: header;
-  position: sticky;
+  /* position: sticky; */ /* cjm */
   top: 0;
   background-color: #333;
   color: white;
@@ -235,7 +235,7 @@ body {
   }
 
   #Hamburger {
-    position: sticky;
+    /* position: sticky; */ /* cjm */
     top: 0;
     border: black 3px solid;
     border-left: none;
@@ -331,7 +331,7 @@ body {
       height: min-content;
       max-height: 3.55em;
       margin: 0 0.25em 0 0;
-      /* flex: 1 0 auto; */
+      /* flex: 1 0 auto; */ /* cjm */
       width: 100%;
       font-size: 0.9em;
       text-wrap: wrap;

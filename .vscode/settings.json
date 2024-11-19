@@ -1,13 +1,14 @@
 {
-    "cSpell.words": [
-        "CHARTMAXWIDTH",
-        "dewpoint",
-        "Fastify",
-        "fflate",
-        "Fubar",
-        "geoaddress",
-        "ghcnd",
-        "hellip",
-        "ipapi"
-    ]
+  "cSpell.words": [
+    "CHARTMAXWIDTH",
+    "dewpoint",
+    "Fastify",
+    "fflate",
+    "Fubar",
+    "geoaddress",
+    "ghcnd",
+    "hellip",
+    "ipapi",
+    "precip"
+  ]
 }
