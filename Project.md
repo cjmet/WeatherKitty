@@ -78,7 +78,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Mobile
+- [ ] Mobile (720x350)
   - [ ] Increase Chart Margins and remove Chart Vertical Override, or if less than 1:1 scroll page instead of over-ride.
   - [ ] Maps and Matrix need the same margins
   - [ ] un-sticky the header for mobile.
