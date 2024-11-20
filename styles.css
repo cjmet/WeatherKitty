@@ -1,6 +1,22 @@
 /* Page Layout */
 :root {
+  /* Input Variables: */
   --headerHeight: 6em;
+  --desktopMarginSize: 1em; /* evenly on all sides including the vertical doubling, extra 1em on the right */
+  --mobileMarginSize: 4em; /* size on the right. desktopMargin on the other sides */
+
+  /* Calculated Results:  */
+  --desktopHeight: calc(100vh - var(--desktopMarginSize) * 2);
+  --desktopWidth: calc(100vw - var(--desktopMarginSize) * 2 - 1em);
+  --desktopMapWidth: min(var(--desktopWidth), calc(var(--desktopHeight) * 1.38));
+  --desktopMargin: calc(var(--desktopMarginSize) / 2) calc(var(--desktopMarginSize) + 1em)
+    calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
+
+  --mobileHeight: min(calc(100vh - var(--desktopMarginSize) * 2), var(--mobileWidth));
+  --mobileWidth: calc(100vw - var(--desktopMarginSize) - var(--mobileMarginSize));
+  --mobileMapWidth: min(var(--mobileWidth), calc(var(--mobileHeight) * 1.38));
+  --mobileMargin: calc(var(--desktopMarginSize) / 2) calc(var(--mobileMarginSize))
+    calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
 }
 
 html,
@@ -82,6 +98,7 @@ body {
   box-sizing: border-box;
   margin: 0.5em 0.25em;
   height: var(--headerHeight);
+  flex: 1 0 auto;
 
   display: grid;
   grid-template-columns: 1fr;
@@ -105,6 +122,10 @@ body {
   box-sizing: border-box;
   margin: 0.5em 0 0 0;
   container-type: size;
+}
+#HeaderRow2 weather-kitty-geoaddress {
+  box-sizing: border-box;
+  display: none;
 }
 
 weather-kitty-geoaddress span,
@@ -219,22 +240,32 @@ weather-kitty-geoaddress button {
   flex-direction: column;
 }
 
-weather-kitty-chart {
-  /* // cjm  */
-  /* height: calc(100vh - 6em);
-  width: calc(100vw - 6em);
-  margin: 1.5em 3em; */
-  --chartMargin: 3em;
-  height: calc(100vh - var(--chartMargin) * 2);
-  width: calc(100vw - var(--chartMargin) * 2);
-  margin: calc(var(--chartMargin) / 2) var(--chartMargin);
-}
-
 .MapsAlpha {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
+}
+
+weather-kitty-map-forecast,
+weather-kitty-map-radar,
+weather-kitty-map-alerts {
+  /* cjm */
+  width: var(--desktopMapWidth);
+  margin: var(--desktopMargin);
+  align-self: center;
+  justify-self: center;
+}
+
+weather-kitty-week {
+  width: var(--desktopWidth);
+  margin: var(--desktopMargin);
+}
+
+weather-kitty-chart {
+  height: var(--desktopHeight);
+  width: var(--desktopWidth);
+  margin: var(--desktopMargin);
 }
 
 /* ----------------------------------------------------------------------------   ----------------- */
@@ -252,12 +283,12 @@ weather-kitty-chart {
 
 @media (max-aspect-ratio: 1) {
   weather-kitty-chart {
-    height: calc(100vw - 4em); /* cjm */
+    height: calc(100vw - 4em);
     width: calc(100vw - 4em);
   }
 }
 
-@media (max-width: 750px) {
+@media (max-width: 760px) {
   #HeaderTitle h1 {
     transition: all 0.66s;
     font-size: 2.33em;
@@ -268,7 +299,7 @@ weather-kitty-chart {
   }
 }
 
-@media (max-width: 666px) {
+@media (max-width: 690px) {
   #HeaderTitle h1 {
     transition: all 0.66s;
     font-size: 1.8em;
@@ -279,17 +310,31 @@ weather-kitty-chart {
   }
 }
 
-@media (max-width: 590px) {
+@media (max-width: 600px) {
   #HeaderTitle h1 {
     transition: all 0.66s;
     font-size: 1.5em;
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 560px) {
   #HeaderTitle h1 {
     transition: all 0.66s;
     font-size: 1.25em;
+  }
+}
+
+@media (max-width: 520px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 1em;
+  }
+
+  @media (max-width: 500px) {
+    #HeaderTitle h1 {
+      transition: all 0.66s;
+      font-size: 0em;
+    }
   }
 }
 
@@ -298,6 +343,26 @@ weather-kitty-chart {
 /* ----------------------------------------------------------------------------   ----------------- */
 
 /* ----------------------------------------------------------------------------   ----------------- */
+
+@media (max-width: 450px), (max-height: 450px) {
+  /* cjm */
+  weather-kitty-map-forecast,
+  weather-kitty-map-radar,
+  weather-kitty-map-alerts {
+    width: var(--mobileMapWidth);
+    margin: var(--mobileMargin);
+  }
+
+  weather-kitty-week {
+    margin: var(--mobileMargin);
+  }
+
+  weather-kitty-chart {
+    height: var(--mobileHeight);
+    width: var(--mobileWidth);
+    margin: var(--mobileMargin);
+  }
+}
 
 @media (max-width: 450px) {
   #LogoImg {
@@ -310,14 +375,10 @@ weather-kitty-chart {
   #HeaderTitle {
     box-sizing: border-box;
   }
-  #HeaderTitle weather-kitty-geoaddress {
-    display: none;
-  }
   #HeaderTitle h1 {
     box-sizing: border-box;
     flex: 1 0 auto;
   }
-
   #NavLinks {
     display: none;
   }
@@ -356,6 +417,16 @@ weather-kitty-chart {
   }
 }
 
+@media (max-width: 415px) {
+  /* cjm */
+  #HeaderTitle weather-kitty-geoaddress {
+    display: none;
+  }
+  #HeaderRow2 weather-kitty-geoaddress {
+    display: flex;
+  }
+}
+
 @media (max-width: 365px) {
   #HeaderTitle h1 {
     transition: all 0.66s;
@@ -382,7 +453,6 @@ weather-kitty-chart {
 .hidden {
   border: 3px solid red;
   margin: 3px;
-  /* padding: 3px; */
   opacity: 0.5;
   display: none;
 }

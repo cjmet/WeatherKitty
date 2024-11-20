@@ -257,7 +257,7 @@ weather-kitty-chart canvas {
 
 /* ---------------------------------------------------------------------------- */
 /* required use of a container query */
-/* use of padding required, margin still causes issues even with container query */
+/* use of padding or calc() required, margin still causes issues even with container query */
 weather-kitty-map-forecast,
 weather-kitty-map-radar,
 weather-kitty-map-alerts {
@@ -265,8 +265,8 @@ weather-kitty-map-alerts {
   container-name: weather-kitty-map;
   box-sizing: border-box;
   aspect-ratio: 1.38;
-  width: 100%;
-  padding: 1em;
+  width: calc(100% - 2em);
+  margin: 1em;
 }
 
 /* required use of container units */

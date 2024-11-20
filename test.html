@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- WeatherKitty.html Version 240829.15  -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
@@ -10,33 +9,41 @@
   </head>
 
   <body id="WeatherKittyBody">
-    <div id="Logo">
-      <img id="LogoImg" src="_Angel_Hornet_Icon128.png" alt="Angle Hornet Logo" />
-    </div>
-
-    <div id="Hamburger">
-      <div id="HamburgerRelative">
-        <img id="HamburgerImg" src="img/CatBurger.png" alt="Angle Hornet Logo" />
-        <nav id="HamburgerLinks">
-          <a id="NavHome"><span>Home</span></a>
-          <a id="NavWeather">Weather<br />Charts</a>
-          <a id="NavHistory">History<br />Charts</a>
-          <a id="NavClimate">Boston<br />Climate<br />Charts</a>
-          <hr width="50%" />
-          <a id="NavTest"
-            ><span>Test<br />Script</span></a
-          >
-          <a id="ExpireData">Expire<br />Data</a>
-          <a id="PurgeData">Purge<br />Data</a>
-        </nav>
-      </div>
-    </div>
-
     <header id="WeatherKittyHeader">
-      <h1>Weather Kitty Demo</h1>
-      <div id="WeatherKittyHeaderDiv">
-        <weather-kitty></weather-kitty>
-        <weather-kitty-geoaddress></weather-kitty-geoaddress>
+      <div id="HeaderRow1">
+        <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        <div id="NavImg">
+          <img src="img/CatBurger.png" alt="Hamburger Image" />
+          <nav id="HamLinks">
+            <a id="HamHome"><span>Home</span></a>
+            <!-- <a id="HamWeather"><span>Weather Charts</span></a>
+            <a id="HamHistory"><span>History Charts</span></a>
+            <a id="HamClimate"><span>Boston Climate Charts</span></a>
+            <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+            <a id="HamExpire"><span>Expire Data</span></a>
+            <a id="HamPurge"><span>Purge Data</span></a>
+          </nav>
+        </div>
+
+        <div id="HeaderTitle">
+          <h1>Weather Kitty Demo</h1>
+          <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+        </div>
+        <div id="WeatherKittyWidgetDiv">
+          <weather-kitty></weather-kitty>
+        </div>
+      </div>
+      <div id="HeaderRow2">
+        <nav id="NavLinks">
+          <!-- <a id="NavHome"><span>Home</span></a>
+          <a id="NavWeather"><span>Weather Charts</span></a>
+          <a id="NavHistory"><span>History Charts</span></a>
+          <a id="NavClimate"><span>Boston Climate Charts</span></a>
+          <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+          <a id="NavExpire"><span>Expire Data</span></a>
+          <a id="NavPurge"><span>Purge Data</span></a>
+        </nav>
+        <weather-kitty-geoaddress> </weather-kitty-geoaddress>
       </div>
     </header>
 
@@ -50,13 +57,6 @@
 
     <script src="./WeatherKitty.mjs" type="module"></script>
     <script src="./script.js" type="module"></script>
-    <script type="module">
-      import { WeatherKittyWaitOnLoad } from "./WeatherKitty.mjs";
-      import { NavTest } from "./script.js";
-      (async () => {
-        await WeatherKittyWaitOnLoad();
-        NavTest();
-      })();
-    </script>
+    <script src="./test.js" type="module"></script>
   </body>
 </html>

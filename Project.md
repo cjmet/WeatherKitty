@@ -78,18 +78,13 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Fix the background and footer for flex
 - [ ] Mobile (720x350)
-  - [ ] Increase Chart Margins and remove Chart Vertical Override, or if less than 1:1 scroll page instead of over-ride.
-  - [ ] Maps and Matrix need the same margins
-  - [ ] un-sticky the header for mobile.
-  - [ ] fix scrolling, or hide up once scrolled?
-  - [ ] browser full-screen for mobile?
+  - [ ] Chart if less than 1:1 scroll page instead of over-ride.
   - [ ] Map Zoom on Mobile.
 - [ ] Hardware Dev Machine
-- [ ] More tests for API status and server status
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
   - [ ] probably need to do the same thing to ghcnd-states.txt
+- [ ] work Styles.css calculated sizes into WeatherKitty.css.
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
   - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip

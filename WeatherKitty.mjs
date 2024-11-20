@@ -26,6 +26,9 @@ let Log = {
     Log.LogLevel = level;
     if (!silent) console.log(`[WeatherKittyLog] LogLevel: ${Log.GetLogLevelText()}`);
   },
+  GetLogLevel() {
+    return Log.LogLevel;
+  },
   GetLogLevelText() {
     for (let key in LogLevel) {
       if (LogLevel[key] === Log.LogLevel) return key;
@@ -351,6 +354,13 @@ export async function WeatherKitty() {
     let locationName = null;
     if (weather?.pointData && weather?.stationsData && weather?.forecastData) {
       locationName = weather.pointData.properties.relativeLocation.properties.city;
+      // cj-debug
+      // longname long name longest name
+      // "100 lake shore, Village of Grosse Pointe Shores, Michigan"
+      // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
+      // locationName = "Chargoggagoggmanchauggagoggchaubunagungamaugg";
+      // locationName = "Chargo ggagogg manchau ggagogg chaubu nagung amaugg";
+
       locationName += ", ";
       locationName += weather.pointData.properties.relativeLocation.properties.state;
       locationName += " - ";
@@ -388,10 +398,6 @@ export async function WeatherKitty() {
     }
 
     // weather-kitty-geoaddress Location Block
-    // longname
-    // "100 lake shore, Village of Grosse Pointe Shores, Michigan"
-    // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
-
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
@@ -697,12 +703,12 @@ export async function getLocationAsync() {
 
 // Function getWeatherLocationByIPAsync {
 // City, State, Country, ZipCode, Latitude, Longitude
+// n/c - non-commercial use only
+// Site             Limits    Limit/Mth Limit/Day Limit/Min
+// ip-api.com/json  http n/c  75000     2500      45
+// ipapi.com                  100       ---       ---
+// ipapi.co/json              30000     967       0.5
 async function getWeatherLocationByIPAsync() {
-  // n/c - non-commercial use only
-  // Site             Limits    Limit/Mth Limit/Day Limit/Min
-  // ip-api.com/json  http n/c  75000     2500      45
-  // ipapi.com                  100       ---       ---
-  // ipapi.co/json              30000     967       0.5
   let locationUrl = "https://ipapi.co/json/";
   let response = await fetchCache(locationUrl, null, config.longCacheTime);
 
@@ -921,7 +927,6 @@ async function getWeatherAsync() {
     let city = data.properties.relativeLocation.properties.city;
     let state = data.properties.relativeLocation.properties.state;
     let locationName = `${city}, ${state}`;
-
     resultString += locationName;
   } else {
     if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Point Data Available");
@@ -930,7 +935,7 @@ async function getWeatherAsync() {
   }
 
   // Get "Featured" Observation Station ... from Stations
-  // https://api.weather.gov/stations/KI35/observations
+  // https://api.weather.gov/stations/KI35/observations // cjm-test
 
   let observationStationID = null;
   if (observationStationsUrl) {
@@ -2103,7 +2108,7 @@ async function RateLimitFetch(url, ttl) {
     }
     elapsed = now - lastFetch;
     let delta = ttl - elapsed;
-    if (Log.Info()) console.log(`[RateLimitFetch] ${base} [rate-limit]`);
+    if (Log.Debug()) console.log(`[RateLimitFetch] ${base} [rate-limit]`);
     await microSleep(delta + Math.random() * ttl);
   } while (elapsed < ttl);
   if (Log.Trace()) console.log(`[RateLimitFetch] ${base} [releasing]`);
@@ -2137,7 +2142,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   let response = await cache.match(url);
 
   if (response && response.ok && !expired) {
-    if (Log.Info() || verbose)
+    if (Log.Debug() || verbose)
       console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
@@ -2151,10 +2156,10 @@ export async function fetchCache(url, options, ttl, verbose) {
   } else {
     await RateLimitFetch(url, 1000); // cj-rate-limit
     try {
-      console.log(`[fetchCache] fetch: ${url}`); // cjm
+      // console.log(`[FETCH!: ${url}`); //
       fetchResponse = await fetch(url, options);
     } catch (error) {
-      // WeatherKittyErrorText(`${error}`); // cjm ... this didn't work out.
+      // WeatherKittyErrorText(`${error}`); //  ... this didn't work out.
       if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${error}`);
       let ErrorResponse = new Response("Fetch Error", { status: 500, ok: false, text: error });
       return ErrorResponse;
@@ -2412,9 +2417,9 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
     ];
 
     for (let url of urls) {
-      console.log("FETCHCACHE: ", url);
+      // console.log("FETCHCACHE: ", url);
       response = await fetchCache(url, null, config.archiveCacheTime);
-      console.log("RESPONSE:", response);
+      // console.log("RESPONSE:", response);
       if (!response || !response?.ok || response?.status !== 200) {
         response = await corsCache(url, null, config.archiveCacheTime);
         console.log("RESPONSE:", response);
@@ -2557,8 +2562,9 @@ async function HistoryGetState(state) {
       "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
     ];
 
+    let response;
     for (let url of urls) {
-      let response = await fetchCache(url, null, config.archiveCacheTime);
+      response = await fetchCache(url, null, config.archiveCacheTime);
       if (!response || !response?.ok || response?.status !== 200) {
         response = await corsCache(url, null, config.archiveCacheTime);
       }
@@ -2622,13 +2628,13 @@ async function HistoryGetCsvFile(stationId) {
     ];
 
     for (let url of urls) {
-      console.log("FETCHCACHE: ", url);
+      // console.log("FETCHCACHE: ", url);
       response = await fetchCache(url, null, config.archiveCacheTime);
-      console.log("RESPONSE:", response);
+      // console.log("RESPONSE:", response);
       if (response?.ok && response?.status === 200) {
         if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
         else if (url.substring(url.length - 4) === ".csv") {
-          fileData = await response.text(); // cjm
+          fileData = await response.text();
           fileData = fileData.split("\n");
         }
       }
@@ -2639,7 +2645,7 @@ async function HistoryGetCsvFile(stationId) {
         if (response?.ok && response?.status === 200) {
           if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
           else if (url.substring(url.length - 4) === ".csv") {
-            fileData = await response.text(); // cjm
+            fileData = await response.text();
             fileData = fileData.split("\n");
           }
         }
@@ -2651,7 +2657,7 @@ async function HistoryGetCsvFile(stationId) {
   });
 }
 
-async function DecompressCsvFile(response) {
+export async function DecompressCsvFile(response) {
   return WeatherKittyIsLoading("Decompressing", async () => {
     let fileData;
     // let sleep = await new Promise((r) => setTimeout(r, 1000));
