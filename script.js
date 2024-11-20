@@ -56,9 +56,24 @@ function LoadButtons() {
   if (element) element.addEventListener("click", NavClimate);
   element = document.getElementById("NavTest");
   if (element) element.addEventListener("click", NavTest);
-  element = document.getElementById("ExpireData");
+  element = document.getElementById("NavExpire");
   if (element) element.addEventListener("click", ExpireDataFunc);
-  element = document.getElementById("PurgeData");
+  element = document.getElementById("NavPurge");
+  if (element) element.addEventListener("click", PurgeDataFunc);
+
+  element = document.getElementById("HamHome");
+  if (element) element.addEventListener("click", NavHome);
+  element = document.getElementById("HamWeather");
+  if (element) element.addEventListener("click", NavWeather);
+  element = document.getElementById("HamHistory");
+  if (element) element.addEventListener("click", NavHistory);
+  element = document.getElementById("HamClimate");
+  if (element) element.addEventListener("click", NavClimate);
+  element = document.getElementById("HamTest");
+  if (element) element.addEventListener("click", NavTest);
+  element = document.getElementById("HamExpire");
+  if (element) element.addEventListener("click", ExpireDataFunc);
+  element = document.getElementById("HamPurge");
   if (element) element.addEventListener("click", PurgeDataFunc);
 }
 
