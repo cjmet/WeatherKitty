@@ -199,12 +199,10 @@ weather-kitty-geoaddress button {
 
 #WeatherKittyMain {
   box-sizing: border-box;
-  grid-area: main;
 
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
-  /* overflow: auto; // cjm  */
 
   background-image: url("./img/Background01g2.png");
   background-size: cover;
@@ -216,11 +214,20 @@ weather-kitty-geoaddress button {
 .WeatherKittyWeatherCharts,
 .WeatherKittyHistoryCharts,
 .WeatherKittyClimateCharts {
-  /* height: 100%; // cjm  */
-  height: 100vh;
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
+}
+
+weather-kitty-chart {
+  /* // cjm  */
+  /* height: calc(100vh - 6em);
+  width: calc(100vw - 6em);
+  margin: 1.5em 3em; */
+  --chartMargin: 3em;
+  height: calc(100vh - var(--chartMargin) * 2);
+  width: calc(100vw - var(--chartMargin) * 2);
+  margin: calc(var(--chartMargin) / 2) var(--chartMargin);
 }
 
 .MapsAlpha {
@@ -240,6 +247,13 @@ weather-kitty-geoaddress button {
   .MapsAlpha {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
+  }
+}
+
+@media (max-aspect-ratio: 1) {
+  weather-kitty-chart {
+    height: calc(100vw - 4em); /* cjm */
+    width: calc(100vw - 4em);
   }
 }
 
