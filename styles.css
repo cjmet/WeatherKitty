@@ -7,7 +7,7 @@ html,
 body {
   box-sizing: border-box;
   margin: 0;
-  /* height: 100%; // cjm */
+  height: 100%;
 }
 
 #WeatherKittyBody {
