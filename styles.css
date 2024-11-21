@@ -254,7 +254,7 @@ weather-kitty-week {
 weather-kitty-chart {
   margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
   /* - 4.5em for scroll-ability */
-  /* min-height: min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)); // cjm */
+  /* min-height: min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2));  */
   min-height: max(10em, min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)));
 }
 
@@ -438,8 +438,22 @@ weather-kitty-chart {
 
 @media (max-width: 450px), (max-height: 450px) {
   /* // Is-Mobile */
-  #WeatherKittyMain {
+  /* #WeatherKittyMain {
     padding: 0 3em 0 0;
+  } */
+  /* // Trying Margins instead of padding.  Padding didn't entirely work as desired on mobile landscape. */
+  /* // Margins DO work better on mobile landscape. */
+  .MapsAlpha {
+    margin: 0 4em 0 0;
+  }
+  .WeekAlpha {
+    margin: 0 4em 0 0;
+  }
+  .WeatherKittyHomeCharts,
+  .WeatherKittyWeatherCharts,
+  .WeatherKittyHistoryCharts,
+  .WeatherKittyClimateCharts {
+    margin: 0 4em 0 0;
   }
 }
 
