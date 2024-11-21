@@ -4,19 +4,6 @@
   --headerHeight: 6em;
   --desktopMarginSize: 1em; /* evenly on all sides including the vertical doubling, extra 1em on the right */
   --mobileMarginSize: 4em; /* size on the right. desktopMargin on the other sides */
-
-  /* Calculated Results:  */
-  --desktopHeight: calc(100vh - var(--desktopMarginSize) * 2);
-  --desktopWidth: calc(100vw - var(--desktopMarginSize) * 2 - 1em);
-  --desktopMapWidth: min(var(--desktopWidth), calc(var(--desktopHeight) * 1.38));
-  --desktopMargin: calc(var(--desktopMarginSize) / 2) calc(var(--desktopMarginSize) + 1em)
-    calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
-
-  --mobileHeight: min(calc(100vh - var(--desktopMarginSize) * 2), var(--mobileWidth));
-  --mobileWidth: calc(100vw - var(--desktopMarginSize) - var(--mobileMarginSize));
-  --mobileMapWidth: min(var(--mobileWidth), calc(var(--mobileHeight) * 1.38));
-  --mobileMargin: calc(var(--desktopMarginSize) / 2) calc(var(--mobileMarginSize))
-    calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
 }
 
 html,
@@ -62,6 +49,11 @@ body {
   align-items: center;
   width: 100%;
   margin: 0;
+}
+
+#HeaderRow2 weather-kitty-geoaddress {
+  box-sizing: border-box;
+  display: none;
 }
 
 #LogoImg {
@@ -122,10 +114,6 @@ body {
   box-sizing: border-box;
   margin: 0.5em 0 0 0;
   container-type: size;
-}
-#HeaderRow2 weather-kitty-geoaddress {
-  box-sizing: border-box;
-  display: none;
 }
 
 weather-kitty-geoaddress span,
@@ -231,41 +219,43 @@ weather-kitty-geoaddress button {
   background-position: center;
 }
 
-.WeatherKittyHomeCharts,
-.WeatherKittyWeatherCharts,
-.WeatherKittyHistoryCharts,
-.WeatherKittyClimateCharts {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-}
+/* ---------------------------------------------------------------------------- */
 
 .MapsAlpha {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr;
 }
 
 weather-kitty-map-forecast,
 weather-kitty-map-radar,
 weather-kitty-map-alerts {
-  /* cjm */
-  width: var(--desktopMapWidth);
-  margin: var(--desktopMargin);
-  align-self: center;
-  justify-self: center;
+  margin: var(--desktopMarginSize) calc(var(--desktopMarginSize) / 2);
+}
+
+.WeekAlpha {
+  box-sizing: border-box;
 }
 
 weather-kitty-week {
-  width: var(--desktopWidth);
-  margin: var(--desktopMargin);
+  margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
+}
+
+.WeatherKittyHomeCharts,
+.WeatherKittyWeatherCharts,
+.WeatherKittyHistoryCharts,
+.WeatherKittyClimateCharts {
+  box-sizing: border-box;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 weather-kitty-chart {
-  height: var(--desktopHeight);
-  width: var(--desktopWidth);
-  margin: var(--desktopMargin);
+  margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
+  /* - 4.5em for scroll-ability */
+  /* min-height: min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)); // cjm */
+  min-height: max(10em, min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)));
 }
 
 /* ----------------------------------------------------------------------------   ----------------- */
@@ -274,17 +264,19 @@ weather-kitty-chart {
 
 /* ----------------------------------------------------------------------------   ----------------- */
 /* media query for width and height of viewport */
-@media (max-width: 1535px) {
+/* 720p 1280x720 - 2 rem for scroll bars*/
+@media (max-width: calc( 1280px - 2rem)) {
   .MapsAlpha {
+    box-sizing: border-box;
+    display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
   }
-}
 
-@media (max-aspect-ratio: 1) {
-  weather-kitty-chart {
-    height: calc(100vw - 4em);
-    width: calc(100vw - 4em);
+  weather-kitty-map-forecast,
+  weather-kitty-map-radar,
+  weather-kitty-map-alerts {
+    margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
   }
 }
 
@@ -344,26 +336,6 @@ weather-kitty-chart {
 
 /* ----------------------------------------------------------------------------   ----------------- */
 
-@media (max-width: 450px), (max-height: 450px) {
-  /* cjm */
-  weather-kitty-map-forecast,
-  weather-kitty-map-radar,
-  weather-kitty-map-alerts {
-    width: var(--mobileMapWidth);
-    margin: var(--mobileMargin);
-  }
-
-  weather-kitty-week {
-    margin: var(--mobileMargin);
-  }
-
-  weather-kitty-chart {
-    height: var(--mobileHeight);
-    width: var(--mobileWidth);
-    margin: var(--mobileMargin);
-  }
-}
-
 @media (max-width: 450px) {
   #LogoImg {
     display: none;
@@ -418,41 +390,73 @@ weather-kitty-chart {
 }
 
 @media (max-width: 415px) {
-  /* cjm */
   #HeaderTitle weather-kitty-geoaddress {
     display: none;
   }
+  #HeaderRow2 {
+    justify-content: end;
+  }
   #HeaderRow2 weather-kitty-geoaddress {
     display: flex;
+    box-sizing: border-box;
   }
 }
 
-@media (max-width: 365px) {
-  #HeaderTitle h1 {
-    transition: all 0.66s;
-    font-size: medium;
-  }
-}
-
-@media (max-width: 350px) {
-  #HeaderTitle h1 {
-    transition: all 0.66s;
+@media (max-width: 305px) {
+  weather-kitty {
     font-size: small;
   }
 }
 
-@media (max-width: 340px) {
-  #HeaderTitle h1 {
-    transition: all 0.66s;
-    font-size: 0;
-    /* display: none; */
+@media (max-width: 250px) {
+  #HeaderRow1 {
+    height: calc(var(--headerHeight) * 2 / 3);
+  }
+  weather-kitty {
+    font-size: x-small;
+  }
+}
+
+@media (max-width: 215px) {
+  #HeaderRow1 {
+    height: calc(var(--headerHeight) * 2 / 3);
+  }
+  weather-kitty {
+    font-size: xx-small;
+  }
+}
+
+@media (max-width: 200px) {
+  weather-kitty-forecast {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------   ----------------- */
+/* MOBILE OVER-RIDES*/
+/* --- */
+
+@media (max-width: 450px), (max-height: 450px) {
+  /* // Is-Mobile */
+  #WeatherKittyMain {
+    padding: 0 3em 0 0;
+  }
+}
+
+@media (max-aspect-ratio: 1) {
+  weather-kitty-chart {
+    aspect-ratio: 1 / 1;
+    min-height: 10em;
+    display: none;
   }
 }
 
 /* hidden class ...  */
 .hidden {
   border: 3px solid red;
+  background-color: magenta;
   margin: 3px;
-  opacity: 0.5;
+  opacity: 0;
+  z-index: 1000;
   display: none;
 }

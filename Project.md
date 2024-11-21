@@ -78,8 +78,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Mobile (720x350)
-  - [ ] Chart if less than 1:1 scroll page instead of over-ride.
+- [ ] Mobile
+  - [ ] Page Scroll
+    - [ ] Chart if less than 1:1 scroll page instead of over-ride.
+    - [ ] If Chart is max scrolled, scroll page.
   - [ ] Map Zoom on Mobile.
 - [ ] Hardware Dev Machine
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.

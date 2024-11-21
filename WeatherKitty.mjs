@@ -935,7 +935,7 @@ async function getWeatherAsync() {
   }
 
   // Get "Featured" Observation Station ... from Stations
-  // https://api.weather.gov/stations/KI35/observations // cjm-test
+  // https://api.weather.gov/stations/KI35/observations
 
   let observationStationID = null;
   if (observationStationsUrl) {
@@ -1032,7 +1032,8 @@ async function ForecastMatrix(data) {
         <weather-kitty-week-forecast> ${BadHyphen(
           period.shortForecast
         )} </weather-kitty-week-forecast>
-      </weather-kitty-week-card>`;
+      </weather-kitty-week-card>
+      `;
   }
   let targets = document.getElementsByTagName("weather-kitty-week");
 
@@ -1699,6 +1700,7 @@ async function MonitorCharts() {
     await sleep(1);
     let newList = [];
     let elements = document.getElementsByTagName("weather-kitty-chart");
+    if (!chartList) ReCalcChartAspectAll();
     for (let element of elements) {
       newList.push(JSON.stringify(window.getComputedStyle(element)));
     }
@@ -1716,7 +1718,7 @@ export async function ReCalcChartAspectAll() {
 
 // cj-chart
 async function RecalculateChartAspect(chartContainer) {
-  // chart-display chart-resize chart-recalc
+  // chart-display chart-resize chart-reCalc
   let type = chartContainer.getAttribute("type");
   let chartDiv = chartContainer.getElementsByTagName("canvasBounds")[0];
   let oneEm = parseFloat(getComputedStyle(chartContainer).fontSize);
@@ -2399,7 +2401,7 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
       if (result && result.length == 2) state = result;
     }
 
-    // ERROR BLOCK ghcnd-stations.txt // cjm
+    // ERROR BLOCK ghcnd-stations.txt
     // Why does the mobile version die on SSL and CORS errors while desktop works just fine?
     // ---
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
@@ -2616,7 +2618,7 @@ async function HistoryGetCsvFile(stationId) {
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
     let idString = stationId.toLowerCase().substring(11 - 8);
 
-    // ERROR BLOCK .gz // cjm
+    // ERROR BLOCK .gz
     // (same as above) Why does the mobile version die on SSL and CORS errors while desktop works just fine?
     let response;
     let fileData;

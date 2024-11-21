@@ -33,7 +33,6 @@ weather-kitty-forecast {
     0.1em -0.1em 0 black;
 }
 
-/* // cjm  */
 weather-kitty-current > clip,
 weather-kitty-forecast > clip {
   position: relative;
@@ -64,7 +63,7 @@ weather-kitty-geoaddress label {
   font-size: small;
   color: white;
   margin: 0.25em;
-  height: 1.2em; /* // cjm set height: and overflow to truncate text-wrap; */
+  height: 1.2em; /* // set height: and overflow to truncate text-wrap; */
   overflow: hidden;
   text-shadow: 0.05em 0.05em 0 black, -0.05em -0.05em 0 black, -0.05em 0.05em 0 black,
     0.05em -0.05em 0 black, 0.1em 0.1em 0 black, -0.1em -0.1em 0 black, -0.1em 0.1em 0 black,
@@ -155,10 +154,8 @@ weather-kitty > weather-kitty-forecast > weather-kitty-tooltip {
 /* ---------------------------------------------------------------------------- */
 /* Matrix */
 weather-kitty-week {
-  flex: 1 0 auto;
-  border-radius: 1em;
   box-sizing: border-box;
-  margin: 1em;
+  flex: 1 0 auto;
   text-align: center;
   text-justify: center;
   display: flex;
@@ -202,21 +199,22 @@ weather-kitty-week-summary {
 /* --- */
 
 weather-kitty-chart {
+  container-type: size;
+  min-height: 5em;
+  min-width: 10em;
   position: relative;
   flex: 1 0 auto;
   border: black 3px solid;
   border-radius: 1em;
-  margin: 1em;
   box-sizing: border-box;
   background-color: whitesmoke;
-  width: calc(100% - 2em);
-  height: calc(100% - 2em);
 }
 
 weather-kitty-chart > chartSpan {
   box-sizing: border-box;
-  margin: 0 0 -0.5em 0;
+  margin: 1em 0 0 0;
   display: block;
+  position: absolute;
   width: 100%;
   /* Gray, *DimGray, DarkSlateGray */
   color: dimgray;
@@ -228,23 +226,24 @@ weather-kitty-chart > chartSpan {
 }
 
 weather-kitty-chart > scrollDiv {
-  /* border: green 3px solid; */
   box-sizing: border-box;
   flex: 1 0 auto;
   display: block;
+  height: max(10em, calc(100% - 1em));
+  min-height: 10em;
   width: 100%;
-  height: calc(100% - 0.5em);
   overflow-x: auto;
   overflow-y: hidden;
 }
 
 weather-kitty-chart canvasBounds {
   /* required for chart.js responsiveness */
+  box-sizing: border-box;
   position: relative;
   display: flex;
   box-sizing: border-box;
-  width: calc(100% - 0em);
-  height: calc(100% - 0em);
+  width: 100%;
+  height: 100%;
 }
 
 weather-kitty-chart canvas {
@@ -261,25 +260,20 @@ weather-kitty-chart canvas {
 weather-kitty-map-forecast,
 weather-kitty-map-radar,
 weather-kitty-map-alerts {
-  container-type: size;
-  container-name: weather-kitty-map;
   box-sizing: border-box;
   aspect-ratio: 1.38;
-  width: calc(100% - 2em);
-  margin: 1em;
+  align-self: center;
+  justify-self: center;
 }
 
-/* required use of container units */
 weather-kitty-map-forecast img,
 weather-kitty-map-radar img,
 weather-kitty-map-alerts img {
   border: black 1px solid;
   box-sizing: border-box;
   border-radius: 1em;
+  width: 100%;
   aspect-ratio: 1.38;
-  width: 100cqw;
   align-self: center;
   justify-self: center;
-  margin: 0;
-  padding: 0;
 }
