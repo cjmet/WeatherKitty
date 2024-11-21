@@ -9,39 +9,41 @@
   </head>
 
   <body id="WeatherKittyBody">
-    <div id="Logo">
-      <img
-        id="LogoImg"
-        src="_Angel Hornet Icon128.png"
-        alt="Angle Hornet Logo"
-      />
-    </div>
-
-    <div id="Hamburger">
-      <div id="HamburgerRelative">
-        <img
-          id="HamburgerImg"
-          src="img/CatBurger.png"
-          alt="Angle Hornet Logo"
-        />
-        <nav id="HamburgerLinks">
-          <a id="NavHome"><span>Home</span></a>
-          <a id="NavWeather">Weather<br />Charts</a>
-          <a id="NavHistory">History<br />Charts</a>
-          <a id="NavClimate">Boston<br />Climate<br />Charts</a>
-          <hr width="50%" />
-          <a id="ExpireData">Expire<br />Data</a>
-          <a id="PurgeData">Purge<br />Data</a>
-        </nav>
-      </div>
-    </div>
-
     <header id="WeatherKittyHeader">
-      <h1>Weather Kitty Demo</h1>
-      <weather-kitty-geoaddress id="GeoAddressHeader"></weather-kitty-geoaddress>
-      <div id="WeatherKittyHeaderDiv">
-        <weather-kitty></weather-kitty>
-        <weather-kitty-geoaddress id="GeoAddressWidget"></weather-kitty-geoaddress>
+      <div id="HeaderRow1">
+        <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        <div id="NavImg">
+          <img src="img/CatBurger.png" alt="Hamburger Image" />
+          <nav id="HamLinks">
+            <a id="HamHome"><span>Home</span></a>
+            <a id="HamWeather"><span>Weather Charts</span></a>
+            <a id="HamHistory"><span>History Charts</span></a>
+            <a id="HamClimate"><span>Boston Climate Charts</span></a>
+            <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" />
+            <a id="HamExpire"><span>Expire Data</span></a>
+            <a id="HamPurge"><span>Purge Data</span></a>
+          </nav>
+        </div>
+
+        <div id="HeaderTitle">
+          <h1>Weather Kitty Demo</h1>
+          <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+        </div>
+        <div id="WeatherKittyWidgetDiv">
+          <weather-kitty></weather-kitty>
+        </div>
+      </div>
+      <div id="HeaderRow2">
+        <nav id="NavLinks">
+          <a id="NavHome"><span>Home</span></a>
+          <a id="NavWeather"><span>Weather Charts</span></a>
+          <a id="NavHistory"><span>History Charts</span></a>
+          <a id="NavClimate"><span>Boston Climate Charts</span></a>
+          <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" />
+          <a id="NavExpire"><span>Expire Data</span></a>
+          <a id="NavPurge"><span>Purge Data</span></a>
+        </nav>
+        <weather-kitty-geoaddress> </weather-kitty-geoaddress>
       </div>
     </header>
 
@@ -52,7 +54,9 @@
         <weather-kitty-map-alerts></weather-kitty-map-alerts>
       </div>
 
-      <weather-kitty-week class="WeekAlpha"></weather-kitty-week>
+      <div class="WeekAlpha">
+        <weather-kitty-week></weather-kitty-week>
+      </div>
 
       <!-- ---  -->
 
@@ -117,15 +121,15 @@
 
       <div class="WeatherKittyClimateCharts">
         <weather-kitty-chart
-          style="background-color: rgba(255, 255, 0, 0.0667)"
+          style="background-color: lightyellow"
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="medium"
           averageData="month"
         ></weather-kitty-chart>
 
-        <hr width="50%" />
-        
+        <hr width="50%" style="border: black 1px solid" />
+
         <weather-kitty-chart
           type="TMXN"
           maxDataPoints="max"
@@ -138,9 +142,8 @@
           pixelsPerDataPoint="default"
           averageData="week"
         ></weather-kitty-chart>
-      <div class="WeatherKittyClimateCharts">
         <weather-kitty-chart
-          style="background-color: rgba(255, 255, 0, 0.0667)"
+          style="background-color: lightyellow"
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="medium"

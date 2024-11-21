@@ -1,4 +1,11 @@
 /* Page Layout */
+:root {
+  /* Input Variables: */
+  --headerHeight: 6em;
+  --desktopMarginSize: 1em; /* evenly on all sides including the vertical doubling, extra 1em on the right */
+  --mobileMarginSize: 4em; /* size on the right. desktopMargin on the other sides */
+}
+
 html,
 body {
   box-sizing: border-box;
@@ -7,62 +14,141 @@ body {
 }
 
 #WeatherKittyBody {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) min-content;
-  grid-template-areas:
-    "logo header"
-    "nav main"
-    "footer footer";
-}
-
-#Logo img {
-  height: 6em;
-  align-self: center;
-  justify-self: center;
-}
-
-#Logo {
-  grid-area: logo;
-  position: sticky;
-  top: 0;
-  border: black 3px solid;
-  border-right: none;
-  box-sizing: border-box;
-  background-color: #333;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  /* padding: 0 0 0 0.25em; */
-  z-index: 2;
+  flex-direction: column;
 }
 
-#HamburgerImg {
-  height: 4.5em;
-  align-self: center;
-  justify-self: center;
-  display: none;
-}
+/* ---------------------------------------------------------------------------- */
 
-#Hamburger {
-  grid-area: nav;
+#WeatherKittyHeader {
+  border: black 3px solid;
+  border-left: none;
   box-sizing: border-box;
   background-color: #333;
   color: white;
+
   display: flex;
   flex-direction: column;
-  overflow: auto;
-  z-index: 1;
 }
 
-#HamburgerRelative {
-  position: relative;
+#HeaderRow1 {
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+#HeaderRow2 {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+#HeaderRow2 weather-kitty-geoaddress {
+  box-sizing: border-box;
+  display: none;
+}
+
+#LogoImg {
+  box-sizing: border-box;
+  height: var(--headerHeight);
+  margin: 0.5em 0.25em;
+  align-self: center;
+  justify-self: center;
+}
+
+#NavImg {
+  box-sizing: border-box;
+  height: var(--headerHeight);
+  width: calc(var(--headerHeight) * 2 / 3);
+  min-height: var(--headerHeight);
+  min-width: calc(var(--headerHeight) * 2 / 3);
+  margin: 0.5em 0.25em;
+  /* position: relative; */
+  overflow: hidden;
+  display: none;
+}
+
+#NavImg img {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-self: center;
+  justify-self: center;
+  object-fit: cover;
+  object-position: center;
+}
+
+#HeaderTitle {
+  box-sizing: border-box;
+  margin: 0.5em 0.25em;
+  height: var(--headerHeight);
+  flex: 1 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "header"
+    "geoaddress";
+}
+
+#HeaderTitle h1 {
+  grid-area: "header";
+  box-sizing: border-box;
+  font-size: 2.93em;
+  text-align: center;
+  text-justify: center;
+  margin: 0;
+}
+
+#HeaderTitle weather-kitty-geoaddress {
+  grid-area: "geoaddress";
+  box-sizing: border-box;
+  margin: 0.5em 0 0 0;
+  container-type: size;
+}
+
+weather-kitty-geoaddress span,
+weather-kitty-geoaddress label {
+  box-sizing: border-box;
+  text-wrap: pretty;
+  text-overflow: ellipsis;
+  hyphens: auto;
+  text-align: end;
+  text-justify: end;
+  align-self: end;
+  justify-self: end;
+  margin: 0 0.25em 0 0;
+  height: auto;
+  max-height: 100cqh;
   overflow: hidden;
 }
 
-#HamburgerLinks {
+weather-kitty-geoaddress button {
+  align-self: end;
+  justify-self: end;
+}
+
+#WeatherKittyWidgetDiv {
+  box-sizing: border-box;
+  height: (--headerHeight);
+  margin: 0.5em 0.25em;
+  /* z-index: 1; */
+}
+
+/* ---------------------------------------------------------------------------- */
+
+#HamLinks,
+#NavLinks {
+  box-sizing: border-box;
   transition: all 0.33s;
   grid-area: nav;
   border: none;
@@ -71,77 +157,35 @@ body {
   background-color: #333;
   color: white;
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   opacity: 1;
-  margin: 0 0.5em;
 }
 
-#HamburgerLinks a,
-#HamburgerLinks a:link,
-#HamburgerLinks a:visited {
-  border: gray 3px solid;
+#HamLinks a,
+#HamLinks a:link,
+#HamLinks a:visited,
+#NavLinks a,
+#NavLinks a:link,
+#NavLinks a:visited {
+  font-family: Arial, Helvetica, sans-serif;
   border-radius: 1em;
   color: white;
   text-align: center;
   text-justify: center;
   text-decoration: none;
   font-weight: bolder;
-  margin: 0.25em 0;
-  padding: 0.1em 0.5em;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+  padding: 0 0.5em;
 }
 
-#HamburgerLinks > #NavHome {
-  padding: 0.675em 0;
-}
-
-#HamburgerLinks a:hover {
+#HamLinks a:hover,
+#NavLinks a:hover {
   background-color: gray;
 }
 
-#WeatherKittyHeader {
-  border: black 3px solid;
-  border-left: none;
-  box-sizing: border-box;
-  grid-area: header;
-  position: sticky;
-  top: 0;
-  background-color: #333;
-  color: white;
-  /* padding: 0 0.25em; */
-  text-align: left;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1;
-}
-
-#WeatherKittyHeader h1 {
-  margin: 0.5em;
-  text-align: center;
-  text-justify: center;
-  font-size: 1.66em;
-}
-
-#WeatherKittyHeaderDiv {
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  align-content: end;
-  justify-content: end;
-  justify-items: end;
-}
-
-#WeatherKittyHeaderDiv weather-kitty-geoaddress {
-  text-align: right;
-  text-justify: right;
-  margin-top: 0.25em;
-  font-size: small;
-}
-
-#GeoAddressHeader {
-  display: none;
-}
+/* ---------------------------------------------------------------------------- */
 
 #WeatherKittySpacer {
   flex-grow: 1;
@@ -150,7 +194,6 @@ body {
 #WeatherKittyFooter {
   border: black 1px solid;
   box-sizing: border-box;
-  grid-area: footer;
   font-size: small;
   margin: 0;
   display: flex;
@@ -165,269 +208,269 @@ body {
 
 #WeatherKittyMain {
   box-sizing: border-box;
-  grid-area: main;
 
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  flex: 1 0 auto;
 
-  /* background-image: url("./img/Background01g2.png");
-  background-size: 100%; */
+  background-image: url("./img/Background01g2.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ---------------------------------------------------------------------------- */
+
+.MapsAlpha {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+weather-kitty-map-forecast,
+weather-kitty-map-radar,
+weather-kitty-map-alerts {
+  margin: var(--desktopMarginSize) calc(var(--desktopMarginSize) / 2);
+}
+
+.WeekAlpha {
+  box-sizing: border-box;
+}
+
+weather-kitty-week {
+  margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
 }
 
 .WeatherKittyHomeCharts,
 .WeatherKittyWeatherCharts,
 .WeatherKittyHistoryCharts,
 .WeatherKittyClimateCharts {
-  height: 100%;
+  box-sizing: border-box;
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }
 
-/* ---------------------------------------------------------------------------- */
-/* MapsAlpha */
-
-.MapsAlpha {
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr;
+weather-kitty-chart {
+  margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
+  /* - 4.5em for scroll-ability */
+  /* min-height: min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2));  */
+  min-height: max(10em, min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)));
 }
 
-/* ---------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------   ----------------- */
 
-/* ---------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------   ----------------- */
 
-/* ---------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------   ----------------- */
 /* media query for width and height of viewport */
-@media (max-width: 1535px) {
+/* 720p 1280x720 - 2 rem for scroll bars*/
+@media (max-width: calc( 1280px - 2rem)) {
   .MapsAlpha {
+    box-sizing: border-box;
+    display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+  }
+
+  weather-kitty-map-forecast,
+  weather-kitty-map-radar,
+  weather-kitty-map-alerts {
+    margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
   }
 }
 
-/* // cjm  */
-@media (max-width: 450px), (max-height: 450px) {
-  #WeatherKittyBody {
-    display: grid;
-    grid-template-columns: 4em 4em minmax(0, 1fr);
-    grid-template-rows: 5em 1fr min-content;
-    grid-template-areas:
-      "logo nav header"
-      "main main main"
-      "footer footer footer";
+@media (max-width: 760px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 2.33em;
+  }
+  #NavLinks {
+    transition: all 0.66s;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 690px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 1.8em;
+  }
+  #NavLinks {
+    transition: all 0.66s;
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 600px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 560px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 1.25em;
+  }
+}
+
+@media (max-width: 520px) {
+  #HeaderTitle h1 {
+    transition: all 0.66s;
+    font-size: 1em;
   }
 
-  weather-kitty-tooltip {
-    margin: 1em 0 0 0;
+  @media (max-width: 500px) {
+    #HeaderTitle h1 {
+      transition: all 0.66s;
+      font-size: 0em;
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------------   ----------------- */
+
+/* ----------------------------------------------------------------------------   ----------------- */
+
+/* ----------------------------------------------------------------------------   ----------------- */
+
+@media (max-width: 450px) {
+  #LogoImg {
+    display: none;
+  }
+  #NavImg {
+    box-sizing: border-box;
+    display: flex;
+  }
+  #HeaderTitle {
+    box-sizing: border-box;
+  }
+  #HeaderTitle h1 {
+    box-sizing: border-box;
+    flex: 1 0 auto;
+  }
+  #NavLinks {
+    display: none;
   }
 
-  #Logo {
-    z-index: 1;
-  }
-
-  #Logo img {
-    height: 4em;
-  }
-
-  #Hamburger {
-    position: sticky;
-    top: 0;
+  #HamLinks {
     border: black 3px solid;
-    border-left: none;
-    border-right: none;
-    z-index: 1;
-  }
-
-  #HamburgerImg {
-    display: block;
-  }
-
-  #HamburgerLinks {
     position: fixed;
-    border: gray 3px solid;
     top: 0;
-    left: -5em;
-    width: 0;
-    height: 0;
-    margin: 0;
+    transition: all 1s;
+    left: -100%;
     opacity: 0;
-    z-index: -10;
-  }
-
-  #HamburgerLinks a,
-  #HamburgerLinks a:link,
-  #HamburgerLinks a:visited {
-    border: black 3px solid;
-    margin: 0.2em 0.25em;
-  }
-
-  #HamburgerLinks hr {
-    display: none;
-  }
-
-  #Hamburger:hover {
-    #HamburgerRelative {
-      background-color: gray;
-      border-radius: 1em;
+    z-index: 1;
+    flex-direction: column;
+    a {
+      border: black 3px solid;
+      font-size: medium;
+      width: calc(var(--headerHeight) * 2 / 3);
+      min-height: calc(var(--headerHeight) * 2 / 3);
+      margin: 0.25em 0.5em;
+      flex: 1 0 auto;
+      display: flex;
+      span {
+        width: 100%;
+        align-self: center;
+      }
     }
-    #HamburgerLinks {
-      top: 0;
+  }
+  #NavImg:hover {
+    background-color: gray;
+    #HamLinks {
+      transition: all 0.66s;
       left: 0;
-      width: auto;
-      height: auto;
-      max-height: 100%;
       opacity: 1;
-      overflow: auto;
-      z-index: 1;
-      direction: rtl;
+      display: flex;
     }
   }
+}
 
-  #WeatherKittyHeaderDiv {
-    height: 4.5em;
-  }
-
-  #WeatherKittyHeader h1 {
-    font-size: 1.33em;
-  }
-
-  #WeatherKittyMain {
-    grid-area: main;
-  }
-
-  #WeatherKittyNav {
+@media (max-width: 415px) {
+  #HeaderTitle weather-kitty-geoaddress {
     display: none;
   }
-
-  #WeatherKittyHeader {
-    grid-area: header;
+  #HeaderRow2 {
+    justify-content: end;
   }
+  #HeaderRow2 weather-kitty-geoaddress {
+    display: flex;
+    box-sizing: border-box;
+  }
+}
 
+@media (max-width: 305px) {
   weather-kitty {
     font-size: small;
   }
 }
 
-@media (max-width: 450px) {
-  #WeatherKittyHeader h1 {
-    font-size: 0;
+@media (max-width: 250px) {
+  #HeaderRow1 {
+    height: calc(var(--headerHeight) * 2 / 3);
   }
-  #GeoAddressHeader {
-    box-sizing: border-box;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-    align-items: end;
-    span {
-      box-sizing: border-box;
-      height: min-content;
-      max-height: 3.55em;
-      margin: 0 0.25em 0 0;
-      /* flex: 1 1 auto; */
-      font-size: 0.9em;
-      text-wrap: wrap;
-      text-overflow: ellipsis;
-      text-align: end;
-      text-justify: end;
-      hyphens: auto;
-      overflow: hidden;
-    }
-    button {
-      box-sizing: border-box;
-      margin: 0 0.25em;
-    }
+  weather-kitty {
+    font-size: x-small;
   }
+}
 
-  #GeoAddressWidget {
+@media (max-width: 215px) {
+  #HeaderRow1 {
+    height: calc(var(--headerHeight) * 2 / 3);
+  }
+  weather-kitty {
+    font-size: xx-small;
+  }
+}
+
+@media (max-width: 200px) {
+  weather-kitty-forecast {
     display: none;
   }
 }
 
-@media (max-width: 400px) {
-  #GeoAddressHeader h1 {
-    font-size: 0;
+/* ----------------------------------------------------------------------------   ----------------- */
+/* MOBILE OVER-RIDES*/
+/* --- */
+
+@media (max-width: 450px), (max-height: 450px) {
+  /* // Is-Mobile */
+  /* #WeatherKittyMain {
+    padding: 0 3em 0 0;
+  } */
+  /* // Trying Margins instead of padding.  Padding didn't entirely work as desired on mobile landscape. */
+  /* // Margins DO work better on mobile landscape. */
+  .MapsAlpha {
+    margin: 0 4em 0 0;
   }
-  #GeoAddressHeader > span {
-    font-size: 0.75em;
-    overflow: hidden;
+  .WeekAlpha {
+    margin: 0 4em 0 0;
+  }
+  .WeatherKittyHomeCharts,
+  .WeatherKittyWeatherCharts,
+  .WeatherKittyHistoryCharts,
+  .WeatherKittyClimateCharts {
+    margin: 0 4em 0 0;
   }
 }
 
-@media (max-width: 380px) {
-  #WeatherKittyBody {
-    display: grid;
-    grid-template-columns: 4em minmax(0, 1fr);
-    grid-template-rows: 5em 1fr min-content;
-    grid-template-areas:
-      "nav header"
-      "main main"
-      "footer footer";
-  }
-  #Logo {
+@media (max-aspect-ratio: 1) {
+  weather-kitty-chart {
+    aspect-ratio: 1 / 1;
+    min-height: 10em;
     display: none;
-  }
-  #GeoAddressHeader h1 {
-    font-size: 0;
-  }
-  #GeoAddressHeader > span {
-    font-size: 0.75em;
-    overflow: hidden;
   }
 }
 
 /* hidden class ...  */
 .hidden {
   border: 3px solid red;
+  background-color: magenta;
   margin: 3px;
-  /* padding: 3px; */
-  opacity: 0.5;
+  opacity: 0;
+  z-index: 1000;
   display: none;
-}
-
-.scroll-container {
-  border: red 3px solid;
-  box-sizing: border-box;
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.scroll-content {
-  border: green 3px solid;
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 90%;
-  height: 100%;
-  overflow: scroll;
-}
-
-.scroll-track {
-  border: blue 3px solid;
-  box-sizing: border-box;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 4em;
-  height: 100%;
-  background-color: #ccc;
-}
-
-.scroll-thumb {
-  border: magenta 3px solid;
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4em;
-  height: 4em;
-  background-color: #333;
-  cursor: pointer;
 }

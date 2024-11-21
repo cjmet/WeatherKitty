@@ -8,8 +8,9 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 
 ## Usage
 
+- **Required**: Secure https and Location are Required.
 - Valid for locations in the United States Only. The primary API is from the **United States** National Weather Service.
-- Secure https and Location are **Required**.
+
   <details>
 
   - location can be provided by browser permissions, GeoIP, or GeoAddress.
@@ -32,7 +33,7 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 - <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
 - <b>`<weather-kitty-map-radar>`</b> - Radar map link.
 - <b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
-- <b>`<weather-kitty-chart type="keyword">`</b> - Chart
+- <b>`<weather-kitty-chart type="keyword">`</b> - Weather Charts. NOTE: Charts may require a defined or contained size.
 - <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
 
 ### CSS Classes and Tags
@@ -55,6 +56,8 @@ For ease of editing and customization
 #### Charts
 
 <b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value" noData="value">`</b>
+
+<small>NOTE: Charts may require a defined or contained size. Charts will attempt to size to their parent container. This can sometimes cause issues with dynamic undefined sizing.</small>
 
 ##### Type - <small>required</small>
 

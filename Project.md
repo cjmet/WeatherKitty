@@ -24,10 +24,8 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 10 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
   - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
-
   - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
         `Maybe?  I will say this is not my strong suit`
-
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
   - [x] Add any special instructions for the reviewer to run your project.
@@ -75,18 +73,23 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] We broke the editor, additional features are on-hold until after VITE.
-  - [ ] Over 3,000 lines breaks prettier
 - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
 - [ ] CodeKy Project Completeness Review
-- [ ] How to know if MonitorCharts is still running? Class? Query the class?
-  - [ ] SetInterval MonitorCharts and use global memory storage?
-    - [ ] WeatherKitty Locking? Doesn't appear to be needed? It didn't explode.
-    - [ ] Monitor Locking? Won't be needed unless we convert to setInterval
 
 ### Project Current Work and Fixes
 
-- [ ] clear() and purge() functions.
+- [ ] Mobile
+  - [ ] Page Scroll
+    - [ ] Chart if less than 1:1 scroll page instead of over-ride.
+    - [ ] If Chart is max scrolled, scroll page.
+  - [ ] Map Zoom on Mobile.
+- [ ] Hardware Dev Machine
+- [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
+  - [ ] probably need to do the same thing to ghcnd-states.txt
+- [ ] work Styles.css calculated sizes into WeatherKitty.css.
+- [ ] font, color, padding, less words, detail icon to pull eye, spacing
+  - [ ] needs to be applied to media queries
+  - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip
 
 #### Project Priority 2
 
@@ -94,7 +97,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Priority 3
 
-- [ ] Vite
+- [ ] Vite, Vite/React
 - [ ] Node Package
 - [ ] CDN
 - [ ] Modularize
@@ -106,7 +109,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Chart.js Decimation: Wrong data format. Change this later as part of Phase 2
 - [ ] Chart.js Data-Chunking: Wrong Program Architecture. Change this later as part of Phase 2
-- [ ] Chart.js Webworker: This is possible, but I don't like what you give up for what you gain.
+- [ ] Chart.js WebWorker: This is possible, but I don't like what you give up for what you gain.
 - [ ] Cache the Processed Data? That may require a Re-Write?
 
 ### Additional Features or Fixes To Add
