@@ -80,8 +80,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Mobile
-  - [ ] Map Zoom on Mobile.
+- [ ] Update Readme Image
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
