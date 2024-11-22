@@ -1594,6 +1594,7 @@ async function MonitorCharts() {
     if (!chartList) ReCalcChartAspectAll();
     for (let element of elements) {
       newList.push(JSON.stringify(window.getComputedStyle(element)));
+      microSleep(1); // cjm
     }
     if (chartList && JSON.stringify(chartList) != JSON.stringify(newList)) ReCalcChartAspectAll();
     chartList = newList;
@@ -1604,6 +1605,7 @@ export async function ReCalcChartAspectAll() {
   let chartContainers = document.getElementsByTagName("weather-kitty-chart");
   for (let container of chartContainers) {
     RecalculateChartAspect(container);
+    microSleep(1); // cjm
   }
 }
 
