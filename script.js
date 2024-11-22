@@ -1,6 +1,6 @@
+import { Log, LogLevel, config } from "./config.mjs";
+
 import {
-  Log,
-  LogLevel,
   SetLocationAddress,
   WeatherKitty,
   WeatherKittyWaitOnLoad,
@@ -14,6 +14,8 @@ import {
   ExpireData,
   PurgeData,
 } from "./WeatherKitty.mjs";
+
+import { RunTests } from "./test.js";
 
 // --- -------------------------------------
 // MAIN
@@ -29,7 +31,7 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Debug);
+if (CodeKy) Log.SetLogLevel(LogLevel.Info);
 WeatherKittyPause(false);
 if (Test_FubarDisplay) NavHome(); // this order forces render of hidden elements, and makes a mess of them, hence the extensive testing and refactoring.
 WeatherKitty();
@@ -54,7 +56,7 @@ function LoadButtons() {
   element = document.getElementById("NavClimate");
   if (element) element.addEventListener("click", NavClimate);
   element = document.getElementById("NavTest");
-  if (element) element.addEventListener("click", NavTest);
+  if (element) element.addEventListener("click", RunTests);
   element = document.getElementById("NavExpire");
   if (element) element.addEventListener("click", ExpireDataFunc);
   element = document.getElementById("NavPurge");
@@ -68,12 +70,12 @@ function LoadButtons() {
   if (element) element.addEventListener("click", NavHistory);
   element = document.getElementById("HamClimate");
   if (element) element.addEventListener("click", NavClimate);
-  element = document.getElementById("HamTest");
-  if (element) element.addEventListener("click", NavTest);
   element = document.getElementById("HamExpire");
   if (element) element.addEventListener("click", ExpireDataFunc);
   element = document.getElementById("HamPurge");
   if (element) element.addEventListener("click", PurgeDataFunc);
+  element = document.getElementById("HamTest");
+  if (element) element.addEventListener("click", RunTests);
 }
 
 // FUNCTIONS -------------------------------------

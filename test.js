@@ -1,14 +1,6 @@
-import {
-  Log,
-  LogLevel,
-  getWeatherLocationByAddressAsync,
-  HistoryGetStation,
-  PurgeData,
-  fetchCache,
-  config,
-  WeatherKittyPause,
-  DecompressCsvFile,
-} from "./WeatherKitty.mjs";
+import { Log, LogLevel, config } from "./config.mjs";
+
+import { getWeatherLocationByAddressAsync, HistoryGetStation, PurgeData, fetchCache, WeatherKittyPause, DecompressCsvFile } from "./WeatherKitty.mjs";
 
 // -------------------------------------
 // TESTING
@@ -19,11 +11,11 @@ async function assert(message, condition) {
   if (!assertText) return;
   if (!condition) {
     // ✅, ☑️, ❌
-    let msg = `<br>❌ <span style="color: red;">${message}</span>`;
+    let msg = `❌ <span style="color: red;">${message}</span><br>`;
     assertText.innerHTML += msg;
     console.error("Assertion Failed: ", message);
   } else {
-    let msg = `<br>☑️ ${message}`;
+    let msg = `☑️ ${message}<br>`;
     assertText.innerHTML += msg;
   }
 }
@@ -33,8 +25,7 @@ async function testStationIdAddress(address, expected) {
   let response = await getWeatherLocationByAddressAsync(address);
   if (response && response.ok) {
     result = await response.json();
-    if (result && !result.id)
-      result = await HistoryGetStation(null, result.latitude, result.longitude);
+    if (result && !result.id) result = await HistoryGetStation(null, result.latitude, result.longitude);
   }
   await assert(`StationId "${address}"`, result?.id === expected);
 }
@@ -46,11 +37,7 @@ async function TestNWSAPI() {
   assert(
     "NWS Points API",
     await (async () => {
-      let result = await fetchCache(
-        "https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312",
-        null,
-        config.shortCacheTime
-      );
+      let result = await fetchCache("https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312", null, config.shortCacheTime);
       if (result && result.ok) {
         let json = await result.json();
         return json?.properties?.cwa === "JKL";
@@ -63,17 +50,10 @@ async function TestNWSAPI() {
   assert(
     "NWS Observations KI35 API",
     await (async () => {
-      let result = await fetchCache(
-        "https://api.weather.gov/stations/KI35/observations",
-        null,
-        config.shortCacheTime
-      );
+      let result = await fetchCache("https://api.weather.gov/stations/KI35/observations", null, config.shortCacheTime);
       if (result && result.ok) {
         let json = await result.json();
-        return (
-          json?.features?.length >= 1 &&
-          json?.features[0]?.properties?.station === "https://api.weather.gov/stations/KI35"
-        );
+        return json?.features?.length >= 1 && json?.features[0]?.properties?.station === "https://api.weather.gov/stations/KI35";
       }
       return false;
     })()
@@ -83,17 +63,10 @@ async function TestNWSAPI() {
   assert(
     "NWS Forecast JKL API",
     await (async () => {
-      let result = await fetchCache(
-        "https://api.weather.gov/gridpoints/JKL/65,16/forecast",
-        null,
-        config.shortCacheTime
-      );
+      let result = await fetchCache("https://api.weather.gov/gridpoints/JKL/65,16/forecast", null, config.shortCacheTime);
       if (result && result.ok) {
         let json = await result.json();
-        return (
-          json?.properties?.periods.length >= 1 &&
-          json?.properties?.periods[0]?.shortForecast.length >= 1
-        );
+        return json?.properties?.periods.length >= 1 && json?.properties?.periods[0]?.shortForecast.length >= 1;
       }
       return false;
     })()
@@ -166,14 +139,22 @@ async function TestGhcndCsv() {
   }
 }
 
-export async function NavTest() {
+export async function RunTests() {
   if (!assertText) return;
+
+  console.log("Running Tests ...");
+  assertText.innerHTML = "<b><h3>Running Tests</h3></b>";
 
   let savedLogLevel = Log.GetLogLevel();
   Log.SetLogLevel(LogLevel.Info);
 
-  // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
+  // ------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------- //
+  // Tests
+  // ---
+
   await Promise.all([
+    // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
     testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
     testStationIdAddress("asdf"),
     testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
@@ -196,7 +177,12 @@ export async function NavTest() {
     TestGhcndCsv(),
   ]);
 
-  Log.SetLogLevel(savedLogLevel);
-}
+  // ---
+  // / Tests
+  // ------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------- //
 
-NavTest();
+  Log.SetLogLevel(savedLogLevel);
+  assertText.innerHTML += "<br><b><h3>Tests Completed.</h3></b>";
+  console.log("Tests Completed.");
+}
