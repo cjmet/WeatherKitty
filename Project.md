@@ -80,12 +80,6 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Update Readme Image
-- [ ] Debug the 3,600,000 cache issue and it not? caching on the first try?
-  - [ ] Maps are not always getting the cache set correctly?
-- [ ] MicroSleep monitor loop for scrolling jitter
-- [ ] Database TEsting and Stats
-  - [ ] Change database back to primary
 - [ ] Add popups to matrix
 - [ ] Local Radar Loop
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.

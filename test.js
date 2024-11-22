@@ -1,6 +1,13 @@
 import { Log, LogLevel, config } from "./config.mjs";
 
-import { getWeatherLocationByAddressAsync, HistoryGetStation, PurgeData, fetchCache, WeatherKittyPause, DecompressCsvFile } from "./WeatherKitty.mjs";
+import {
+  getWeatherLocationByAddressAsync,
+  HistoryGetStation,
+  PurgeData,
+  fetchCache,
+  WeatherKittyPause,
+  DecompressCsvFile,
+} from "./WeatherKitty.mjs";
 
 // -------------------------------------
 // TESTING
@@ -25,7 +32,8 @@ async function testStationIdAddress(address, expected) {
   let response = await getWeatherLocationByAddressAsync(address);
   if (response && response.ok) {
     result = await response.json();
-    if (result && !result.id) result = await HistoryGetStation(null, result.latitude, result.longitude);
+    if (result && !result.id)
+      result = await HistoryGetStation(null, result.latitude, result.longitude);
   }
   await assert(`StationId "${address}"`, result?.id === expected);
 }
@@ -37,7 +45,11 @@ async function TestNWSAPI() {
   assert(
     "NWS Points API",
     await (async () => {
-      let result = await fetchCache("https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312", null, config.shortCacheTime);
+      let result = await fetchCache(
+        "https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312",
+        null,
+        config.shortCacheTime
+      );
       if (result && result.ok) {
         let json = await result.json();
         return json?.properties?.cwa === "JKL";
@@ -50,10 +62,17 @@ async function TestNWSAPI() {
   assert(
     "NWS Observations KI35 API",
     await (async () => {
-      let result = await fetchCache("https://api.weather.gov/stations/KI35/observations", null, config.shortCacheTime);
+      let result = await fetchCache(
+        "https://api.weather.gov/stations/KI35/observations",
+        null,
+        config.shortCacheTime
+      );
       if (result && result.ok) {
         let json = await result.json();
-        return json?.features?.length >= 1 && json?.features[0]?.properties?.station === "https://api.weather.gov/stations/KI35";
+        return (
+          json?.features?.length >= 1 &&
+          json?.features[0]?.properties?.station === "https://api.weather.gov/stations/KI35"
+        );
       }
       return false;
     })()
@@ -63,10 +82,17 @@ async function TestNWSAPI() {
   assert(
     "NWS Forecast JKL API",
     await (async () => {
-      let result = await fetchCache("https://api.weather.gov/gridpoints/JKL/65,16/forecast", null, config.shortCacheTime);
+      let result = await fetchCache(
+        "https://api.weather.gov/gridpoints/JKL/65,16/forecast",
+        null,
+        config.shortCacheTime
+      );
       if (result && result.ok) {
         let json = await result.json();
-        return json?.properties?.periods.length >= 1 && json?.properties?.periods[0]?.shortForecast.length >= 1;
+        return (
+          json?.properties?.periods.length >= 1 &&
+          json?.properties?.periods[0]?.shortForecast.length >= 1
+        );
       }
       return false;
     })()
@@ -100,9 +126,12 @@ async function TestGhcndStationStates() {
 // -------------------------------------
 
 async function TestGhcndCsv() {
-  let stationId = "USC00153622";
+  let stationId;
+  // stationId = "USC00153622"; // Harlan, KY
+  stationId = "USW00014739"; // Boston, MA
   let response;
   let fileData;
+  let lastDate;
   let urls = [
     `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
     `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
@@ -112,6 +141,7 @@ async function TestGhcndCsv() {
 
   for (let url of urls) {
     fileData = null;
+    lastDate = null;
     response = await fetchCache(url, null, config.archiveCacheTime);
     assert(url, response && response.ok && response.status === 200);
     if (response?.ok && response?.status === 200) {
@@ -121,7 +151,8 @@ async function TestGhcndCsv() {
         fileData = fileData.split("\n");
       }
     }
-    assert("FileData: " + url, fileData && fileData.length > 0);
+    lastDate = await getLastWeatherDate(fileData);
+    assert(`FileData: [${fileData?.length}] [${lastDate}] ${url}`, fileData && fileData.length > 0);
 
     if (!response || !response?.ok || response?.status !== 200 || fileData?.length < 1) {
       fileData = null;
@@ -134,10 +165,30 @@ async function TestGhcndCsv() {
           fileData = fileData.split("\n");
         }
       }
-      assert("FileData: " + url, fileData && fileData.length > 0);
+      lastDate = await getLastWeatherDate(fileData);
+      assert(
+        `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
+        fileData && fileData.length > 0
+      );
     }
   }
 }
+
+async function getLastWeatherDate(fileData) {
+  if (!fileData || fileData.length < 1) return null;
+  let lastDate = null;
+  for (let line of fileData) {
+    if (line.length < 1) continue;
+    let parts = line.split(",");
+    if (parts.length < 3) continue;
+    let date = parseInt(parts[1]);
+    if (date.length < 8) continue;
+    if (!lastDate || date > lastDate) lastDate = date;
+  }
+  return lastDate;
+}
+
+async function HistoryStats() {}
 
 export async function RunTests() {
   if (!assertText) return;

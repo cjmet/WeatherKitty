@@ -501,7 +501,7 @@ async function WeatherMaps(elementName, Url, CacheTime) {
         img.src = url;
 
         // --------------------------------------------------------------
-        // Thruple Events // cjm
+        // Thruple Events
         img.removeEventListener("touchstart", () => {
           img.removeEventListener("click", AIshowFullscreenImage);
         });
@@ -1213,7 +1213,7 @@ export async function CreateChart(
           let avgValues = [];
           let avgTimestamps = [];
           let step = Math.ceil(values?.length / maxDataPoints);
-          let remainder = values?.length % maxDataPoints;
+          let divisionCheck = values?.length / step < maxDataPoints;
           let sum = 0;
           let count = 0;
           for (let i = 0; i < values?.length; i++) {
@@ -1593,19 +1593,33 @@ async function MonitorCharts() {
     let elements = document.getElementsByTagName("weather-kitty-chart");
     if (!chartList) ReCalcChartAspectAll();
     for (let element of elements) {
-      newList.push(JSON.stringify(window.getComputedStyle(element)));
-      microSleep(1); // cjm
+      let style = window.getComputedStyle(element);
+      let entry = {
+        innerHeight: style.innerHeight,
+        innerWidth: style.innerWidth,
+        display: style.display,
+      };
+      newList.push(JSON.stringify(entry));
+      await microSleep(1);
     }
-    if (chartList && JSON.stringify(chartList) != JSON.stringify(newList)) ReCalcChartAspectAll();
+    if (Log.Trace())
+      console.log(
+        `MonitorCharts: ${chartList?.length} ${
+          chartList?.length > 0 && JSON.stringify(chartList) != JSON.stringify(newList)
+        }`
+      );
+    if (chartList?.length > 0 && JSON.stringify(chartList) != JSON.stringify(newList))
+      ReCalcChartAspectAll();
     chartList = newList;
   } while (true);
 }
 
 export async function ReCalcChartAspectAll() {
+  if (Log.Trace()) console.log("ReCalcChartAspectAll");
   let chartContainers = document.getElementsByTagName("weather-kitty-chart");
   for (let container of chartContainers) {
     RecalculateChartAspect(container);
-    microSleep(1); // cjm
+    await microSleep(1);
   }
 }
 
@@ -1714,7 +1728,7 @@ export function wkElapsedTime(startTime) {
   if (Math.abs(minutes) >= 1) return `${minutes}m`;
   if (Math.abs(seconds) >= 1) return `${seconds}s`;
 
-  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`); // cjm
+  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`);
   return `${elapsed}ms`;
 }
 
@@ -1983,6 +1997,16 @@ export async function setCache(url, response, ttl, verbose) {
   await cache.put(url, response);
 }
 
+export async function getCache(url) {
+  let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+  if (ttlCache == null) ttlCache = {};
+  let ttl = ttlCache[url];
+
+  let cache = await caches.open("weather-kitty");
+  let response = await cache.match(url);
+  return { url: url, ttl: ttl, response: response };
+}
+
 let rateLimitCache = new Map();
 async function RateLimitFetch(url, ttl) {
   ttl = ttl * 0.667; // force sleep .667, then randomize .667, for average of 1
@@ -2072,6 +2096,10 @@ export async function fetchCache(url, options, ttl, verbose) {
       let ErrorResponse = new Response("Cache Error", { status: 500, ok: false, text: error });
       return ErrorResponse;
     }
+    // ASYNC Issue: We need to fresh read the ttlCache now that we have a rate limit.
+    // this could still allow async collisions, but less so.
+    ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+    if (ttlCache == null) ttlCache = {};
     ttlCache[url] = expires;
     localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
     return fetchResponse;
@@ -2304,9 +2332,9 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
     let response;
     let urls = [
-      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
-      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
       "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
     ];
 
     for (let url of urls) {
@@ -2450,9 +2478,9 @@ async function HistoryGetState(state) {
     // "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
 
     let urls = [
-      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt",
-      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
       "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt",
     ];
 
     let response;
@@ -2514,10 +2542,10 @@ async function HistoryGetCsvFile(stationId) {
     let response;
     let fileData;
     let urls = [
-      `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
-      `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
-      `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
       `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+      `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+      `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
+      `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
     ];
 
     for (let url of urls) {

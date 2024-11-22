@@ -121,7 +121,6 @@
 
       <!-- ---------------------------------------------- -->
 
-      <div class="WeatherKittyClimateCharts">
         <weather-kitty-chart
           style="background-color: lightyellow"
           type="TMXN"
@@ -162,6 +161,21 @@
           maxDataPoints="max"
           pixelsPerDataPoint="large"
           averageData="year"
+        ></weather-kitty-chart>
+
+        <hr width="50%" style="border: black 1px solid" />
+
+        <weather-kitty-chart
+          type="SNOW"
+          maxDataPoints="max"
+          pixelsPerDataPoint="default"
+          averageData="avg"
+        ></weather-kitty-chart>
+        <weather-kitty-chart
+          type="SNWD"
+          maxDataPoints="max"
+          pixelsPerDataPoint="default"
+          averageData="avg"
         ></weather-kitty-chart>
       </div>
 
