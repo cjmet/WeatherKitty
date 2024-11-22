@@ -1700,8 +1700,6 @@ export function Fahrenheit(temperature, temperatureUnit) {
 // Function Elapsed Time
 export function wkElapsedTime(startTime) {
   let endTime = new Date();
-  // let elapsed = Math.abs(endTime - startTime);
-  // let elapsed = endTime - startTime;
   let elapsed = startTime - endTime;
   let seconds = (elapsed / 1000).toFixed(0);
   let minutes = (seconds / 60).toFixed(0);
@@ -1710,10 +1708,11 @@ export function wkElapsedTime(startTime) {
   seconds = seconds % 60;
   minutes = minutes % 60;
 
-  if (Math.abs(hours) > 1) return `${hours}h`;
-  if (Math.abs(minutes) > 1) return `${minutes}m`;
-  if (Math.abs(seconds) > 1) return `${seconds}s`;
+  if (Math.abs(hours) >= 1) return `${hours}h`; // DOH! It's 1 hour even
+  if (Math.abs(minutes) >= 1) return `${minutes}m`;
+  if (Math.abs(seconds) >= 1) return `${seconds}s`;
 
+  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`); // cjm
   return `${elapsed}ms`;
 }
 
@@ -2037,6 +2036,7 @@ export async function fetchCache(url, options, ttl, verbose) {
       console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
+  console.log(`EXPIRED: ${url} [${wkElapsedTime(expires)}]`); // cjm
 
   // If the url is not cached or expired, fetch it
   // If the url is in the specialUrlTable, use the special function
@@ -2060,7 +2060,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
     if (Log.Info() || verbose)
-      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
+      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`); // cjm
     let responseClone = fetchResponse.clone();
     try {
       await cache.put(url, responseClone);

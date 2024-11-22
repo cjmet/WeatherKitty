@@ -31,7 +31,7 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Info);
+if (CodeKy) Log.SetLogLevel(LogLevel.Info); // cjm
 WeatherKittyPause(false);
 if (Test_FubarDisplay) NavHome(); // this order forces render of hidden elements, and makes a mess of them, hence the extensive testing and refactoring.
 WeatherKitty();
