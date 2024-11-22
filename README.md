@@ -2,9 +2,11 @@
 
 Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Weather API <br> The intent is to make this relatively modular and easy to use in any project or page.
 
+https://cjmet.github.io/WeatherKitty/
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/img/DemoImage.jpg)
-
 <span style="font-size: x-small;"> <br>Github Copilot was used during the development of this project.</span>
+
+**CodeKy Note:** See the project.md for CodeKy Specific Info.
 
 ## Usage
 
@@ -19,7 +21,9 @@ Implementing Weather Widgets, Maps, and Charts using the NWS/NOAA **_FREE_** Wea
 
 - Install as a git submodule. I'll make this a node module later.
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
+  - <small>I'll make this a Node.js module later.</small>
 - Add WeatherKitty.mjs to your scripts in your html file
+  - <small>Optionally you may need to add config.mjs or functions.mjs before WeatherKitty.mjs as well. I had wanted to keep this as simple as possible, however the file became too large and the editor broke. I'll try to organize this better later.</small>
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
 

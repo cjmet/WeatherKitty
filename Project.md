@@ -4,6 +4,8 @@
   - add the script to your html or js
   - add a weather element to your html
 
+**Note:** The History APIs were taken out by the fall Hurricanes. A secondary backup of the API came back online first. Later that API failed, but by then the primary in NC was back on line. Later, both primary and secondary failed. However, by that time the AWS mirror was back online and updating again. At that point I rewrote it a third time, and this time the parts of the History API that can be redundant are now triple redundant: AWS, Primary, Secondary. However the live data does not currently have a backup, and also occasionally has transient failures.
+
 ### Overview
 
 It sounds so neat and simple, and it so very much isn't.
@@ -78,14 +80,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Mobile
-  - [ ] Page Scroll
-    - [ ] Chart if less than 1:1 scroll page instead of over-ride.
-    - [ ] If Chart is max scrolled, scroll page.
-  - [ ] Map Zoom on Mobile.
+- [ ] Add popups to matrix
+- [ ] Local Radar Loop
+- [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
-- [ ] Cors, SSL, CorsProxy, Decompression on Mobile.
-  - [ ] probably need to do the same thing to ghcnd-states.txt
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries

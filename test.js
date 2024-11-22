@@ -1,11 +1,10 @@
+import { Log, LogLevel, config } from "./config.mjs";
+
 import {
-  Log,
-  LogLevel,
   getWeatherLocationByAddressAsync,
   HistoryGetStation,
   PurgeData,
   fetchCache,
-  config,
   WeatherKittyPause,
   DecompressCsvFile,
 } from "./WeatherKitty.mjs";
@@ -19,11 +18,11 @@ async function assert(message, condition) {
   if (!assertText) return;
   if (!condition) {
     // ✅, ☑️, ❌
-    let msg = `<br>❌ <span style="color: red;">${message}</span>`;
+    let msg = `❌ <span style="color: red;">${message}</span><br>`;
     assertText.innerHTML += msg;
     console.error("Assertion Failed: ", message);
   } else {
-    let msg = `<br>☑️ ${message}`;
+    let msg = `☑️ ${message}<br>`;
     assertText.innerHTML += msg;
   }
 }
@@ -127,9 +126,12 @@ async function TestGhcndStationStates() {
 // -------------------------------------
 
 async function TestGhcndCsv() {
-  let stationId = "USC00153622";
+  let stationId;
+  // stationId = "USC00153622"; // Harlan, KY
+  stationId = "USW00014739"; // Boston, MA
   let response;
   let fileData;
+  let lastDate;
   let urls = [
     `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
     `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
@@ -139,6 +141,7 @@ async function TestGhcndCsv() {
 
   for (let url of urls) {
     fileData = null;
+    lastDate = null;
     response = await fetchCache(url, null, config.archiveCacheTime);
     assert(url, response && response.ok && response.status === 200);
     if (response?.ok && response?.status === 200) {
@@ -148,7 +151,8 @@ async function TestGhcndCsv() {
         fileData = fileData.split("\n");
       }
     }
-    assert("FileData: " + url, fileData && fileData.length > 0);
+    lastDate = await getLastWeatherDate(fileData);
+    assert(`FileData: [${fileData?.length}] [${lastDate}] ${url}`, fileData && fileData.length > 0);
 
     if (!response || !response?.ok || response?.status !== 200 || fileData?.length < 1) {
       fileData = null;
@@ -161,19 +165,47 @@ async function TestGhcndCsv() {
           fileData = fileData.split("\n");
         }
       }
-      assert("FileData: " + url, fileData && fileData.length > 0);
+      lastDate = await getLastWeatherDate(fileData);
+      assert(
+        `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
+        fileData && fileData.length > 0
+      );
     }
   }
 }
 
-export async function NavTest() {
+async function getLastWeatherDate(fileData) {
+  if (!fileData || fileData.length < 1) return null;
+  let lastDate = null;
+  for (let line of fileData) {
+    if (line.length < 1) continue;
+    let parts = line.split(",");
+    if (parts.length < 3) continue;
+    let date = parseInt(parts[1]);
+    if (date.length < 8) continue;
+    if (!lastDate || date > lastDate) lastDate = date;
+  }
+  return lastDate;
+}
+
+async function HistoryStats() {}
+
+export async function RunTests() {
   if (!assertText) return;
+
+  console.log("Running Tests ...");
+  assertText.innerHTML = "<b><h3>Running Tests</h3></b>";
 
   let savedLogLevel = Log.GetLogLevel();
   Log.SetLogLevel(LogLevel.Info);
 
-  // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
+  // ------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------- //
+  // Tests
+  // ---
+
   await Promise.all([
+    // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
     testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
     testStationIdAddress("asdf"),
     testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
@@ -196,7 +228,12 @@ export async function NavTest() {
     TestGhcndCsv(),
   ]);
 
-  Log.SetLogLevel(savedLogLevel);
-}
+  // ---
+  // / Tests
+  // ------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------- //
 
-NavTest();
+  Log.SetLogLevel(savedLogLevel);
+  assertText.innerHTML += "<br><b><h3>Tests Completed.</h3></b>";
+  console.log("Tests Completed.");
+}
