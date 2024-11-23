@@ -3,10 +3,9 @@ import { Log, LogLevel, config } from "./config.mjs";
 import {
   getWeatherLocationByAddressAsync,
   HistoryGetStation,
-  PurgeData,
   fetchCache,
-  WeatherKittyPause,
   DecompressCsvFile,
+  corsCache,
 } from "./WeatherKitty.mjs";
 
 // -------------------------------------
@@ -188,7 +187,16 @@ async function getLastWeatherDate(fileData) {
   return lastDate;
 }
 
-async function HistoryStats() {}
+async function TestMapsCache() {
+  let response;
+  let urls = [config.ForecastMapUrl, config.RadarMapUrl, config.AlertsMapUrl];
+
+  for (let url of urls) {
+    response = await corsCache(url, null, config.archiveCacheTime);
+    assert(`Maps: ${url}`, response && response.ok && response.status === 200);
+    let corsUrl = `${config.CORSProxy}${url}`;
+  }
+}
 
 export async function RunTests() {
   if (!assertText) return;
@@ -206,6 +214,7 @@ export async function RunTests() {
 
   await Promise.all([
     // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
+
     testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
     testStationIdAddress("asdf"),
     testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
@@ -226,6 +235,8 @@ export async function RunTests() {
     TestGhcndStationStates(),
 
     TestGhcndCsv(),
+
+    TestMapsCache(),
   ]);
 
   // ---

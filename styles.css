@@ -228,12 +228,15 @@ weather-kitty-geoaddress button {
 .MapsAlpha {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  /* Fracking Math! */
+  grid-template-columns: 1.09fr 1.38fr 1.38fr 1.38fr;
 }
 
 weather-kitty-map-forecast,
-weather-kitty-map-radar,
-weather-kitty-map-alerts {
+weather-kitty-radar-national,
+weather-kitty-map-alerts,
+weather-kitty-radar-local {
   margin: var(--desktopMarginSize) calc(var(--desktopMarginSize) / 2);
 }
 
@@ -272,14 +275,13 @@ weather-kitty-chart {
 @media (max-width: calc( 1280px - 2rem)) {
   .MapsAlpha {
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
+    display: flex;
+    flex-direction: column;
   }
-
   weather-kitty-map-forecast,
-  weather-kitty-map-radar,
-  weather-kitty-map-alerts {
+  weather-kitty-radar-national,
+  weather-kitty-map-alerts,
+  weather-kitty-radar-local {
     margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
   }
 }

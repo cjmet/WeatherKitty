@@ -99,7 +99,7 @@ async function WeatherWidgetInit(path) {
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
-    "weather-kitty-map-radar",
+    "weather-kitty-radar-national",
     WeatherKittyMapRadarBlock,
     "WeatherKittyMapRadar"
   );
@@ -109,6 +109,13 @@ async function WeatherWidgetInit(path) {
     "weather-kitty-map-alerts",
     WeatherKittyMapAlertsBlock,
     "WeatherKittyMapAlerts"
+  );
+  widgets = [...widgets, ...result];
+
+  result = FindAndReplaceTags(
+    "weather-kitty-radar-local",
+    WeatherKittyMapLocalRadarBlock,
+    "WeatherKittyMapLocalRadar"
   );
   widgets = [...widgets, ...result];
 
@@ -143,12 +150,23 @@ export async function WeatherKitty() {
     // in theory this should be ok. otherwise await it.
     // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
     WeatherMaps("weather-kitty-map-forecast", config.ForecastMapUrl, config.ForecastMapCacheTime);
-    WeatherMaps("weather-kitty-map-radar", config.RadarMapUrl, config.RadarMapCacheTime);
+    WeatherMaps("weather-kitty-radar-national", config.RadarMapUrl, config.RadarMapCacheTime);
     WeatherMaps("weather-kitty-map-alerts", config.AlertsMapUrl, config.AlertsMapCacheTime);
 
     // DATA --------------------------------------------------------------
     // Get/Update the Weather Data
     let weather = await getWeatherAsync();
+
+    // Insert Local Radar here.
+    // https://radar.weather.gov/ridge/standard/KMRX_loop.gif
+    let localRadar = weather?.radarStation;
+    if (localRadar) {
+      let url = `https://radar.weather.gov/ridge/standard/${localRadar}_loop.gif`;
+      console.log("[WeatherKitty] Local Radar: ", url);
+      WeatherMaps("weather-kitty-radar-local", url, config.shortCacheTime - 60000); // cjm
+    }
+    // /Local Radar
+
     let historyStation = null;
     let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this to the stationID as well.
     // cj-optimize - Only get the station if we need it or already have it.
@@ -780,6 +798,7 @@ async function getWeatherAsync() {
   let stationsData = null;
   let observationData = null;
   let forecastData = null;
+  let radarStation = null;
   let resultString = "";
 
   let locData = await getWeatherLocationAsync();
@@ -815,6 +834,7 @@ async function getWeatherAsync() {
     pointData = data;
     weatherForecastUrl = String(data.properties.forecast);
     observationStationsUrl = String(data.properties.observationStations);
+    radarStation = String(data.properties.radarStation);
     let city = data.properties.relativeLocation.properties.city;
     let state = data.properties.relativeLocation.properties.state;
     let locationName = `${city}, ${state}`;
@@ -891,7 +911,7 @@ async function getWeatherAsync() {
 
   // Call the callback function:
   // callBack(cached);
-  return { pointData, stationsData, observationData, forecastData };
+  return { pointData, stationsData, observationData, forecastData, radarStation };
 }
 // /Function getWeatherAsync ----------------------------------------------
 0;
@@ -2062,7 +2082,7 @@ export async function fetchCache(url, options, ttl, verbose) {
       console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
-  console.log(`EXPIRED: ${url} [${wkElapsedTime(expires)}]`); // cjm
+  console.log(`EXPIRED: ${url} [${wkElapsedTime(expires)}]`);
 
   // If the url is not cached or expired, fetch it
   // If the url is in the specialUrlTable, use the special function
@@ -2086,7 +2106,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
     if (Log.Info() || verbose)
-      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`); // cjm
+      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
     try {
       await cache.put(url, responseClone);
@@ -2112,7 +2132,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   }
 }
 
-async function corsCache(url, options, ttl, verbose) {
+export async function corsCache(url, options, ttl, verbose) {
   let corsUrl = `${config.CORSProxy}${url}`;
   return fetchCache(corsUrl, options, ttl, verbose);
 }
@@ -2800,6 +2820,10 @@ let WeatherKittyMapRadarBlock = `<img
 
 let WeatherKittyMapAlertsBlock = `          <img
             alt="US Weather Alerts Map"
+          />`;
+
+let WeatherKittyMapLocalRadarBlock = `          <img
+            alt="Local Radar"
           />`;
 
 function WeatherKittyGeoAddressBlock() {

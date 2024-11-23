@@ -34,9 +34,10 @@ https://cjmet.github.io/WeatherKitty/
 - <b>`<weather-kitty-forecast>`</b> - Forecast
 - <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input.
 - <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
-- <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
-- <b>`<weather-kitty-map-radar>`</b> - Radar map link.
-- <b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
+- <b>`<weather-kitty-radar-local>`</b> - Local Radar map.
+- <b>`<weather-kitty-radar-national>`</b> - National Radar map.
+- <b>`<weather-kitty-map-forecast>`</b> - Forecast map.
+- <b>`<weather-kitty-map-alerts>`</b> - Alerts map.
 - <b>`<weather-kitty-chart type="keyword">`</b> - Weather Charts. NOTE: Charts may require a defined or contained size.
 - <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
 

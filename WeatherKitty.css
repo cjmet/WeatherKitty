@@ -160,7 +160,7 @@ weather-kitty-week {
   text-justify: center;
   display: flex;
   justify-content: space-around;
-  overflow-x: scroll;
+  overflow-x: auto;
   text-wrap: pretty;
   hyphens: auto;
 }
@@ -258,22 +258,29 @@ weather-kitty-chart canvas {
 /* required use of a container query */
 /* use of padding or calc() required, margin still causes issues even with container query */
 weather-kitty-map-forecast,
-weather-kitty-map-radar,
-weather-kitty-map-alerts {
+weather-kitty-radar-national,
+weather-kitty-map-alerts,
+weather-kitty-radar-local {
   box-sizing: border-box;
-  aspect-ratio: 1.38;
-  align-self: center;
-  justify-self: center;
+  max-width: 99vw;
+  max-height: 99vh;
+  display: flex;
+  justify-content: center;
 }
 
 weather-kitty-map-forecast img,
-weather-kitty-map-radar img,
-weather-kitty-map-alerts img {
+weather-kitty-radar-national img,
+weather-kitty-map-alerts img,
+weather-kitty-radar-local img {
   border: black 1px solid;
   box-sizing: border-box;
   border-radius: 1em;
-  width: 100%;
   aspect-ratio: 1.38;
-  align-self: center;
-  justify-self: center;
+  max-width: min(100%, 99vw);
+  max-height: min(100%, 99vh);
+  flex: 0 0 auto;
+}
+
+weather-kitty-radar-local img {
+  aspect-ratio: 1.09;
 }
