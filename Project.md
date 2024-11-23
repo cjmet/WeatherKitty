@@ -80,7 +80,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Add popups to matrix
+- [ ] Write Documentation onto the Demo Page, maybe a help button that turns on/off verbose text?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.

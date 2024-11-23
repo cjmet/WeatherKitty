@@ -924,11 +924,24 @@ async function ForecastMatrix(data) {
   }
 
   let text = "";
+  let i = 0;
+  console.log(data);
+  console.log(data.length);
   for (let period of data) {
+    // cjm
+    let leftRight = "";
+    i++;
+    console.log(`i: ${i} vs data.length: ${data.length}`);
+    if (i === 1) leftRight = 'style="left: 0;"';
+    else if (i === data.length) leftRight = 'style="left: auto; right: 0;"';
     text += `
       <weather-kitty-week-card>
-        <weather-kitty-week-title>${period.name}</weather-kitty-week-title>
-        <img src=${period.icon} alt="Weather Image"><br>
+    <weather-kitty-week-title>${period.name}</weather-kitty-week-title>    
+    <clip style="display: block;">
+      <weather-kitty-week-tip ${leftRight}>
+        <span >${period.detailedForecast}</span>
+      </weather-kitty-week-tip><img src=${period.icon} alt="Weather Image">
+    </clip><br>
         <weather-kitty-week-summary>
           <span>
             ${period.temperature}<small>${period.temperatureUnit.toLowerCase()}</small> 

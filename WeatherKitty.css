@@ -98,6 +98,8 @@ weather-kitty-forecast > img {
   opacity: var(--weatherKittyBackgroundOpacity);
 }
 
+/* Yes all the week-tip stuff is a mess // cjm */
+weather-kitty-week-tip,
 weather-kitty-tooltip {
   position: absolute;
   top: 0;
@@ -106,19 +108,15 @@ weather-kitty-tooltip {
   align-self: start;
   text-align: left;
   border-radius: 0.5em;
-
   transition: opacity var(--weatherKittyTranSecDefault);
-  /* translate: 0 0; // removed this */
   opacity: 0;
-
   width: 0;
   height: 0;
-  z-index: -10;
   overflow: hidden;
-
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
+weather-kitty-week-card clip:hover,
 weather-kitty:hover,
 weather-kitty-current:hover,
 weather-kitty-forecast:hover {
@@ -129,9 +127,13 @@ weather-kitty-forecast:hover {
     transition: opacity var(--weatherKittyTranSecDefault);
     opacity: 0.5;
   }
+  weather-kitty-week-tip,
   weather-kitty-tooltip {
     border: black 3px solid;
+    z-index: 10;
   }
+  weather-kitty-week-tip,
+  weather-kitty-week-tip span,
   weather-kitty-tooltip,
   weather-kitty-tooltip span {
     color: white;
@@ -142,6 +144,11 @@ weather-kitty-forecast:hover {
     height: max-content;
     opacity: 1;
     z-index: 10;
+  }
+  weather-kitty-week-tip,
+  weather-kitty-week-tip span {
+    left: -4em;
+    width: 12em;
   }
 }
 
@@ -170,12 +177,13 @@ weather-kitty-week img {
 }
 
 weather-kitty-week-card {
-  /* background-color: gainsboro;  */
-  background-color: whitesmoke;
+  position: relative;
+  background-color: whitesmoke; /* whitesmoke, gainsboro */
   border: black 1px solid;
   border-radius: 1em;
   margin: 0.25em;
   max-width: 6em;
+  overflow: visible;
 }
 
 weather-kitty-week-title {
