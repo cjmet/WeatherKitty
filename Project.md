@@ -26,7 +26,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 10 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
   - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
-  - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+  - [x] Visual Appeal: Design your project to be visually appealing; follow industry trends.
         `Maybe?  I will say this is not my strong suit`
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
@@ -75,12 +75,23 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+- [ ] Check all three APIs? Set a time out and rotate through them? How to handle the API is slow or not responding?
 - [ ] CodeKy Project Completeness Review
 
 ### Project Current Work and Fixes
 
-- [ ] Write Documentation onto the Demo Page, maybe a help button that turns on/off verbose text?
+- [ ] UI Help Page and Help Text
+  - [ ] Write Documentation onto the Demo Page, maybe a help button that turns on/off verbose text?
+  - [ ] Help Page and Help Text
+  - [ ] Note that Commas required for addresses
+  - [ ] More Verbose Labels on charts.
+  - [ ] Warning Map Legend.
+  - [ ] Pad SET so it's not covered on some mobile scroll bars
+  - [ ] "Set Location"
+  - [ ] Move Clear nd Purge to Test page, and rename as 'Expire Data Cache', 'Purge Data Cache'
+  - [ ] Maybe deploy to readme instead of index?
+- [ ] Fix logging text and expired text
+- [ ] Check all three APIs? Set a time out and rotate through them? How to handle the API is slow or not responding?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
