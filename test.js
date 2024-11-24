@@ -12,25 +12,30 @@ import {
 // -------------------------------------
 // TESTING
 // ---
-let assertText = document.getElementById("assert");
+let assertText = document.getElementById("WK-assert");
+let statusText = document.getElementById("WK-status");
 
 let logOnce = false;
-export async function assert(message, condition) {
-  if (!assertText) {
+export async function assert(message, condition, element) {
+  if (!element) element = assertText;
+  if (!element) {
     if (!logOnce) {
       if (Log.Warn()) console.log('[Assert] Log Once: "assertText not found."');
       logOnce = true;
     }
     return;
   }
+  let msg;
   if (!condition) {
-    // ✅, ☑️, ❌
-    let msg = `❌ <span style="color: red;">${message}</span><br>`;
-    assertText.innerHTML += msg;
+    // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢
+    if (message) msg = `🔴 <span style="color: red;">${message}</span><br>`;
+    else msg = `🔴`;
+    element.innerHTML += msg;
     console.error("Assertion Failed: ", message);
   } else {
-    let msg = `☑️ ${message}<br>`;
-    assertText.innerHTML += msg;
+    if (message) msg = `🟢 ${message}<br>`;
+    else msg = `🟢`;
+    element.innerHTML += msg;
   }
 }
 
@@ -206,6 +211,27 @@ async function TestMapsCache() {
   }
 }
 
+export async function CheckApiStatus(element) {
+  if (!element) return;
+  let response;
+  let urls = [
+    "https://api.weather.gov/alerts/types",
+    "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-version.txt",
+    "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+    "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+  ];
+
+  element.innerHTML = "";
+  for (let url of urls) {
+    response = await fetchCache(url);
+    assert(null, response && response.ok && response.status === 200, element);
+    if (!response || !response?.ok || response?.status !== 200) {
+      response = await corsCache(url, null, config.archiveCacheTime);
+      assert(url, response && response.ok && response.status === 200);
+    }
+  }
+}
+
 export async function RunTests() {
   if (!assertText) return;
 
@@ -256,3 +282,5 @@ export async function RunTests() {
   assertText.innerHTML += "<br><b><h3>Tests Completed.</h3></b>";
   console.log("Tests Completed.");
 }
+
+CheckApiStatus(statusText);

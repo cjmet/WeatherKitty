@@ -2,7 +2,6 @@
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-// import lodash from "https://cdn.jsdelivr.net/npm/lodash/+esm";
 
 import {
   Log,
@@ -34,7 +33,7 @@ export {
   MathAverage,
   MathDistance,
   ManhattanDistance,
-} from "./config.mjs";
+};
 
 // Function Weather Kitty
 async function WeatherKittyStart() {

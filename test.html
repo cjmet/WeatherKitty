@@ -11,7 +11,9 @@
   <body id="WeatherKittyBody">
     <header id="WeatherKittyHeader">
       <div id="HeaderRow1">
-        <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        <div>
+          <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        </div>
         <div id="NavImg">
           <img src="img/CatBurger.png" alt="Hamburger Image" />
           <nav id="HamLinks">
@@ -45,12 +47,19 @@
           <a id="NavPurge"><span>Delete All Weather Data</span></a>
           <a id="NavTest"><span>Run Tests</span></a>
         </nav>
+        <div
+          id="ApiStatus"
+          style="width: 100%; text-align: center; font-weight: bold; font-size: small"
+        >
+          API:
+          <div id="WK-status" style="display: inline-block">🟡🟡🟡🟡</div>
+        </div>
         <weather-kitty-geoaddress> </weather-kitty-geoaddress>
       </div>
     </header>
 
     <main id="WeatherKittyMain">
-      <div id="assert" style="margin: 1em; background-color: lightgray">
+      <div id="WK-assert" style="margin: 1em; background-color: rgb(160, 160, 160)">
         <span style="font-weight: bold; font-size: large">Test Area</span><br />
       </div>
     </main>

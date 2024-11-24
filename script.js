@@ -1,5 +1,3 @@
-import { assert } from "./test.js";
-
 import {
   Log,
   LogLevel,
@@ -154,13 +152,11 @@ async function NavClimate() {
 async function ExpireDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Expiring Data");
-  assert("ExpireData", ExpireData());
   ExpireData();
 }
 
 async function PurgeDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
   console.log("Purging Data");
-  assert("PurgeData", PurgeData());
   PurgeData();
 }

@@ -76,17 +76,16 @@ It sounds so neat and simple, and it so very much isn't.
 ### Questions (may be duplicated below in fixes)
 
 - [ ] Check all three APIs? Set a time out and rotate through them? How to handle the API is slow or not responding?
+  - [ ] Cache a negative-cache / fail flag?
 - [ ] CodeKy Project Completeness Review
 
 ### Project Current Work and Fixes
 
-- [ ] Maybe deploy to readme instead of index?
-- [ ] Check all three APIs? Set a time out and rotate through them? How to handle the API is slow or not responding?
-- [ ] API Status [] [] [] [] ....
-- [ ] Cache a negative-cache / fail flag?
+- [ ] <weather-kitty-api-status> ...
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
+- [ ] Maybe deploy to readme instead of index?
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
   - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip
