@@ -68,7 +68,6 @@ body {
 }
 
 #NavImg {
-  border: red 1px solid;
   box-sizing: border-box;
   height: var(--headerHeight);
   width: var(--headerHeight);
@@ -81,7 +80,6 @@ body {
 }
 
 #NavImg img {
-  border: green 1px solid;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -322,7 +320,10 @@ weather-kitty-chart {
   align-self: center;
   text-align: left;
   text-justify: center;
-  margin: 1;
+  margin: 1em;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: large;
 }
 
 /* ----------------------------------------------------------------------------   ----------------- */

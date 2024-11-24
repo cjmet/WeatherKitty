@@ -1670,6 +1670,8 @@ async function MonitorCharts() {
       let entry = {
         innerHeight: style.innerHeight,
         innerWidth: style.innerWidth,
+        outerHeight: style.outerHeight,
+        outerWidth: style.outerWidth,
         display: style.display,
       };
       newList.push(JSON.stringify(entry));
