@@ -6,7 +6,7 @@
   --headerHeight: 6em;
   --desktopMarginSize: 1em; /* evenly on all sides including the vertical doubling, extra 1em on the right */
   /* --mobileMargin: 0 4em 0 0;  /* Large finger area on the right for scrolling. */
-  --mobileMargin: 0 0 0 0; /* back to normal now that we have chart zoom fixed? */
+  --mobileMargin: var(--desktopMarginSize); /* back to normal now that we have chart zoom fixed? */
 }
 
 html,
@@ -153,8 +153,8 @@ weather-kitty-geoaddress button {
 }
 #ApiStatus {
   box-sizing: border-box;
-  min-width: 8.1em;
-  max-width: 8.1em;
+  min-width: 8.5em;
+  max-width: 8.5em;
 }
 
 #HamLinks,
@@ -533,17 +533,20 @@ weather-kitty-chart {
   } */
   /* // Trying Margins instead of padding.  Padding didn't entirely work as desired on mobile landscape. */
   /* // Margins DO work better on mobile landscape. */
-  .MapsAlpha {
+  weather-kitty-chart {
     margin: var(--mobileMargin);
   }
+  .MapsAlpha {
+    margin: 0;
+  }
   .WeekAlpha {
-    margin: var(--mobileMargin);
+    margin: 0;
   }
   .WeatherKittyHomeCharts,
   .WeatherKittyWeatherCharts,
   .WeatherKittyHistoryCharts,
   .WeatherKittyClimateCharts {
-    margin: var(--mobileMargin);
+    margin: 0;
   }
 }
 
@@ -551,7 +554,6 @@ weather-kitty-chart {
   weather-kitty-chart {
     aspect-ratio: 1 / 1;
     min-height: 10em;
-    display: none;
   }
 }
 

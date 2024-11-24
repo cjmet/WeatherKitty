@@ -75,13 +75,14 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Check all three APIs? Set a time out and rotate through them? How to handle the API is slow or not responding?
-  - [ ] Cache a negative-cache / fail flag?
-- [ ] CodeKy Project Completeness Review
+- [ ] Why does AbortController() kill some fetch() calls, but not others? If this worked I wouldn't have to worry about the next question.
+- [ ] How to handle the APIs are slow or not responding?
+  - [ ] Re-Order the API list(s) based on the status calls that do respond to AbortController()?
+- [ ] NavTitle Shrink on Load is causing some of the oddness, but I like the shrink animation any time other than load?
+- [ ] CodeKy Project Completeness Review. Do you feel like I've completed the requirements?
 
 ### Project Current Work and Fixes
 
-- [ ] <weather-kitty-api-status> ...
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.

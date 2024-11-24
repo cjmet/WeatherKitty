@@ -64,6 +64,7 @@ let config = {
   archiveCacheTime: 60000 * 60 * 24 * 30, // 30 days
   defaultCacheTime: 60000 * 30, // 30 minutes
 
+  fetchTimeout: 1000 * 30, // 30 seconds
   RateLimitTtl: 6000 * 1.1, // x seconds
 
   CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for no-proxy

@@ -7,6 +7,9 @@ import {
   HistoryGetStation,
   fetchCache,
   corsCache,
+  wkElapsedTime,
+  fetchTimeoutOption,
+  assert,
 } from "./WeatherKitty.mjs";
 
 // -------------------------------------
@@ -14,30 +17,6 @@ import {
 // ---
 let assertText = document.getElementById("WK-assert");
 let statusText = document.getElementById("WK-status");
-
-let logOnce = false;
-export async function assert(message, condition, element) {
-  if (!element) element = assertText;
-  if (!element) {
-    if (!logOnce) {
-      if (Log.Warn()) console.log('[Assert] Log Once: "assertText not found."');
-      logOnce = true;
-    }
-    return;
-  }
-  let msg;
-  if (!condition) {
-    // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢
-    if (message) msg = `🔴 <span style="color: red;">${message}</span><br>`;
-    else msg = `🔴`;
-    element.innerHTML += msg;
-    console.error("Assertion Failed: ", message);
-  } else {
-    if (message) msg = `🟢 ${message}<br>`;
-    else msg = `🟢`;
-    element.innerHTML += msg;
-  }
-}
 
 async function testStationIdAddress(address, expected) {
   let result = null;
@@ -47,7 +26,7 @@ async function testStationIdAddress(address, expected) {
     if (result && !result.id)
       result = await HistoryGetStation(null, result.latitude, result.longitude);
   }
-  await assert(`StationId "${address}"`, result?.id === expected);
+  await assert(`StationId "${address}"`, result?.id === expected, assertText);
 }
 
 // -------------------------------------
@@ -59,7 +38,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -67,7 +46,8 @@ async function TestNWSAPI() {
         return json?.properties?.cwa === "JKL";
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 
@@ -76,7 +56,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/stations/KI35/observations",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -87,7 +67,8 @@ async function TestNWSAPI() {
         );
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 
@@ -96,7 +77,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/gridpoints/JKL/65,16/forecast",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -107,7 +88,8 @@ async function TestNWSAPI() {
         );
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 }
@@ -126,11 +108,11 @@ async function TestGhcndStationStates() {
   ];
 
   for (let url of urls) {
-    response = await fetchCache(url, null, config.archiveCacheTime);
-    assert(url, response && response.ok && response.status === 200);
+    response = await fetchCache(url, fetchTimeoutOption(1000 * 30), config.archiveCacheTime);
+    assert(url, response && response.ok && response.status === 200, assertText);
     if (!response || !response?.ok || response?.status !== 200) {
       response = await corsCache(url, null, config.archiveCacheTime);
-      assert(url, response && response.ok && response.status === 200);
+      assert(url, response && response.ok && response.status === 200, assertText);
     }
   }
 }
@@ -154,8 +136,8 @@ async function TestGhcndCsv() {
   for (let url of urls) {
     fileData = null;
     lastDate = null;
-    response = await fetchCache(url, null, config.archiveCacheTime);
-    assert(url, response && response.ok && response.status === 200);
+    response = await fetchCache(url, fetchTimeoutOption(1000 * 30), config.archiveCacheTime);
+    assert(url, response && response.ok && response.status === 200, assertText);
     if (response?.ok && response?.status === 200) {
       if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
       else if (url.substring(url.length - 4) === ".csv") {
@@ -164,12 +146,16 @@ async function TestGhcndCsv() {
       }
     }
     lastDate = await getLastWeatherDate(fileData);
-    assert(`FileData: [${fileData?.length}] [${lastDate}] ${url}`, fileData && fileData.length > 0);
+    assert(
+      `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
+      fileData && fileData.length > 0,
+      assertText
+    );
 
     if (!response || !response?.ok || response?.status !== 200 || fileData?.length < 1) {
       fileData = null;
       response = await corsCache(url, null, config.archiveCacheTime);
-      assert(url, response && response.ok && response.status === 200);
+      assert(url, response && response.ok && response.status === 200, assertText);
       if (response?.ok && response?.status === 200) {
         if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
         else if (url.substring(url.length - 4) === ".csv") {
@@ -180,7 +166,8 @@ async function TestGhcndCsv() {
       lastDate = await getLastWeatherDate(fileData);
       assert(
         `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
-        fileData && fileData.length > 0
+        fileData && fileData.length > 0,
+        assertText
       );
     }
   }
@@ -206,29 +193,8 @@ async function TestMapsCache() {
 
   for (let url of urls) {
     response = await corsCache(url, null, config.archiveCacheTime);
-    assert(`Maps: ${url}`, response && response.ok && response.status === 200);
+    assert(`Maps: ${url}`, response && response.ok && response.status === 200, assertText);
     let corsUrl = `${config.CORSProxy}${url}`;
-  }
-}
-
-export async function CheckApiStatus(element) {
-  if (!element) return;
-  let response;
-  let urls = [
-    "https://api.weather.gov/alerts/types",
-    "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-version.txt",
-    "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
-    "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
-  ];
-
-  element.innerHTML = "";
-  for (let url of urls) {
-    response = await fetchCache(url);
-    assert(null, response && response.ok && response.status === 200, element);
-    if (!response || !response?.ok || response?.status !== 200) {
-      response = await corsCache(url, null, config.archiveCacheTime);
-      assert(url, response && response.ok && response.status === 200);
-    }
   }
 }
 
@@ -282,5 +248,3 @@ export async function RunTests() {
   assertText.innerHTML += "<br><b><h3>Tests Completed.</h3></b>";
   console.log("Tests Completed.");
 }
-
-CheckApiStatus(statusText);
