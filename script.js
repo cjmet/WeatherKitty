@@ -1,16 +1,13 @@
-import { Log, LogLevel, config } from "./config.mjs";
-
 import {
+  Log,
+  LogLevel,
+  microSleep,
   SetLocationAddress,
   WeatherKitty,
   WeatherKittyWaitOnLoad,
   WeatherKittyPause,
-  microSleep,
-  sleep,
   WeatherKittyIsLoading,
   getWeatherLocationAsync,
-  getWeatherLocationByAddressAsync,
-  HistoryGetStation,
   ExpireData,
   PurgeData,
 } from "./WeatherKitty.mjs";
@@ -25,6 +22,7 @@ import { RunTests } from "./test.js";
 let CodeKy = true;
 
 // Default False
+let BostonClimate = false;
 let DisableWhileLoading = false;
 let Test_FubarDisplay = false;
 
@@ -112,6 +110,7 @@ async function SaveLocation() {
 }
 
 async function RestoreLocation() {
+  if (!BostonClimate) return; // disable this feature unless we are forcing Boston
   let locData = await getWeatherLocationAsync();
   if (savedLocation && locData && JSON.stringify(savedLocation) !== JSON.stringify(locData)) {
     await SetLocationAddress(`${savedLocation.latitude}, ${savedLocation.longitude}`);
@@ -137,13 +136,16 @@ async function NavHistory() {
 
 // Always go to Boston for "Boston Climate Data", StationId "USW00014739"
 async function NavClimate() {
-  let locData = await getWeatherLocationAsync();
-  let id = locData.id;
-  if (id !== "USW00014739") {
-    await SaveLocation();
-    await SetLocationAddress("USW00014739");
-    WeatherKitty();
+  if (BostonClimate) {
+    let locData = await getWeatherLocationAsync();
+    let id = locData.id;
+    if (id !== "USW00014739") {
+      await SaveLocation();
+      await SetLocationAddress("USW00014739");
+      WeatherKitty();
+    }
   }
+
   await NavToClass(["WeatherKittyClimateCharts"]);
 }
 

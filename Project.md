@@ -26,7 +26,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [x] GitHub Repository: Upload your project to GitHub with a minimum of 10 distinct commits. Uploading via Git command line is required; GitHub's file uploader won't suffice.
   - [x] README File: Include a README file explaining your project.
         Describe your project in a paragraph or more.
-  - [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
+  - [x] Visual Appeal: Design your project to be visually appealing; follow industry trends.
         `Maybe?  I will say this is not my strong suit`
   - [x] Responsive Design: Implement responsive design using media queries, CSS Grid, Flexbox, etc. Your application should adapt to at least two screen sizes (mobile and desktop).
   - [x] 3+ features from the provided list that you've integrated.
@@ -75,16 +75,18 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Visual Appeal: Design your project to be visually appealing; follow industry trends.
-- [ ] CodeKy Project Completeness Review
+- [ ] Why does AbortController() kill some fetch() calls, but not others? If this worked I wouldn't have to worry about the next question.
+- [ ] How to handle the APIs are slow or not responding?
+  - [ ] Re-Order the API list(s) based on the status calls that do respond to AbortController()?
+- [ ] NavTitle Shrink on Load is causing some of the oddness, but I like the shrink animation any time other than load?
+- [ ] CodeKy Project Completeness Review. Do you feel like I've completed the requirements?
 
 ### Project Current Work and Fixes
 
-- [ ] Add popups to matrix
-- [ ] Local Radar Loop
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
+- [ ] Maybe deploy to readme instead of index?
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
   - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip
@@ -137,6 +139,8 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] AWS, Lambda, MongoDb, Hosting, Etc, ...
 
 ## Misc Notes
+
+.nojekyll - github pages
 
 ```
 // Assuming you have a large dataset:

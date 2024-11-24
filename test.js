@@ -1,31 +1,22 @@
-import { Log, LogLevel, config } from "./config.mjs";
-
 import {
+  Log,
+  LogLevel,
+  config,
+  DecompressCsvFile,
   getWeatherLocationByAddressAsync,
   HistoryGetStation,
-  PurgeData,
   fetchCache,
-  WeatherKittyPause,
-  DecompressCsvFile,
+  corsCache,
+  wkElapsedTime,
+  fetchTimeoutOption,
+  assert,
 } from "./WeatherKitty.mjs";
 
 // -------------------------------------
 // TESTING
 // ---
-let assertText = document.getElementById("assert");
-
-async function assert(message, condition) {
-  if (!assertText) return;
-  if (!condition) {
-    // ✅, ☑️, ❌
-    let msg = `❌ <span style="color: red;">${message}</span><br>`;
-    assertText.innerHTML += msg;
-    console.error("Assertion Failed: ", message);
-  } else {
-    let msg = `☑️ ${message}<br>`;
-    assertText.innerHTML += msg;
-  }
-}
+let assertText = document.getElementById("WK-assert");
+let statusText = document.getElementById("WK-status");
 
 async function testStationIdAddress(address, expected) {
   let result = null;
@@ -35,7 +26,7 @@ async function testStationIdAddress(address, expected) {
     if (result && !result.id)
       result = await HistoryGetStation(null, result.latitude, result.longitude);
   }
-  await assert(`StationId "${address}"`, result?.id === expected);
+  await assert(`StationId "${address}"`, result?.id === expected, assertText);
 }
 
 // -------------------------------------
@@ -47,7 +38,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -55,7 +46,8 @@ async function TestNWSAPI() {
         return json?.properties?.cwa === "JKL";
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 
@@ -64,7 +56,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/stations/KI35/observations",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -75,7 +67,8 @@ async function TestNWSAPI() {
         );
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 
@@ -84,7 +77,7 @@ async function TestNWSAPI() {
     await (async () => {
       let result = await fetchCache(
         "https://api.weather.gov/gridpoints/JKL/65,16/forecast",
-        null,
+        fetchTimeoutOption(1000 * 30),
         config.shortCacheTime
       );
       if (result && result.ok) {
@@ -95,7 +88,8 @@ async function TestNWSAPI() {
         );
       }
       return false;
-    })()
+    })(),
+    assertText
   );
   // /assert
 }
@@ -114,11 +108,11 @@ async function TestGhcndStationStates() {
   ];
 
   for (let url of urls) {
-    response = await fetchCache(url, null, config.archiveCacheTime);
-    assert(url, response && response.ok && response.status === 200);
+    response = await fetchCache(url, fetchTimeoutOption(1000 * 30), config.archiveCacheTime);
+    assert(url, response && response.ok && response.status === 200, assertText);
     if (!response || !response?.ok || response?.status !== 200) {
       response = await corsCache(url, null, config.archiveCacheTime);
-      assert(url, response && response.ok && response.status === 200);
+      assert(url, response && response.ok && response.status === 200, assertText);
     }
   }
 }
@@ -142,8 +136,8 @@ async function TestGhcndCsv() {
   for (let url of urls) {
     fileData = null;
     lastDate = null;
-    response = await fetchCache(url, null, config.archiveCacheTime);
-    assert(url, response && response.ok && response.status === 200);
+    response = await fetchCache(url, fetchTimeoutOption(1000 * 30), config.archiveCacheTime);
+    assert(url, response && response.ok && response.status === 200, assertText);
     if (response?.ok && response?.status === 200) {
       if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
       else if (url.substring(url.length - 4) === ".csv") {
@@ -152,12 +146,16 @@ async function TestGhcndCsv() {
       }
     }
     lastDate = await getLastWeatherDate(fileData);
-    assert(`FileData: [${fileData?.length}] [${lastDate}] ${url}`, fileData && fileData.length > 0);
+    assert(
+      `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
+      fileData && fileData.length > 0,
+      assertText
+    );
 
     if (!response || !response?.ok || response?.status !== 200 || fileData?.length < 1) {
       fileData = null;
       response = await corsCache(url, null, config.archiveCacheTime);
-      assert(url, response && response.ok && response.status === 200);
+      assert(url, response && response.ok && response.status === 200, assertText);
       if (response?.ok && response?.status === 200) {
         if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
         else if (url.substring(url.length - 4) === ".csv") {
@@ -168,7 +166,8 @@ async function TestGhcndCsv() {
       lastDate = await getLastWeatherDate(fileData);
       assert(
         `FileData: [${fileData?.length}] [${lastDate}] ${url}`,
-        fileData && fileData.length > 0
+        fileData && fileData.length > 0,
+        assertText
       );
     }
   }
@@ -188,7 +187,16 @@ async function getLastWeatherDate(fileData) {
   return lastDate;
 }
 
-async function HistoryStats() {}
+async function TestMapsCache() {
+  let response;
+  let urls = [config.ForecastMapUrl, config.RadarMapUrl, config.AlertsMapUrl];
+
+  for (let url of urls) {
+    response = await corsCache(url, null, config.archiveCacheTime);
+    assert(`Maps: ${url}`, response && response.ok && response.status === 200, assertText);
+    let corsUrl = `${config.CORSProxy}${url}`;
+  }
+}
 
 export async function RunTests() {
   if (!assertText) return;
@@ -206,6 +214,7 @@ export async function RunTests() {
 
   await Promise.all([
     // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
+
     testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
     testStationIdAddress("asdf"),
     testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
@@ -226,6 +235,8 @@ export async function RunTests() {
     TestGhcndStationStates(),
 
     TestGhcndCsv(),
+
+    TestMapsCache(),
   ]);
 
   // ---

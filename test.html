@@ -11,7 +11,9 @@
   <body id="WeatherKittyBody">
     <header id="WeatherKittyHeader">
       <div id="HeaderRow1">
-        <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        <div>
+          <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        </div>
         <div id="NavImg">
           <img src="img/CatBurger.png" alt="Hamburger Image" />
           <nav id="HamLinks">
@@ -20,8 +22,8 @@
             <a id="HamHistory"><span>History Charts</span></a>
             <a id="HamClimate"><span>Boston Climate Charts</span></a>
             <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-            <a id="HamExpire"><span>Expire Data</span></a>
-            <a id="HamPurge"><span>Purge Data</span></a>
+            <a id="HamExpire"><span>Expire Weather Cache ttl</span></a>
+            <a id="HamPurge"><span>Delete All Weather Data</span></a>
             <a id="HamTest"><span>Run Tests</span></a>
           </nav>
         </div>
@@ -41,16 +43,17 @@
           <a id="NavHistory"><span>History Charts</span></a>
           <a id="NavClimate"><span>Boston Climate Charts</span></a>
           <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-          <a id="NavExpire"><span>Expire Data</span></a>
-          <a id="NavPurge"><span>Purge Data</span></a>
+          <a id="NavExpire"><span>Expire Weather Cache ttl</span></a>
+          <a id="NavPurge"><span>Delete All Weather Data</span></a>
           <a id="NavTest"><span>Run Tests</span></a>
         </nav>
+        <weather-kitty-status> </weather-kitty-status>
         <weather-kitty-geoaddress> </weather-kitty-geoaddress>
       </div>
     </header>
 
     <main id="WeatherKittyMain">
-      <div id="assert" style="margin: 1em; background-color: lightgray">
+      <div id="WK-assert" style="margin: 1em; background-color: rgb(160, 160, 160)">
         <span style="font-weight: bold; font-size: large">Test Area</span><br />
       </div>
     </main>

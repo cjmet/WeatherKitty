@@ -2,9 +2,39 @@
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-// import lodash from "https://cdn.jsdelivr.net/npm/lodash/+esm";
+import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
 
-import { Log, LogLevel, config } from "./config.mjs";
+import {
+  Log,
+  LogLevel,
+  config,
+  GetPixels,
+  AddPixels,
+  DecompressCsvFile,
+  sleep,
+  microSleep,
+  TouchMoveAccelerated,
+  isValidNumericString,
+  MathAverage,
+  MathDistance,
+  ManhattanDistance,
+} from "./config.mjs";
+
+export {
+  Log,
+  LogLevel,
+  config,
+  GetPixels,
+  AddPixels,
+  DecompressCsvFile,
+  sleep,
+  microSleep,
+  TouchMoveAccelerated,
+  isValidNumericString,
+  MathAverage,
+  MathDistance,
+  ManhattanDistance,
+};
 
 // Function Weather Kitty
 async function WeatherKittyStart() {
@@ -76,6 +106,13 @@ async function WeatherWidgetInit(path) {
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
+    "weather-kitty-status",
+    WeatherKittyStatusBlock,
+    "WeatherKittyStatus"
+  );
+  widgets = [...widgets, ...result];
+
+  result = FindAndReplaceTags(
     "weather-kitty-forecast",
     WeatherKittyForecastBlock(),
     "WeatherKittyBlock"
@@ -99,7 +136,7 @@ async function WeatherWidgetInit(path) {
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
-    "weather-kitty-map-radar",
+    "weather-kitty-radar-national",
     WeatherKittyMapRadarBlock,
     "WeatherKittyMapRadar"
   );
@@ -109,6 +146,13 @@ async function WeatherWidgetInit(path) {
     "weather-kitty-map-alerts",
     WeatherKittyMapAlertsBlock,
     "WeatherKittyMapAlerts"
+  );
+  widgets = [...widgets, ...result];
+
+  result = FindAndReplaceTags(
+    "weather-kitty-radar-local",
+    WeatherKittyMapLocalRadarBlock,
+    "WeatherKittyMapLocalRadar"
   );
   widgets = [...widgets, ...result];
 
@@ -140,15 +184,29 @@ export async function WeatherKitty() {
       return;
     }
     // console.log("[WeatherKitty] Loading Weather Kitty");
-    // in theory this should be ok. otherwise await it.
+
+    // API Status
+    CheckApiStatus();
+
     // fetchCache the Maps.  Putting it here lets it run async with the getweatherasync
     WeatherMaps("weather-kitty-map-forecast", config.ForecastMapUrl, config.ForecastMapCacheTime);
-    WeatherMaps("weather-kitty-map-radar", config.RadarMapUrl, config.RadarMapCacheTime);
+    WeatherMaps("weather-kitty-radar-national", config.RadarMapUrl, config.RadarMapCacheTime);
     WeatherMaps("weather-kitty-map-alerts", config.AlertsMapUrl, config.AlertsMapCacheTime);
 
     // DATA --------------------------------------------------------------
     // Get/Update the Weather Data
     let weather = await getWeatherAsync();
+
+    // Insert Local Radar here.
+    // https://radar.weather.gov/ridge/standard/KMRX_loop.gif
+    let localRadar = weather?.radarStation;
+    if (localRadar) {
+      let url = `https://radar.weather.gov/ridge/standard/${localRadar}_loop.gif`;
+      console.log("[WeatherKitty] Local Radar: ", url);
+      WeatherMaps("weather-kitty-radar-local", url, config.shortCacheTime - 60000);
+    }
+    // /Local Radar
+
     let historyStation = null;
     let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this to the stationID as well.
     // cj-optimize - Only get the station if we need it or already have it.
@@ -221,13 +279,13 @@ export async function WeatherKitty() {
       // "100 lake shore, Village of Grosse Pointe Shores, Michigan"
       // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
       // locationName = "Chargoggagoggmanchauggagoggchaubunagungamaugg";
+      // DEBUG LONGEST NAME:
       // locationName = "Chargo ggagogg manchau ggagogg chaubu nagung amaugg";
 
       locationName += ", ";
       locationName += weather.pointData.properties.relativeLocation.properties.state;
-      locationName += " - ";
-      locationName += weather.stationsData.features[0].properties.stationIdentifier;
-      locationName += historyStation?.id ? " - " + historyStation.id : "";
+      locationName += " - " + weather.stationsData.features[0].properties.stationIdentifier;
+      locationName += historyStation?.id ? " " + historyStation.id : "";
 
       let shortText = weather.forecastData.properties.periods[0].shortForecast;
       let forecast = weather.forecastData.properties.periods[0].detailedForecast;
@@ -300,7 +358,7 @@ export async function WeatherKitty() {
         chartData = historyData;
       }
 
-      await WeatherCharts(chartData);
+      await WeatherCharts(chartData, locationName);
     }
     if (config.WeatherKittyIsLoaded < 3) {
       config.WeatherKittyIsLoaded = 3;
@@ -308,6 +366,67 @@ export async function WeatherKitty() {
     }
   });
   // console.log("[WeatherKitty] Exiting Weather Kitty");
+}
+
+export async function CheckApiStatus() {
+  let response;
+  let APIs = [
+    { name: "wk-status-nws", url: "https://api.weather.gov/alerts/types" },
+    { name: "wk-status-aws", url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-version.txt" },
+    {
+      name: "wk-status-ncei",
+      url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+    },
+    {
+      name: "wk-status-ncdc",
+      url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+    },
+  ];
+
+  for (let api of APIs) {
+    let elements = document.getElementsByTagName(api.name);
+    for (let element of elements) element.innerHTML = "🟡";
+  }
+
+  for (let api of APIs) {
+    let elements = document.getElementsByTagName(api.name);
+    if (Log.Trace()) console.log(`Checking API: ${api.name} ${elements?.length}...`);
+    if (elements?.length < 1) continue;
+    let replace = true;
+
+    // fetchCache
+    let url = api.url;
+    let options = fetchTimeoutOption(1000 * 10);
+
+    fetchCache(url, options).then((response) => {
+      for (let element of elements)
+        assert(null, response && response.ok && response.status === 200, element, replace);
+    });
+  }
+}
+
+export async function assert(message, condition, element, replace) {
+  if (!element) {
+    if (!config.logOnce) {
+      if (Log.Warn()) console.log('[Assert] Log Once: "element not found."');
+      config.logOnce = true;
+    }
+    return;
+  }
+  let msg;
+  if (!condition) {
+    // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢, ✴️, ☐, ◯, ⍰, ❓, ❔
+    if (message) msg = `🔴 <span style="color: red;">${message}</span><br>`;
+    else msg = `🔴`;
+    if (replace) element.innerHTML = msg;
+    else element.innerHTML += msg;
+    if (Log.Error()) console.log("Assertion Failed: ", message);
+  } else {
+    if (message) msg = `🟢 ${message}<br>`;
+    else msg = `🟢`;
+    if (replace) element.innerHTML = msg;
+    else element.innerHTML += msg;
+  }
 }
 
 export function WeatherKittyErrorText(message) {
@@ -379,7 +498,7 @@ export function SetAddLocationButton(widget) {
     widget.appendChild(div);
 
     button = document.createElement("button");
-    button.innerHTML = "Set";
+    button.innerHTML = config.SetLocationText;
     button.style.fontSize = "x-small";
     button.style.margin = 0;
     button.style.padding = 0;
@@ -630,9 +749,7 @@ export async function getWeatherLocationByAddressAsync(address) {
   let error = new Response("Address Error", { status: 400, ok: false });
   if (!address)
     address = prompt(
-      '"GHCND Station",   ' +
-        '"Latitude, Longitude",   "Address, ZipCode",   "City, State",   ' +
-        '"Address, City, State"'
+      'ENTER: "GHCND Station", "Latitude, Longitude", "Address, ZipCode","City, State", or "Address, City, State".  COMMAS REQUIRED.'
     );
 
   if (address === null || address === "") {
@@ -662,6 +779,7 @@ export async function getWeatherLocationByAddressAsync(address) {
 
       // Harlan: USC00153629
       // Boston: USW00014739
+      // Largest Daily File (17mb): USW00093822  39.8453  -89.6839  179.8 IL SPRINGFIELD ABRAHAM LINCOLN CA         72439
       // TestFL: USW000xxxxx
       // "City, State", "State", "Search" by ghcnd
       // HistoryGetStation(stationId, latitude, longitude);
@@ -780,6 +898,7 @@ async function getWeatherAsync() {
   let stationsData = null;
   let observationData = null;
   let forecastData = null;
+  let radarStation = null;
   let resultString = "";
 
   let locData = await getWeatherLocationAsync();
@@ -815,6 +934,7 @@ async function getWeatherAsync() {
     pointData = data;
     weatherForecastUrl = String(data.properties.forecast);
     observationStationsUrl = String(data.properties.observationStations);
+    radarStation = String(data.properties.radarStation);
     let city = data.properties.relativeLocation.properties.city;
     let state = data.properties.relativeLocation.properties.state;
     let locationName = `${city}, ${state}`;
@@ -891,7 +1011,7 @@ async function getWeatherAsync() {
 
   // Call the callback function:
   // callBack(cached);
-  return { pointData, stationsData, observationData, forecastData };
+  return { pointData, stationsData, observationData, forecastData, radarStation };
 }
 // /Function getWeatherAsync ----------------------------------------------
 0;
@@ -904,11 +1024,20 @@ async function ForecastMatrix(data) {
   }
 
   let text = "";
+  let i = 0;
   for (let period of data) {
+    let leftRight = "";
+    i++;
+    if (i === 1) leftRight = 'class="wk-left"';
+    else if (i === data.length) leftRight = 'class="wk-right"';
     text += `
       <weather-kitty-week-card>
-        <weather-kitty-week-title>${period.name}</weather-kitty-week-title>
-        <img src=${period.icon} alt="Weather Image"><br>
+    <weather-kitty-week-title>${period.name}</weather-kitty-week-title>    
+    <clip style="display: block;">
+      <weather-kitty-week-tip ${leftRight}>
+        <span >${period.detailedForecast}</span>
+      </weather-kitty-week-tip><img src=${period.icon} alt="Weather Image">
+    </clip><br>
         <weather-kitty-week-summary>
           <span>
             ${period.temperature}<small>${period.temperatureUnit.toLowerCase()}</small> 
@@ -1020,7 +1149,7 @@ async function GetObservationChartData(data) {
 }
 
 // Function Process Chart Elements
-export async function WeatherCharts(chartData) {
+export async function WeatherCharts(chartData, locationName) {
   await WeatherKittyIsLoading("charts", async () => {
     if (chartData == null) {
       if (Log.Warn()) console.log("[WeatherCharts] Warning: No Chart Data Available");
@@ -1042,6 +1171,7 @@ export async function WeatherCharts(chartData) {
 
         continue;
       }
+      chartType = chartType.trim();
 
       // NO-DATA  CHART-NO-DATA // cj-no-data
       if (types.includes(chartType) === false) {
@@ -1054,7 +1184,15 @@ export async function WeatherCharts(chartData) {
       }
       let chart = chartData.get(chartType);
 
-      CreateChart(container, chartType, chart?.values, chart?.timestamps, null, chart?.history);
+      CreateChart(
+        container,
+        chartType,
+        chart?.values,
+        chart?.timestamps,
+        null,
+        chart?.history,
+        locationName
+      );
     }
   });
 }
@@ -1066,7 +1204,8 @@ export async function CreateChart(
   values,
   timestamps,
   aspect, // aspect ratio, 0 or null for auto
-  isHistory // history = true for history charts and history date format
+  isHistory, // history = true for history charts and history date format
+  locationName
 ) {
   WeatherKittyIsLoading(`${key}`, async () => {
     if (values == null || values.length == 0 || values[0].value === undefined) {
@@ -1460,8 +1599,13 @@ export async function CreateChart(
         averageData != "none" ? `(${averageData})` : ""
       }`;
       if (preFix.length > 0) preFix += ":";
+      let suffix;
+      if (locationName) suffix = `<br>${locationName}`;
+      else suffix = "";
       if (chartSpan)
-        chartSpan.innerHTML = `${preFix} ${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
+        chartSpan.innerHTML = `${preFix} ${key} - ${
+          values && values[0]?.unitCode ? values[0]?.unitCode : "NO-DATA" // cjm
+        } ${suffix} [xf]`; // cj-no-data
     }
 
     // ---
@@ -1597,6 +1741,8 @@ async function MonitorCharts() {
       let entry = {
         innerHeight: style.innerHeight,
         innerWidth: style.innerWidth,
+        outerHeight: style.outerHeight,
+        outerWidth: style.outerWidth,
         display: style.display,
       };
       newList.push(JSON.stringify(entry));
@@ -1650,22 +1796,6 @@ async function RecalculateChartAspect(chartContainer) {
       await chart.update();
     }
   }
-}
-
-function GetPixels(pxString) {
-  let pixels;
-  pxString = pxString.toLowerCase();
-  if (pxString.includes("px")) pixels = parseFloat(pxString.replace("px", ""));
-  return pixels;
-}
-
-function AddPixels(array) {
-  let pixels = 0;
-  for (let px of array) {
-    pixels += GetPixels(px);
-  }
-  let result = pixels.toFixed(2);
-  return result;
 }
 
 // Function WeatherSquares
@@ -1860,9 +1990,37 @@ function RemoveAllEventListeners(element) {
   return removedAllEventListeners;
 }
 
+export function IsMobileByBowser() {
+  const parser = Bowser.getParser(navigator.userAgent);
+  return parser.getPlatformType() === "mobile";
+}
+
+export function isMobile() {
+  if (!config.isMobile) config.isMobile = IsMobileByBowser();
+  return config.isMobile;
+
+  // additional ways to detect mobile; but all, including bowser, have issues.
+  if (window.innerWidth < 450 || window.innerHeight < 450) return true;
+  if ("ontouchstart" in window) return true;
+  // Gemini AI, Chat GPT
+  {
+    let userAgent = navigator.userAgent.toLowerCase();
+    if (
+      /mobile|tablet|ipad|ipod|phone|mobi|android|iphone|ipod|opera mini|iemobile|webos/i.test(
+        userAgent
+      )
+    )
+      return true;
+  }
+
+  return false;
+}
+
 // ------------------------------------------------------------------
 // Gemini AI, and then edited a fair bit.  It was a bit of a mess at first.
 async function AIshowFullscreenImage(imageElement) {
+  if (isMobile()) return; // Disable on mobile
+
   // Zoom Settings
   let zoom = "100%";
   let zoomInit = "200%";
@@ -1880,6 +2038,7 @@ async function AIshowFullscreenImage(imageElement) {
 
   // Add event listeners for pan and zoom
   popupImage.addEventListener("touchstart", closeFullscreenImage); // Immediately close on touchend, aka: disabled on mobile.
+  popupImage.addEventListener("touchmove", closeFullscreenImage);
   popupImage.addEventListener("touchend", closeFullscreenImage);
   popupImage.addEventListener("mousedown", handleMouseDown);
   popupImage.addEventListener("mousemove", handleMouseMove);
@@ -1975,11 +2134,13 @@ const specialUrlTable = {
 
 export function ExpireData() {
   localStorage.clear("ttlCache");
+  return true;
 }
 
 export async function PurgeData() {
   localStorage.clear("ttlCache");
   caches.delete("weather-kitty");
+  return true;
 }
 
 export async function clearCache(url, verbose) {
@@ -2026,10 +2187,20 @@ async function RateLimitFetch(url, ttl) {
     let delta = ttl - elapsed;
     if (Log.Debug()) console.log(`[RateLimitFetch] ${base} [rate-limit]`);
     await microSleep(delta + Math.random() * ttl);
-  } while (elapsed < ttl);
+  } while (elapsed < ttl + 1);
   if (Log.Trace()) console.log(`[RateLimitFetch] ${base} [releasing]`);
   now = Date.now();
   rateLimitCache.set(base, now);
+}
+
+export function fetchTimeoutOption(microseconds) {
+  if (!microseconds || microseconds <= 0) return null;
+  let controller = new AbortController();
+  let timeoutId = setTimeout(() => controller.abort("HTTP TIMEOUT"), microseconds);
+  let options = {
+    signal: controller.signal,
+  };
+  return options;
 }
 
 export async function fetchCache(url, options, ttl, verbose) {
@@ -2050,10 +2221,9 @@ export async function fetchCache(url, options, ttl, verbose) {
     cache = await caches.open("weather-kitty");
   } catch (error) {
     config.PAUSE = true;
-    if (Log.Error()) console.log(`[fetchCache] Error: ${error}`);
-    WeatherKittyErrorText(`ERR: https required ${error}`);
-    alert(`ERROR: https Cache Error ${error}.   Https is REQUIRED`);
-    throw error;
+    if (Log.Error()) console.log(`[fetchCache] cache Error: ${error}`);
+    WeatherKittyErrorText(`${error}`);
+    alert(`ERROR: fetch Error ${error}.`);
   }
   let response = await cache.match(url);
 
@@ -2062,7 +2232,6 @@ export async function fetchCache(url, options, ttl, verbose) {
       console.log(`[fetchCache] cached: ${url} [${wkElapsedTime(expires)}]`);
     return response;
   }
-  console.log(`EXPIRED: ${url} [${wkElapsedTime(expires)}]`); // cjm
 
   // If the url is not cached or expired, fetch it
   // If the url is in the specialUrlTable, use the special function
@@ -2071,13 +2240,13 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (url in specialUrlTable) {
     fetchResponse = await specialUrlTable[url](url, options, ttl);
   } else {
-    await RateLimitFetch(url, 1000); // cj-rate-limit
+    await RateLimitFetch(url, config.RateLimitTtl); // cj-rate-limit
     try {
-      // console.log(`[FETCH!: ${url}`); //
+      if (Log.Info()) console.log(`[fetch] ${url}`);
       fetchResponse = await fetch(url, options);
     } catch (error) {
       // WeatherKittyErrorText(`${error}`); //  ... this didn't work out.
-      if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${error}`);
+      if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${url} ${options} ${error}`);
       let ErrorResponse = new Response("Fetch Error", { status: 500, ok: false, text: error });
       return ErrorResponse;
     }
@@ -2086,7 +2255,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
     if (Log.Info() || verbose)
-      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`); // cjm
+      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
     try {
       await cache.put(url, responseClone);
@@ -2112,7 +2281,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   }
 }
 
-async function corsCache(url, options, ttl, verbose) {
+export async function corsCache(url, options, ttl, verbose) {
   let corsUrl = `${config.CORSProxy}${url}`;
   return fetchCache(corsUrl, options, ttl, verbose);
 }
@@ -2325,26 +2494,39 @@ export async function HistoryGetStation(station, latitude, longitude, city, stat
     // ---
     // Get List of Stations ghcnd-stations.txt, cache it for a month?
     // https://docs.opendata.aws/noaa-ghcn-pds/readme.html
+    // https://noaa-ghcn-pds.s3.amazonaws.com/index.html
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz
+    // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv
+
     // http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
     // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
     // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
     let response;
-    let urls = [
-      "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
+    let APIs = [
+      { url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt", timeout: null },
+      {
+        url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+      },
+      {
+        url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+      },
     ];
 
-    for (let url of urls) {
-      // console.log("FETCHCACHE: ", url);
-      response = await fetchCache(url, null, config.archiveCacheTime);
-      // console.log("RESPONSE:", response);
-      if (!response || !response?.ok || response?.status !== 200) {
-        response = await corsCache(url, null, config.archiveCacheTime);
-        console.log("RESPONSE:", response);
-      }
+    for (let api of APIs) {
+      let url = api.url;
+      let options = fetchTimeoutOption(api.timeout);
+      response = await fetchCache(url, options, config.archiveCacheTime);
+
+      // Doesn't Help, if it's broke it's broke.
+      // if (!response || !response?.ok || response?.status !== 200) {
+      //   response = await corsCache(url, null, config.archiveCacheTime);
+      //   console.log("RESPONSE:", response);
+      // }
+
       if (response && response?.ok && response?.status === 200) break;
     }
 
@@ -2477,18 +2659,29 @@ async function HistoryGetState(state) {
     // "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
     // "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
 
-    let urls = [
-      "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
-      "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
-      "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt",
+    let APIs = [
+      { url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-states.txt", timeout: null },
+      {
+        url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+        timeout: config.fetchTimeout,
+      },
+      {
+        url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt",
+        timeout: config.fetchTimeout,
+      },
     ];
 
     let response;
-    for (let url of urls) {
-      response = await fetchCache(url, null, config.archiveCacheTime);
-      if (!response || !response?.ok || response?.status !== 200) {
-        response = await corsCache(url, null, config.archiveCacheTime);
-      }
+    for (let api of APIs) {
+      let url = api.url;
+      let options = fetchTimeoutOption(api.timeout);
+      response = await fetchCache(url, options, config.archiveCacheTime);
+
+      // Doesn't Help, if it's broke it's broke.
+      // if (!response || !response?.ok || response?.status !== 200) {
+      //   response = await corsCache(url, null, config.archiveCacheTime);
+      // }
+
       if (response && response?.ok && response?.status === 200) break;
     }
 
@@ -2541,17 +2734,30 @@ async function HistoryGetCsvFile(stationId) {
     // (same as above) Why does the mobile version die on SSL and CORS errors while desktop works just fine?
     let response;
     let fileData;
-    let urls = [
-      `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-      `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
-      `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
-      `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
+    let APIs = [
+      {
+        url: `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        timeout: config.fetchTimeout,
+      },
+      {
+        url: `https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
+        timeout: config.fetchTimeout,
+      },
+      {
+        url: `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
+        timeout: config.fetchTimeout,
+      },
+      {
+        url: `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
+        timeout: config.fetchTimeout,
+      },
     ];
 
-    for (let url of urls) {
-      // console.log("FETCHCACHE: ", url);
+    for (let api of APIs) {
+      let url = api.url;
+      let options = fetchTimeoutOption(api.timeout);
       response = await fetchCache(url, null, config.archiveCacheTime);
-      // console.log("RESPONSE:", response);
+
       if (response?.ok && response?.status === 200) {
         if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
         else if (url.substring(url.length - 4) === ".csv") {
@@ -2560,74 +2766,21 @@ async function HistoryGetCsvFile(stationId) {
         }
       }
 
-      if (!response || !response?.ok || response?.status !== 200) {
-        response = await corsCache(url, null, config.archiveCacheTime);
-        console.log("RESPONSE:", response);
-        if (response?.ok && response?.status === 200) {
-          if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
-          else if (url.substring(url.length - 4) === ".csv") {
-            fileData = await response.text();
-            fileData = fileData.split("\n");
-          }
-        }
-      }
+      // // Doesn't Help, if it's broke it's broke.
+      // if (!response || !response?.ok || response?.status !== 200) {
+      //   response = await corsCache(url, null, config.archiveCacheTime);
+      //   console.log("RESPONSE:", response);
+      //   if (response?.ok && response?.status === 200) {
+      //     if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
+      //     else if (url.substring(url.length - 4) === ".csv") {
+      //       fileData = await response.text();
+      //       fileData = fileData.split("\n");
+      //     }
+      //   }
+      // }
+
       if (fileData && response && response?.ok && response?.status === 200) break;
     }
-
-    return fileData;
-  });
-}
-
-export async function DecompressCsvFile(response) {
-  return WeatherKittyIsLoading("Decompressing", async () => {
-    let fileData;
-    // let sleep = await new Promise((r) => setTimeout(r, 1000));
-    let blob_compressed;
-    let blob_uncompressed;
-    let result = "";
-    // get the blob from the response
-    if (response.ok) {
-      // un-gzip the blob
-
-      let TotalSize = 0;
-      let Chunks = [];
-      let data_in;
-      let data_out;
-      blob_compressed = await response.blob();
-
-      let utfDecode;
-      let dcmpStrm;
-      try {
-        Chunks = [];
-
-        let stringData = "";
-        utfDecode = new fflate.DecodeUTF8((data, final) => {
-          stringData += data;
-        });
-        dcmpStrm = new fflate.Decompress((chunk, final) => {
-          utfDecode.push(chunk, final);
-        });
-
-        for await (const chunk of blob_compressed.stream()) {
-          TotalSize += chunk.length;
-          dcmpStrm.push(chunk);
-        }
-
-        result = stringData;
-      } catch (e) {
-        console.log("*** ERROR *** - Decompression Error: " + e);
-        WeatherKittyErrorText(`Decompression Error: ${e}`);
-        return null;
-      }
-
-      fileData = result.split("\n");
-      if (!fileData || fileData.length <= 0) {
-        if (Log.Error())
-          console.log("[HistoricalGetCsvFile] *** ERROR *** : fileData Error, No Data ");
-
-        return null;
-      }
-    } else if (Log.Error()) console.log("HTTP-Error: " + response.status);
 
     return fileData;
   });
@@ -2636,126 +2789,12 @@ export async function DecompressCsvFile(response) {
 // ---
 // / GetHistoryChartData ------------------------------------------------
 
-// Function sleep();
-export async function sleep(seconds) {
-  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-}
-
-export async function microSleep(milliSeconds) {
-  return new Promise((resolve) => setTimeout(resolve, milliSeconds));
-}
-
 async function AssignTouchMoveToCharts(charts) {
   for (let chart of charts) {
     let element = chart.getElementsByTagName("scrollDiv")[0];
     TouchMoveAccelerated(element);
   }
 }
-
-// Move one page per 4em of movement, Intended for extra large content on touch devices
-// GEMINI AI - then completely re-written.  It's 95% mine now.
-async function TouchMoveAccelerated(element) {
-  let lastX;
-  let lastY;
-  let isDragging = false;
-  let oneEm = parseFloat(window.getComputedStyle(element).fontSize);
-  let pageSizeY = element.offsetHeight;
-  let pageSizeX = element.offsetWidth;
-  if (pageSizeX < 4 * oneEm) pageSizeX = 4 * oneEm;
-  if (pageSizeY < 4 * oneEm) pageSizeY = 4 * oneEm;
-
-  element.addEventListener("touchstart", (event) => {
-    isDragging = true;
-    lastX = null;
-    lastY = null;
-  });
-
-  element.addEventListener("touchend", () => {
-    isDragging = false;
-    lastX = null;
-    lastY = null;
-  });
-
-  // Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) <= 1;
-  // element.scrollHeight > element.clientHeight;
-  // let AccelY = (element.offsetHeight ) / (4 * oneEm);
-  element.addEventListener("touchmove", (event) => {
-    event.preventDefault();
-    if (isDragging) {
-      let x = event.touches[0].clientX; // X
-      let dx = x - lastX;
-      if (lastX !== null) {
-        if (
-          dx < 0 &&
-          Math.abs(element.scrollWidth - element.clientWidth - element.scrollLeft) > 1
-        ) {
-          let accelX = Math.max(1, element.offsetWidth / (4 * oneEm));
-          element.scrollBy(-dx * accelX, 0); // touch is backwards
-        } else if (dx > 0 && element.scrollLeft > 1) {
-          let accelX = Math.max(1, element.offsetWidth / (4 * oneEm));
-          element.scrollBy(-dx * accelX, 0); // touch is backwards
-        } else {
-          window.scrollBy(-dx, 0); // touch is backwards
-        }
-      }
-      lastX = x;
-
-      let y = event.touches[0].clientY; // Y
-      let dy = y - lastY;
-      if (lastY !== null) {
-        if (
-          dy < 0 &&
-          Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) > 1
-        ) {
-          let accelY = Math.max(1, element.offsetHeight / (4 * oneEm));
-          element.scrollBy(0, -dy * accelY); // touch is backwards
-        } else if (dy > 0 && element.scrollTop > 1) {
-          let accelY = Math.max(1, element.offsetHeight / (4 * oneEm));
-          element.scrollBy(0, -dy * accelY); // touch is backwards
-        } else {
-          window.scrollBy(0, -dy); // touch is backwards
-        }
-      }
-      lastY = y;
-    }
-  });
-}
-
-// Math Functions ---------------------------------------------------------
-// ---
-
-// Gemni AI
-function isValidNumericString(s) {
-  const regex = /^-?\d+(,\d+)*(\.\d+)?$/;
-  return regex.test(s);
-}
-
-function MathAverage(values) {
-  if (!values || values.length <= 0) return null;
-  let sum = 0.0;
-  for (let value of values) {
-    sum += parseInt(value);
-  }
-  let average = sum / values.length;
-  return average;
-}
-
-function MathDistance(lat1, lon1, lat2, lon2) {
-  let dy = lat2 - lat1;
-  let dx = lon2 - lon1;
-  let distance = Math.SQRT2(dy ** 2 + dx ** 2);
-  return distance;
-}
-
-function ManhattanDistance(lat1, lon1, lat2, lon2) {
-  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return NaN;
-  let dy = lat2 - lat1;
-  let dx = lon2 - lon1;
-  let distance = Math.abs(dy) + Math.abs(dx);
-  return distance;
-}
-// ---
-// /Math Functions --------------------------------------------------------
 
 // HTML Blocks -----------------------------------
 // functions instead of variables, so that path updates to the images can take effect
@@ -2790,24 +2829,28 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
 let WeatherKittyChartBlock = `<chartSpan>Loading ...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
-let WeatherKittyMapForecastBlock = `<img
-            alt="NWS Forecast"
-        />`;
+let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast" />`;
 
-let WeatherKittyMapRadarBlock = `<img
-            alt="NWS Radar"
-          />`;
+let WeatherKittyMapRadarBlock = `<img alt="NWS Radar" />`;
 
-let WeatherKittyMapAlertsBlock = `          <img
-            alt="US Weather Alerts Map"
-          />`;
+let WeatherKittyMapAlertsBlock = `<img alt="US Weather Alerts Map" />`;
+
+let WeatherKittyMapLocalRadarBlock = `<img alt="Local Radar" />`;
 
 function WeatherKittyGeoAddressBlock() {
   let results = `<span>Loading ...</span>
   <label>Loading ... </label>
-  <button>Set</button>`;
+  <button>${config.SetLocationText}</button>`;
   return results;
 }
+
+let WeatherKittyStatusBlock = `
+    <span>API:</span>
+    <wk-status-nws class="wk-status-signal">❔</wk-status-nws>
+    <wk-status-aws class="wk-status-signal">❔</wk-status-aws>
+    <wk-status-ncei class="wk-status-signal">❔</wk-status-ncei>
+    <wk-status-ncdc class="wk-status-signal">❔</wk-status-ncdc>
+`;
 // /Blocks -----------------------------------
 
 // Run Weather Kitty

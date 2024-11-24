@@ -34,9 +34,10 @@ https://cjmet.github.io/WeatherKitty/
 - <b>`<weather-kitty-forecast>`</b> - Forecast
 - <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input.
 - <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
-- <b>`<weather-kitty-map-forecast>`</b> - Forecast map link.
-- <b>`<weather-kitty-map-radar>`</b> - Radar map link.
-- <b>`<weather-kitty-map-alerts>`</b> - Alerts map link.
+- <b>`<weather-kitty-radar-local>`</b> - Local Radar map.
+- <b>`<weather-kitty-radar-national>`</b> - National Radar map.
+- <b>`<weather-kitty-map-forecast>`</b> - Forecast map.
+- <b>`<weather-kitty-map-alerts>`</b> - Alerts map.
 - <b>`<weather-kitty-chart type="keyword">`</b> - Weather Charts. NOTE: Charts may require a defined or contained size.
 - <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
 
@@ -119,8 +120,11 @@ For ease of editing and customization
 
 - **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
 - **Software is Licensed:** MPL 2.0 or newer
+
   &nbsp;
+
 - **api.weather.gov:** "Intended to be open data, free to use for any purpose". **Limit:** 1 call per second.
+- **bowser.js:** MIT License.
 - **chart.js:** MIT License.
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
   - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
