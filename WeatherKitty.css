@@ -116,6 +116,14 @@ weather-kitty-tooltip {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
+/* // :hover overrides the class.  Put the override-able styles in the base instead of :hover */
+weather-kitty-week-tip,
+weather-kitty-week-tip span {
+  left: -4em;
+  width: 12em;
+  height: max-content;
+}
+
 weather-kitty-week-card clip:hover,
 weather-kitty:hover,
 weather-kitty-current:hover,
@@ -140,16 +148,14 @@ weather-kitty-forecast:hover {
     transition: opacity var(--weatherKittyTranSecDefault);
     translate: 0 0;
     padding: 0.5em;
-    width: 10.5em;
-    height: max-content;
     opacity: 1;
     z-index: 10;
   }
-  weather-kitty-week-tip,
-  weather-kitty-week-tip span {
+  /* weather-kitty-week-tip, */
+  /* weather-kitty-week-tip span { // cjm 
     left: -4em;
     width: 12em;
-  }
+  } */
 }
 
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
@@ -200,6 +206,7 @@ weather-kitty-week-summary {
   align-items: center;
   padding: 0 0.25em;
 }
+
 /* ---------------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------------- */
@@ -291,4 +298,14 @@ weather-kitty-radar-local img {
 
 weather-kitty-radar-local img {
   aspect-ratio: 1.09;
+}
+
+.wk-left {
+  right: auto;
+  left: 0;
+}
+
+.wk-right {
+  left: auto;
+  right: 0;
 }

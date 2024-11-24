@@ -1,10 +1,11 @@
-import { Log, LogLevel, config } from "./config.mjs";
-
 import {
+  Log,
+  LogLevel,
+  config,
+  DecompressCsvFile,
   getWeatherLocationByAddressAsync,
   HistoryGetStation,
   fetchCache,
-  DecompressCsvFile,
   corsCache,
 } from "./WeatherKitty.mjs";
 
@@ -13,8 +14,15 @@ import {
 // ---
 let assertText = document.getElementById("assert");
 
-async function assert(message, condition) {
-  if (!assertText) return;
+let logOnce = false;
+export async function assert(message, condition) {
+  if (!assertText) {
+    if (!logOnce) {
+      if (Log.Warn()) console.log('[Assert] Log Once: "assertText not found."');
+      logOnce = true;
+    }
+    return;
+  }
   if (!condition) {
     // ✅, ☑️, ❌
     let msg = `❌ <span style="color: red;">${message}</span><br>`;

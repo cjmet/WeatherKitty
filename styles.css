@@ -68,11 +68,12 @@ body {
 }
 
 #NavImg {
+  border: red 1px solid;
   box-sizing: border-box;
   height: var(--headerHeight);
-  width: calc(var(--headerHeight) * 2 / 3);
+  width: var(--headerHeight);
   min-height: var(--headerHeight);
-  min-width: calc(var(--headerHeight) * 2 / 3);
+  min-width: var(--headerHeight);
   margin: 0.5em 0.25em;
   /* position: relative; */
   overflow: hidden;
@@ -80,6 +81,7 @@ body {
 }
 
 #NavImg img {
+  border: green 1px solid;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -240,6 +242,35 @@ weather-kitty-radar-local {
   margin: var(--desktopMarginSize) calc(var(--desktopMarginSize) / 2);
 }
 
+#AlertsDiv {
+  box-sizing: border-box;
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  justify-items: center;
+  h2 {
+    display: inline-block;
+    box-sizing: border-box;
+  }
+  a {
+    display: inline-block;
+    border: black 1px solid;
+    box-sizing: border-box;
+    background-color: whitesmoke;
+    border-radius: 0.5em;
+    padding: 0 0.25em;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    text-justify: center;
+  }
+}
+
 .WeekAlpha {
   box-sizing: border-box;
 }
@@ -265,6 +296,35 @@ weather-kitty-chart {
   min-height: max(10em, min(calc(100vh - 4.5em), calc(100vh - var(--desktopMarginSize) * 2)));
 }
 
+.HelpTitle {
+  text-align: center;
+  text-justify: center;
+  margin: 1em 1em 0em 1em;
+}
+.HelpTitle a {
+  border: black 2px solid;
+  box-sizing: border-box;
+  background-color: whitesmoke;
+  border-radius: 0.5em;
+  padding: 0.1em 0.2em;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: x-small;
+  text-decoration: none;
+  color: black;
+}
+.HelpTitle a:hover {
+  background-color: lightgray;
+}
+.HelpText {
+  max-width: 45em;
+  margin: 1em;
+  align-self: center;
+  text-align: left;
+  text-justify: center;
+  margin: 1;
+}
+
 /* ----------------------------------------------------------------------------   ----------------- */
 
 /* ----------------------------------------------------------------------------   ----------------- */
@@ -272,6 +332,7 @@ weather-kitty-chart {
 /* ----------------------------------------------------------------------------   ----------------- */
 /* media query for width and height of viewport */
 /* 720p 1280x720 - 2 rem for scroll bars*/
+
 @media (max-width: calc( 1280px - 2rem)) {
   .MapsAlpha {
     box-sizing: border-box;
@@ -405,7 +466,8 @@ weather-kitty-chart {
   }
 }
 
-@media (max-width: 415px) {
+/* // Swap Geolocation Positions */
+@media (max-width: 450px) {
   #HeaderTitle weather-kitty-geoaddress {
     display: none;
   }
@@ -419,8 +481,11 @@ weather-kitty-chart {
 }
 
 @media (max-width: 305px) {
-  weather-kitty {
+  #NavImg,
+  #HeaderTitle,
+  #WeatherKittyWidgetDiv {
     font-size: small;
+    margin: 0.5em;
   }
 }
 

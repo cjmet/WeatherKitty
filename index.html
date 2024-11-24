@@ -18,11 +18,11 @@
             <a id="HamHome"><span>Home</span></a>
             <a id="HamWeather"><span>Weather Charts</span></a>
             <a id="HamHistory"><span>History Charts</span></a>
-            <a id="HamClimate"><span>Boston Climate Charts</span></a>
+            <a id="HamClimate"><span>Climate Charts</span></a>
             <!-- <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-            <a id="HamExpire"><span>Expire Data</span></a>
-            <a id="HamPurge"><span>Purge Data</span></a>
-            <a id="HamTestPage" href="./test.html"><span>Test Page</span></a>
+            <!-- <a id="HamExpire"><span>Expire Data</span></a>
+            <a id="HamPurge"><span>Purge Data</span></a> -->
+            <a id="HamTestPage" href="./test.html"><span>Tests Page</span></a>
           </nav>
         </div>
 
@@ -39,89 +39,145 @@
           <a id="NavHome"><span>Home</span></a>
           <a id="NavWeather"><span>Weather Charts</span></a>
           <a id="NavHistory"><span>History Charts</span></a>
-          <a id="NavClimate"><span>Boston Climate Charts</span></a>
+          <a id="NavClimate"><span>Climate Charts</span></a>
           <!-- <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-          <a id="NavExpire"><span>Expire Data</span></a>
-          <a id="NavPurge"><span>Purge Data</span></a>
-          <a id="NavTestPage" href="./test.html"><span>Test Page</span></a>
+          <!-- <a id="NavExpire"><span>Expire Data</span></a>
+          <a id="NavPurge"><span>Purge Data</span></a> -->
+          <a id="NavTestPage" href="./test.html"><span>Tests Page</span></a>
         </nav>
         <weather-kitty-geoaddress> </weather-kitty-geoaddress>
       </div>
     </header>
 
     <main id="WeatherKittyMain">
-      <div class="MapsAlpha"radar-local">
-        <weather-kitty-radar-local></weather-kitty-radar-local>
-        <weather-kitty-radar-national></weather-kitty-radar-national>
-        <weather-kitty-map-forecast></weather-kitty-map-forecast>
-        <weather-kitty-map-alerts></weather-kitty-map-alerts>
+      <div class="MapsAlpha">
+        <div>
+          <h2 class="HelpTitle MapTitle">Local Radar</h2>
+          <weather-kitty-radar-local></weather-kitty-radar-local>
+        </div>
+        <div>
+          <h2 class="HelpTitle MapTitle">National Radar</h2>
+          <weather-kitty-radar-national></weather-kitty-radar-national>
+        </div>
+        <div>
+          <!-- // https://www.wpc.ncep.noaa.gov/html/fntcodes2.shtml -->
+          <h2 class="HelpTitle MapTitle">
+            National Forecast
+            <a href="https://www.wpc.ncep.noaa.gov/html/fntcodes2.shtml" target="_blank">Legend</a>
+          </h2>
+          <weather-kitty-map-forecast></weather-kitty-map-forecast>
+        </div>
+        <div>
+          <!-- <a id="AlertsLegend" href="https://www.weather.gov/help-map/" target="_blank">Legend</a> -->
+          <h2 class="HelpTitle MapTitle">
+            Weather Alerts Map
+            <a href="https://www.weather.gov/help-map/" target="_blank">Legend</a>
+          </h2>
+          <weather-kitty-map-alerts></weather-kitty-map-alerts>
+        </div>
+        <hr width="80%" style="border: black 1px solid" />
       </div>
 
       <div class="WeekAlpha">
+        <h2 class="HelpTitle">7 Day Forecast</h2>
         <weather-kitty-week></weather-kitty-week>
+        <hr width="80%" style="border: black 1px solid" />
       </div>
 
       <!-- ---  -->
 
-      <div class="WeatherKittyHomeCharts"radar-local">
+      <div class="WeatherKittyHomeCharts">
+        <h2 class="HelpTitle">Current Temperature Chart</h2>
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
-        <weather-kitty-chart type="TEMP"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
 
-      <div class="WeatherKittyWeatherCharts"radar-local">
+      <div class="WeatherKittyWeatherCharts">
+        <h2 class="HelpTitle">Current Weather Observation Charts</h2>
+        <p class="HelpText">
+          These are short summary charts of the current weather observations for the selected
+          location and API.<br /><br />The availability of data for any given location or api is
+          random. Selected charts will hide themselves if no data is available. <br /><br />See the
+          Readme and Ghcnd documentation as well as console.log for additional information on the
+          data, data codes, and available chart types for a given location.
+        </p>
+        <hr width="80%" style="border: black 1px solid" />
         <weather-kitty-chart type="temperature"></weather-kitty-chart>
-        <weather-kitty-chart type="relativeHumidity"></weather-kitty-chart>
-        <weather-kitty-chart type="heatIndex"></weather-kitty-chart>
-        <weather-kitty-chart type="dewpoint"></weather-kitty-chart>
-        <weather-kitty-chart type="windChill"></weather-kitty-chart>
-        <weather-kitty-chart type="barometricPressure"></weather-kitty-chart>
-        <weather-kitty-chart type="seaLevelPressure"></weather-kitty-chart>
-        <weather-kitty-chart type="precipitationLastHour"></weather-kitty-chart>
-        <weather-kitty-chart type="visibility"></weather-kitty-chart>
-        <weather-kitty-chart type="windSpeed"></weather-kitty-chart>
-        <weather-kitty-chart type="windGust"></weather-kitty-chart>
+        <weather-kitty-chart type="relativeHumidity" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="heatIndex" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="dewpoint" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="windChill" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="barometricPressure" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="seaLevelPressure" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="precipitationLastHour" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="visibility" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="windSpeed" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="windGust" noData="hide"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
 
-      <div class="WeatherKittyHistoryCharts"radar-local">
+      <div class="WeatherKittyHistoryCharts">
+        <h2 class="HelpTitle">Short Weather History Charts</h2>
+        <p class="HelpText">
+          These short summary charts of a subset of available historical data for the current
+          location and API.<br /><br />The availability of data for any given location or api is
+          random. Selected charts will hide themselves if no data is available. <br /><br />See the
+          Readme and Ghcnd documentation as well as console.log for additional information on the
+          data, data codes, and available chart types for a given location.
+        </p>
+        <hr width="80%" style="border: black 1px solid" />
+
         <weather-kitty-chart type="TEMP"></weather-kitty-chart>
-        <weather-kitty-chart type="TMXN"></weather-kitty-chart>
-        <weather-kitty-chart type="TOBS"></weather-kitty-chart>
-        <weather-kitty-chart type="TAVG"></weather-kitty-chart>
-        <weather-kitty-chart type="TMAX"></weather-kitty-chart>
-        <weather-kitty-chart type="TMIN"></weather-kitty-chart>
+        <weather-kitty-chart type="TMXN" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="TOBS" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="TAVG" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="TMAX" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="TMIN" noData="hide"></weather-kitty-chart>
 
-        <weather-kitty-chart type="PRCP"></weather-kitty-chart>
-        <weather-kitty-chart type="SNOW"></weather-kitty-chart>
-        <weather-kitty-chart type="SNWD"></weather-kitty-chart>
-        <weather-kitty-chart type="FRGT"></weather-kitty-chart>
-        <weather-kitty-chart type="THIC"></weather-kitty-chart>
+        <weather-kitty-chart type="PRCP" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="SNOW" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="SNWD" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="FRGT" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="THIC" noData="hide"></weather-kitty-chart>
 
-        <weather-kitty-chart type="ACMH"></weather-kitty-chart>
-        <weather-kitty-chart type="ACSH"></weather-kitty-chart>
-        <weather-kitty-chart type="WDFN"></weather-kitty-chart>
-        <weather-kitty-chart type="WSFM"></weather-kitty-chart>
+        <weather-kitty-chart type="ACMH" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="ACSH" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="WDFN" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="WSFM" noData="hide"></weather-kitty-chart>
 
-        <weather-kitty-chart type="AWND"></weather-kitty-chart>
-        <weather-kitty-chart type="AWBT"></weather-kitty-chart>
-        <weather-kitty-chart type="ADPT"></weather-kitty-chart>
-        <weather-kitty-chart type="ASLP"></weather-kitty-chart>
-        <weather-kitty-chart type="ASTP"></weather-kitty-chart>
-        <weather-kitty-chart type="RHAV"></weather-kitty-chart>
-        <weather-kitty-chart type="RHMN"></weather-kitty-chart>
-        <weather-kitty-chart type="RHMX"></weather-kitty-chart>
-        <weather-kitty-chart type="PSUN"></weather-kitty-chart>
-        <weather-kitty-chart type="TSUN"></weather-kitty-chart>
+        <weather-kitty-chart type="AWND" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="AWBT" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="ADPT" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="ASLP" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="ASTP" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="RHAV" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="RHMN" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="RHMX" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="PSUN" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="TSUN" noData="hide"></weather-kitty-chart>
 
-        <weather-kitty-chart type="WT**"></weather-kitty-chart>
-        <weather-kitty-chart type="WV**"></weather-kitty-chart>
+        <weather-kitty-chart type="WT**" noData="hide"></weather-kitty-chart>
+        <weather-kitty-chart type="WV**" noData="hide"></weather-kitty-chart>
       </div>
 
       <!-- ---------------------------------------------- -->
-      <div class="WeatherKittyClimateCharts"radar-local">
+      <div class="WeatherKittyClimateCharts">
+        <h2 class="HelpTitle">Climate History Charts</h2>
+        <p class="HelpText">
+          These charts are scrollable and include all available historical data for the current
+          location and API. The first series of charts are temperature charts using various
+          averaging techniques. For a good example of global warming it's recommended to set the
+          location to <strong>"Boston"</strong> and view the highlighted min/max (TMXN) temperatures
+          averaged by monthly averages chart. The latter charts are snowfall (SNOW) and snow depth
+          (SNWD). <br /><br />The availability of data for any given location or api is random.
+          Selected charts will hide themselves if no data is available. <br /><br />See the Readme
+          and Ghcnd documentation as well as console.log for additional information on the data,
+          data codes, and available chart types for a given location.
+        </p>
+        <hr width="80%" style="border: black 1px solid" />
+
         <weather-kitty-chart
           style="background-color: lightyellow"
           type="TMXN"
@@ -129,20 +185,20 @@
           pixelsPerDataPoint="medium"
           averageData="month"
         ></weather-kitty-chart>
-
-        <hr width="50%" style="border: black 1px solid" />
 
         <weather-kitty-chart
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="default"
           averageData="avg"
+          noData="hide"
         ></weather-kitty-chart>
         <weather-kitty-chart
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="default"
           averageData="week"
+          noData="hide"
         ></weather-kitty-chart>
         <weather-kitty-chart
           style="background-color: lightyellow"
@@ -150,18 +206,21 @@
           maxDataPoints="max"
           pixelsPerDataPoint="medium"
           averageData="month"
+          noData="hide"
         ></weather-kitty-chart>
         <weather-kitty-chart
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="large"
           averageData="quarter"
+          noData="hide"
         ></weather-kitty-chart>
         <weather-kitty-chart
           type="TMXN"
           maxDataPoints="max"
           pixelsPerDataPoint="large"
           averageData="year"
+          noData="hide"
         ></weather-kitty-chart>
 
         <hr width="50%" style="border: black 1px solid" />
