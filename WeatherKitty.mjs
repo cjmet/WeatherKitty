@@ -1764,8 +1764,7 @@ async function MonitorCharts() {
 }
 
 export async function ReCalcChartAspectAll() {
-  // if (Log.Trace())
-  console.log("ReCalcChartAspectAll");
+  if (Log.Trace()) console.log("ReCalcChartAspectAll");
   let chartContainers = document.getElementsByTagName("weather-kitty-chart");
   for (let container of chartContainers) {
     RecalculateChartAspect(container);
