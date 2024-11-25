@@ -86,8 +86,8 @@ An update will be posted as soon as updates resume. `
 
 ### Project Current Work and Fixes
 
+- [ ] Test/Cache and Set/Cache Status, then Call or Not the API.
 - [ ] setup a local copy of ghcnd, and links, etc.
-- [ ] Fracking FireFox is Wonky. Firefox clips the left side scroll.
 
 #### Project Priority 2
 

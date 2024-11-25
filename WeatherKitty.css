@@ -170,7 +170,8 @@ weather-kitty-week {
   text-align: center;
   text-justify: center;
   display: flex;
-  justify-content: space-around;
+  /* justify-content: space-around; // FireFox FAIL: space-around fails on FireFox */
+  justify-content: space-between;
   overflow-x: auto;
   text-wrap: pretty;
   hyphens: auto;

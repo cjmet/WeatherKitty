@@ -279,9 +279,11 @@ weather-kitty-radar-local {
 
 .WeekAlpha {
   box-sizing: border-box;
+  overflow-x: scroll;
 }
 
 weather-kitty-week {
+  box-sizing: border-box;
   margin: calc(var(--desktopMarginSize) / 2) var(--desktopMarginSize);
 }
 
