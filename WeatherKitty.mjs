@@ -1733,19 +1733,22 @@ async function MonitorCharts() {
 
   do {
     await sleep(1);
+
     let newList = [];
     let elements = document.getElementsByTagName("weather-kitty-chart");
     if (!chartList) ReCalcChartAspectAll();
     for (let element of elements) {
       let style = window.getComputedStyle(element);
       let entry = {
-        innerHeight: style.innerHeight,
-        innerWidth: style.innerWidth,
-        outerHeight: style.outerHeight,
-        outerWidth: style.outerWidth,
+        // Ugh.  I missed this issue for so long. element vs style
+        innerHeight: element.clientHeight,
+        innerWidth: element.clientWidth,
+        outerHeight: element.offsetHeight,
+        outerWidth: element.offsetWidth,
         display: style.display,
       };
-      newList.push(JSON.stringify(entry));
+      let stringData = JSON.stringify(entry);
+      newList.push(stringData);
       await microSleep(1);
     }
     if (Log.Trace())
@@ -1761,7 +1764,8 @@ async function MonitorCharts() {
 }
 
 export async function ReCalcChartAspectAll() {
-  if (Log.Trace()) console.log("ReCalcChartAspectAll");
+  // if (Log.Trace())
+  console.log("ReCalcChartAspectAll");
   let chartContainers = document.getElementsByTagName("weather-kitty-chart");
   for (let container of chartContainers) {
     RecalculateChartAspect(container);

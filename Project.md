@@ -81,11 +81,12 @@ It sounds so neat and simple, and it so very much isn't.
         `A critical system failure at NCEI is preventing updates to GHCN daily, including the by_station files.
 An update will be posted as soon as updates resume. `
   - [ ] NCEI(primary) and NCDC(secondary) are the ones acting up randomly. NCEI would normally be the one to use.
-- [ ] NavTitle Shrink on Load is causing some of the oddness, but I like the shrink animation any time other than load?
+- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
 - [ ] CodeKy Project Completeness Review. Do you feel like I've completed the requirements?
 
 ### Project Current Work and Fixes
 
+- [ ] Local Radar Landscape mobile aspect ratio is wonky.
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
