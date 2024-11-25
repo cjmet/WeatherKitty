@@ -10,6 +10,8 @@ import {
   getWeatherLocationAsync,
   ExpireData,
   PurgeData,
+  CheckApiStatus,
+  sleep,
 } from "./WeatherKitty.mjs";
 
 import { RunTests } from "./test.js";
@@ -151,12 +153,10 @@ async function NavClimate() {
 
 async function ExpireDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
-  console.log("Expiring Data");
   ExpireData();
 }
 
 async function PurgeDataFunc() {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
-  console.log("Purging Data");
   PurgeData();
 }
