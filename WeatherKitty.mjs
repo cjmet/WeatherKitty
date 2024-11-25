@@ -169,7 +169,7 @@ async function WeatherWidgetInit(path) {
     }
     return true;
   } else {
-    if (Log.Warn()) console.log("[WeatherWidgetInit] Warning: Weather Kitty Elements Not Found");
+    if (Log.Debug()) console.log("[WeatherWidgetInit] Warning: Weather Kitty Elements Not Found");
     return false;
   }
 }
@@ -2246,7 +2246,7 @@ export async function fetchCache(url, options, ttl, verbose) {
       fetchResponse = await fetch(url, options);
     } catch (error) {
       // WeatherKittyErrorText(`${error}`); //  ... this didn't work out.
-      if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${url} ${options} ${error}`);
+      if (Log.Error()) console.log(`[fetchCache] Fetch Error: ${url} ${error}`);
       let ErrorResponse = new Response("Fetch Error", { status: 500, ok: false, text: error });
       return ErrorResponse;
     }
@@ -2255,7 +2255,7 @@ export async function fetchCache(url, options, ttl, verbose) {
   if (fetchResponse && fetchResponse.ok) {
     expires = Date.now() + ttl;
     if (Log.Info() || verbose)
-      console.log(`[fetchCache] fetch: ${url} [${wkElapsedTime(expires)}]`);
+      console.log(`[fetchCache] fetched: ${url} [${wkElapsedTime(expires)}]`);
     let responseClone = fetchResponse.clone();
     try {
       await cache.put(url, responseClone);
