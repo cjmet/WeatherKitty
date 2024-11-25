@@ -86,7 +86,13 @@ An update will be posted as soon as updates resume. `
 
 ### Project Current Work and Fixes
 
-- [ ] Local Radar Landscape mobile aspect ratio is wonky.
+- [ ] setup a local copy of ghcnd, and links, etc.
+- [ ] Fracking FireFox is Wonky. Firefox clips the left side scroll.
+
+#### Project Priority 2
+
+- [ ] store status so we don't keep retrying? /csv/special ?
+- [ ] dynamic chart create?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
@@ -94,10 +100,6 @@ An update will be posted as soon as updates resume. `
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
   - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip
-
-#### Project Priority 2
-
-- [ ] ...
 
 ### Project Priority 3
 

@@ -6,6 +6,8 @@ https://cjmet.github.io/WeatherKitty/
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/img/DemoImage.jpg)
 <span style="font-size: x-small;"> <br>Github Copilot was used during the development of this project.</span>
 
+**GHCND Note:** The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion. If you want to explore the historical data it's advised that you download a local copy from: [NCEI](https://www.ncei.noaa.gov/pub/data/ghcn/daily/)
+
 **CodeKy Note:** See the project.md for CodeKy Specific Info.
 
 ## Usage
@@ -40,6 +42,15 @@ https://cjmet.github.io/WeatherKitty/
 - <b>`<weather-kitty-map-alerts>`</b> - Alerts map.
 - <b>`<weather-kitty-chart type="keyword">`</b> - Weather Charts. NOTE: Charts may require a defined or contained size.
 - <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
+- <b>`<weather-kitty-status>`</b> - API Status Widget.
+  <details>
+  <summary>Additional Status Subwidgets</summary>
+
+  `<wk-status-nws class="wk-status-signal">`
+  `<wk-status-aws class="wk-status-signal">`
+  `<wk-status-ncei class="wk-status-signal">`
+  `<wk-status-ncdc class="wk-status-signal">`
+  </details>
 
 ### CSS Classes and Tags
 

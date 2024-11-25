@@ -18,6 +18,8 @@ import {
   MathAverage,
   MathDistance,
   ManhattanDistance,
+  Fahrenheit,
+  wkElapsedTime,
 } from "./config.mjs";
 
 export {
@@ -34,6 +36,8 @@ export {
   MathAverage,
   MathDistance,
   ManhattanDistance,
+  Fahrenheit,
+  wkElapsedTime,
 };
 
 // Function Weather Kitty
@@ -111,6 +115,11 @@ async function WeatherWidgetInit(path) {
     "WeatherKittyStatus"
   );
   widgets = [...widgets, ...result];
+
+  FindAndReplaceTags("wk-status-nws", WeatherKittySignalBlock, "wk-status-signal");
+  FindAndReplaceTags("wk-status-aws", WeatherKittySignalBlock, "wk-status-signal");
+  FindAndReplaceTags("wk-status-ncei", WeatherKittySignalBlock, "wk-status-signal");
+  FindAndReplaceTags("wk-status-ncdc", WeatherKittySignalBlock, "wk-status-signal");
 
   result = FindAndReplaceTags(
     "weather-kitty-forecast",
@@ -1026,6 +1035,7 @@ async function ForecastMatrix(data) {
   let text = "";
   let i = 0;
   for (let period of data) {
+    // if (i === 3) period.shortForecast = "Slight Chance Rain Showers then Slight Chance Rain And Snow Showers"; // cj-debug Long Text
     let leftRight = "";
     i++;
     if (i === 1) leftRight = 'class="wk-left"';
@@ -1604,8 +1614,8 @@ export async function CreateChart(
       else suffix = "";
       if (chartSpan)
         chartSpan.innerHTML = `${preFix} ${key} - ${
-          values && values[0]?.unitCode ? values[0]?.unitCode : "NO-DATA" // cjm
-        } ${suffix} [xf]`; // cj-no-data
+          values && values[0]?.unitCode ? values[0]?.unitCode : "NO-DATA"
+        } ${suffix}`; // cj-no-data
     }
 
     // ---
@@ -1829,42 +1839,6 @@ async function WeatherSquares(elementId, replacementText, replacementImgUrl, alt
   }
 }
 
-// Function WeatherTemperatureFahrenheit
-// .replace(/wmoUnit\:deg/i, "")
-export function Fahrenheit(temperature, temperatureUnit) {
-  // ((fahrenheit - 32) * 5 / 9) °F to °C;
-  if (temperature === null || temperature === undefined || temperature === "") return NaN;
-  // celcius to fahrenheit: (celsius * 9 / 5) + 32
-  let fahrenheit = -999;
-  temperatureUnit = temperatureUnit.toLowerCase();
-  temperatureUnit = temperatureUnit.replace(/wmoUnit\:deg/i, "");
-  if (temperatureUnit === "f" || temperatureUnit === "°f") fahrenheit = Math.round(temperature);
-  else if (temperatureUnit == "c" || temperatureUnit === "°c")
-    fahrenheit = Math.round((temperature * 9) / 5 + 32);
-  else if (Log.Verbose()) console.log(`Warning: Invalid Temperature Unit: ${temperatureUnit}`);
-
-  return fahrenheit;
-}
-
-// Function Elapsed Time
-export function wkElapsedTime(startTime) {
-  let endTime = new Date();
-  let elapsed = startTime - endTime;
-  let seconds = (elapsed / 1000).toFixed(0);
-  let minutes = (seconds / 60).toFixed(0);
-  let hours = (minutes / 60).toFixed(0);
-
-  seconds = seconds % 60;
-  minutes = minutes % 60;
-
-  if (Math.abs(hours) >= 1) return `${hours}h`; // DOH! It's 1 hour even
-  if (Math.abs(minutes) >= 1) return `${minutes}m`;
-  if (Math.abs(seconds) >= 1) return `${seconds}s`;
-
-  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`);
-  return `${elapsed}ms`;
-}
-
 // Function findWeatherWords
 function findWeatherWords(shortForecast) {
   // Weather Phrases sorted by Severity
@@ -2002,21 +1976,21 @@ export function isMobile() {
   if (!config.isMobile) config.isMobile = IsMobileByBowser();
   return config.isMobile;
 
-  // additional ways to detect mobile; but all, including bowser, have issues.
-  if (window.innerWidth < 450 || window.innerHeight < 450) return true;
-  if ("ontouchstart" in window) return true;
-  // Gemini AI, Chat GPT
-  {
-    let userAgent = navigator.userAgent.toLowerCase();
-    if (
-      /mobile|tablet|ipad|ipod|phone|mobi|android|iphone|ipod|opera mini|iemobile|webos/i.test(
-        userAgent
-      )
-    )
-      return true;
-  }
+  // // additional ways to detect mobile; but all, including bowser, have issues.
+  // if (window.innerWidth < 450 || window.innerHeight < 450) return true;
+  // if ("ontouchstart" in window) return true;
+  // // Gemini AI, Chat GPT
+  // {
+  //   let userAgent = navigator.userAgent.toLowerCase();
+  //   if (
+  //     /mobile|tablet|ipad|ipod|phone|mobi|android|iphone|ipod|opera mini|iemobile|webos/i.test(
+  //       userAgent
+  //     )
+  //   )
+  //     return true;
+  // }
 
-  return false;
+  // return false;
 }
 
 // ------------------------------------------------------------------
@@ -2739,6 +2713,10 @@ async function HistoryGetCsvFile(stationId) {
     let fileData;
     let APIs = [
       {
+        url: `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
+        timeout: config.fetchTimeout,
+      },
+      {
         url: `https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/${stationId}.csv.gz`,
         timeout: config.fetchTimeout,
       },
@@ -2748,10 +2726,6 @@ async function HistoryGetCsvFile(stationId) {
       },
       {
         url: `https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz`,
-        timeout: config.fetchTimeout,
-      },
-      {
-        url: `https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv`,
         timeout: config.fetchTimeout,
       },
     ];
@@ -2849,11 +2823,13 @@ function WeatherKittyGeoAddressBlock() {
 
 let WeatherKittyStatusBlock = `
     <span>API:</span>
-    <wk-status-nws class="wk-status-signal">❔</wk-status-nws>
-    <wk-status-aws class="wk-status-signal">❔</wk-status-aws>
-    <wk-status-ncei class="wk-status-signal">❔</wk-status-ncei>
-    <wk-status-ncdc class="wk-status-signal">❔</wk-status-ncdc>
+    <wk-status-nws></wk-status-nws>
+    <wk-status-aws></wk-status-aws>
+    <wk-status-ncei></wk-status-ncei>
+    <wk-status-ncdc></wk-status-ncdc>
 `;
+
+let WeatherKittySignalBlock = "❔";
 // /Blocks -----------------------------------
 
 // Run Weather Kitty

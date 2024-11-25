@@ -327,6 +327,42 @@ function ManhattanDistance(lat1, lon1, lat2, lon2) {
 // ---
 // /Math Functions --------------------------------------------------------
 
+// Function WeatherTemperatureFahrenheit
+// .replace(/wmoUnit\:deg/i, "")
+function Fahrenheit(temperature, temperatureUnit) {
+  // ((fahrenheit - 32) * 5 / 9) °F to °C;
+  if (temperature === null || temperature === undefined || temperature === "") return NaN;
+  // celcius to fahrenheit: (celsius * 9 / 5) + 32
+  let fahrenheit = -999;
+  temperatureUnit = temperatureUnit.toLowerCase();
+  temperatureUnit = temperatureUnit.replace(/wmoUnit\:deg/i, "");
+  if (temperatureUnit === "f" || temperatureUnit === "°f") fahrenheit = Math.round(temperature);
+  else if (temperatureUnit == "c" || temperatureUnit === "°c")
+    fahrenheit = Math.round((temperature * 9) / 5 + 32);
+  else if (Log.Verbose()) console.log(`Warning: Invalid Temperature Unit: ${temperatureUnit}`);
+
+  return fahrenheit;
+}
+
+// Function Elapsed Time
+function wkElapsedTime(startTime) {
+  let endTime = new Date();
+  let elapsed = startTime - endTime;
+  let seconds = (elapsed / 1000).toFixed(0);
+  let minutes = (seconds / 60).toFixed(0);
+  let hours = (minutes / 60).toFixed(0);
+
+  seconds = seconds % 60;
+  minutes = minutes % 60;
+
+  if (Math.abs(hours) >= 1) return `${hours}h`; // DOH! It's 1 hour even
+  if (Math.abs(minutes) >= 1) return `${minutes}m`;
+  if (Math.abs(seconds) >= 1) return `${seconds}s`;
+
+  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`);
+  return `${elapsed}ms`;
+}
+
 // EXPORT FUNCTIONS -------------------------------------------------------
 export {
   Log,
@@ -342,4 +378,6 @@ export {
   MathAverage,
   MathDistance,
   ManhattanDistance,
+  Fahrenheit,
+  wkElapsedTime,
 };
