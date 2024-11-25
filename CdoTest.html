@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header style="display: flex"></header>
+    <script type="module">
+      // --------------------------------------------------------------
+      // limit 5 requests per second, 10,000 requests per day
+      let token = "";
+      // ---
+
+      import {
+        fetchCache,
+        WeatherKittyPause,
+        fetchTimeoutOption,
+        Log,
+        LogLevel,
+      } from "./WeatherKitty.mjs";
+
+      WeatherKittyPause(true);
+      Log.SetLogLevel(LogLevel.Info);
+
+      let headers = new Headers();
+      let signal = fetchTimeoutOption(30000);
+      headers.append("token", token);
+      headers.append("signal", signal);
+      // ---
+
+      let stationID, dataSetID, maxDate, minDate, dataSetsUrl, stationUrl, dataUrl;
+
+      stationID = "GHCND:USC00153629";
+      stationID = "GHCND:USC00010008";
+      dataSetID = "GSOM";
+      maxDate = "2014-03-06";
+      minDate = "1948-07-01";
+
+      stationID = "GHCND:USC00010008";
+      dataSetID = "GSOM";
+      maxDate = "2014-03-06";
+      minDate = "1948-07-01";
+
+      maxDate = "2010-05-31";
+      minDate = "2010-05-01";
+
+      dataSetsUrl = "https://www.ncei.noaa.gov/cdo-web/api/v2/datasets";
+      if (true) {
+        fetchCache(dataSetsUrl, { headers: headers })
+          .then((response) => response.json())
+          .then((data) => console.log("Datasets: ", data))
+          .catch((error) => console.log(error));
+
+        stationUrl = `https://www.ncei.noaa.gov/cdo-web/api/v2/stations/${stationID}`;
+
+        fetchCache(stationUrl, { headers: headers })
+          .then((response) => response.json())
+          .then((data) => console.log("Station: ", data))
+          .catch((error) => console.log(error));
+
+        //         https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=GSOM&stationid=GHCND:USC00010008&units=standard&startdate=2010-05-01&enddate=2010-05-31
+        dataUrl = `https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=${dataSetID}&stationid=${stationID}&units=standard&startdate=${minDate}&enddate=${maxDate}`;
+        if (minDate && maxDate)
+          fetchCache(dataUrl, { headers: headers })
+            .then((response) => response.json())
+            .then((data) => console.log("Data: ", data))
+            .catch((error) => console.log(error));
+
+        dataUrl = `https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=GSOM&stationid=GHCND:USC00010008&units=standard&startdate=2010-05-01&enddate=2010-05-31`;
+        fetchCache(dataUrl, { headers: headers })
+          .then((response) => response.json())
+          .then((data) => console.log("Data-Test: ", data))
+          .catch((error) => console.log(error));
+      }
+    </script>
+  </body>
+</html>

@@ -55,6 +55,7 @@ let Log = {
 
 // CONFIG ---------------------------------------------------------------
 let config = {
+  PAUSE: false,
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
@@ -66,6 +67,7 @@ let config = {
 
   fetchTimeout: 1000 * 30, // 30 seconds
   RateLimitTtl: 6000 * 1.1, // x seconds
+  StatusTtl: 1000 * 60 * 15, // About 15 minutes
 
   CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for no-proxy
 
@@ -327,19 +329,203 @@ function ManhattanDistance(lat1, lon1, lat2, lon2) {
 // ---
 // /Math Functions --------------------------------------------------------
 
+// Function WeatherTemperatureFahrenheit
+// .replace(/wmoUnit\:deg/i, "")
+function Fahrenheit(temperature, temperatureUnit) {
+  // ((fahrenheit - 32) * 5 / 9) °F to °C;
+  if (temperature === null || temperature === undefined || temperature === "") return NaN;
+  // celcius to fahrenheit: (celsius * 9 / 5) + 32
+  let fahrenheit = -999;
+  temperatureUnit = temperatureUnit.toLowerCase();
+  temperatureUnit = temperatureUnit.replace(/wmoUnit\:deg/i, "");
+  if (temperatureUnit === "f" || temperatureUnit === "°f") fahrenheit = Math.round(temperature);
+  else if (temperatureUnit == "c" || temperatureUnit === "°c")
+    fahrenheit = Math.round((temperature * 9) / 5 + 32);
+  else if (Log.Verbose()) console.log(`Warning: Invalid Temperature Unit: ${temperatureUnit}`);
+
+  return fahrenheit;
+}
+
+// Function Elapsed Time
+function wkElapsedTime(startTime) {
+  let endTime = new Date();
+  let elapsed = startTime - endTime;
+  let seconds = (elapsed / 1000).toFixed(0);
+  let minutes = (seconds / 60).toFixed(0);
+  let hours = (minutes / 60).toFixed(0);
+
+  seconds = seconds % 60;
+  minutes = minutes % 60;
+
+  if (Math.abs(hours) >= 1) return `${hours}h`; // DOH! It's 1 hour even
+  if (Math.abs(minutes) >= 1) return `${minutes}m`;
+  if (Math.abs(seconds) >= 1) return `${seconds}s`;
+
+  // console.log(`${hours}h ${minutes}m ${seconds}s ${elapsed}ms`);
+  return `${elapsed}ms`;
+}
+
+// Function BadHyphen
+function BadHyphen(phrase) {
+  let split = 7;
+  let words = phrase.split(" ");
+  for (let i = 0; i < words.length; i++) {
+    if (words[i].length > split) {
+      words[i] = words[i].substring(0, split) + "-" + words[i].substring(split);
+    }
+  }
+  return words.join(" ");
+}
+
+// Function getWidthInEm
+function getWidthInEm(element) {
+  let fontSize = parseFloat(getComputedStyle(element).fontSize);
+
+  let widthInPixels = getComputedStyle(element).width;
+  widthInPixels = parseFloat(widthInPixels.replace("px", ""));
+
+  let result = widthInPixels / fontSize;
+  return result;
+}
+
+// Function WeatherKittyCheckPath
+async function WeatherKittyCheckPath(path) {
+  path = "/" + path;
+  let target = path + config.WeatherKittyObsImage;
+  let result = await fetch(target);
+  if (result.ok) return path;
+  else return null;
+}
+
+function IsMobileByBowser() {
+  const parser = Bowser.getParser(navigator.userAgent);
+  return parser.getPlatformType() === "mobile";
+}
+
+function isMobile() {
+  if (!config.isMobile) config.isMobile = IsMobileByBowser();
+  return config.isMobile;
+
+  // // additional ways to detect mobile; but all, including bowser, have issues.
+  // if (window.innerWidth < 450 || window.innerHeight < 450) return true;
+  // if ("ontouchstart" in window) return true;
+  // // Gemini AI, Chat GPT
+  // {
+  //   let userAgent = navigator.userAgent.toLowerCase();
+  //   if (
+  //     /mobile|tablet|ipad|ipod|phone|mobi|android|iphone|ipod|opera mini|iemobile|webos/i.test(
+  //       userAgent
+  //     )
+  //   )
+  //     return true;
+  // }
+
+  // return false;
+}
+
+function ExpireData() {
+  localStorage.clear("ttlCache");
+  return true;
+}
+
+async function PurgeData() {
+  console.log("PurgeData");
+  localStorage.clear("ttlCache");
+  caches.delete("weather-kitty");
+  return true;
+}
+
+async function clearCache(url) {
+  console.log("clearCache");
+  let cache = await caches.open("weather-kitty");
+  await cache.delete(url);
+}
+
+async function setCache(url, response, ttl) {
+  let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+  if (ttlCache == null) ttlCache = {};
+  ttlCache[url] = Date.now() + ttl;
+  localStorage.setItem("ttlCache", JSON.stringify(ttlCache));
+
+  let cache = await caches.open("weather-kitty");
+  await cache.put(url, response);
+}
+
+async function getCache(url) {
+  let ttlCache = JSON.parse(localStorage.getItem("ttlCache"));
+  if (ttlCache == null) ttlCache = {};
+  let ttl = ttlCache[url];
+
+  let cache = await caches.open("weather-kitty");
+  let response = await cache.match(url);
+  return { url: url, ttl: ttl, response: response };
+}
+
+// HTML Blocks -----------------------------------
+// functions instead of variables, so that path updates to the images can take effect
+function WeatherKittyCurrentBlock() {
+  let results = `<weather-kitty-tooltip>
+    <weather-kitty-geoaddress></weather-kitty-geoaddress>
+    <p></p>
+  </weather-kitty-tooltip>
+  <img src="${config.WeatherKittyObsImage}" class="WeatherKittyImage"/>
+  <clip><span class="WeatherKittyText">Loading . . .</span><clip>`; // cj-clip-span
+  return results;
+}
+
+function WeatherKittyForecastBlock() {
+  let results = `<weather-kitty-tooltip>
+    <weather-kitty-geoaddress></weather-kitty-geoaddress>
+    <p></p>
+  </weather-kitty-tooltip>
+  <img src="${config.WeatherKittyForeImage}" class="WeatherKittyImage" />
+  <clip><span class="WeatherKittyText">Loading . . .</span></clip>`; // cj-clip-span
+  return results;
+}
+
+let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
+    <weather-kitty-geoaddress></weather-kitty-geoaddress>
+    <p></p>
+  </weather-kitty-tooltip>
+  <weather-kitty-current></weather-kitty-current>
+  <div style="width: 0.5em;"></div>
+  <weather-kitty-forecast></weather-kitty-forecast>`;
+
+let WeatherKittyChartBlock = `<chartSpan>Loading ...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
+
+// src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
+let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast" />`;
+
+let WeatherKittyMapRadarBlock = `<img alt="NWS Radar" />`;
+
+let WeatherKittyMapAlertsBlock = `<img alt="US Weather Alerts Map" />`;
+
+let WeatherKittyMapLocalRadarBlock = `<img alt="Local Radar" />`;
+
+function WeatherKittyGeoAddressBlock() {
+  let results = `<span>Loading ...</span>
+  <label>Loading ... </label>
+  <button>${config.SetLocationText}</button>`;
+  return results;
+}
+
+let WeatherKittyStatusBlock = `
+    <span>API:</span>
+    <wk-status-nws></wk-status-nws>
+    <wk-status-ncei></wk-status-ncei>
+    <wk-status-ncdc></wk-status-ncdc>
+    <wk-status-aws></wk-status-aws>
+`;
+
+let WeatherKittySignalBlock = "❔";
+
+// /Blocks -----------------------------------
+
 // EXPORT FUNCTIONS -------------------------------------------------------
-export {
-  Log,
-  LogLevel,
-  config,
-  GetPixels,
-  AddPixels,
-  DecompressCsvFile,
-  sleep,
-  microSleep,
-  TouchMoveAccelerated,
-  isValidNumericString,
-  MathAverage,
-  MathDistance,
-  ManhattanDistance,
+// prettier-ignore
+export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, microSleep, TouchMoveAccelerated, isValidNumericString, MathAverage, 
+  MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
+  PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, 
+  WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
+  WeatherKittyStatusBlock, WeatherKittySignalBlock,
 };

@@ -3,6 +3,10 @@
 # config file
 config.json
 
+# ghcnd
+*.gz
+*.csv
+
 # compiled output
 /dist
 /tmp

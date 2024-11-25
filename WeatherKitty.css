@@ -98,7 +98,7 @@ weather-kitty-forecast > img {
   opacity: var(--weatherKittyBackgroundOpacity);
 }
 
-/* Yes all the week-tip stuff is a mess // cjm */
+/* Yes all the week-tip stuff is a mess */
 weather-kitty-week-tip,
 weather-kitty-tooltip {
   position: absolute;
@@ -149,7 +149,7 @@ weather-kitty-forecast:hover {
     opacity: 1;
     z-index: 10;
   }
-  weather-kitty-week-tip, /* cjm */
+  weather-kitty-week-tip,
   weather-kitty-week-tip span {
     width: 12em;
     height: max-content;
@@ -170,7 +170,8 @@ weather-kitty-week {
   text-align: center;
   text-justify: center;
   display: flex;
-  justify-content: space-around;
+  /* justify-content: space-around; // FireFox FAIL: space-around fails on FireFox */
+  justify-content: space-between;
   overflow-x: auto;
   text-wrap: pretty;
   hyphens: auto;
@@ -186,7 +187,8 @@ weather-kitty-week-card {
   border: black 1px solid;
   border-radius: 1em;
   margin: 0.25em;
-  max-width: 6em;
+  max-width: 7.5em;
+  min-width: 7.5em;
   overflow: visible;
 }
 
@@ -289,13 +291,15 @@ weather-kitty-radar-local img {
   box-sizing: border-box;
   border-radius: 1em;
   aspect-ratio: 1.38;
-  max-width: min(100%, 99vw);
+  max-width: min(100%, 99vw, calc((99vh - 2em) * 1.38)); /* cjm */
   max-height: min(100%, 99vh);
   flex: 0 0 auto;
 }
 
 weather-kitty-radar-local img {
   aspect-ratio: 1.09;
+  height: 100%;
+  max-width: min(100%, calc((99vh - 2em) * 1.09)); /* cjm */
 }
 
 .wk-left {
