@@ -10,6 +10,7 @@ import {
   wkElapsedTime,
   fetchTimeoutOption,
   assert,
+  CheckApiStatus,
 } from "./WeatherKitty.mjs";
 
 // -------------------------------------
@@ -215,6 +216,8 @@ export async function RunTests() {
   await Promise.all([
     // "GHCND Station",   "Latitude, Longitude",   "Address, ZipCode",   "City, State",   "Address, City, State"
 
+    CheckApiStatus(),
+
     testStationIdAddress("138.04638208053878, -84.49714266224647", undefined),
     testStationIdAddress("asdf"),
     testStationIdAddress("USW00014739", "USW00014739"), // Boston, MA
@@ -245,6 +248,6 @@ export async function RunTests() {
   // ------------------------------------------------------------------------------------------------------- //
 
   Log.SetLogLevel(savedLogLevel);
-  assertText.innerHTML += "<br><b><h3>Tests Completed.</h3></b>";
+  assertText.innerHTML = "<br><b><h3>Tests Completed.</h3></b>" + assertText.innerHTML;
   console.log("Tests Completed.");
 }

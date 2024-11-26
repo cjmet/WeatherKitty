@@ -7,7 +7,7 @@ import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
 import { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, microSleep, TouchMoveAccelerated, isValidNumericString, MathAverage, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
-  WeatherKittyStatusBlock, WeatherKittySignalBlock,
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
 } from "./config.mjs";
 
 // prettier-ignore
@@ -15,7 +15,7 @@ export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, 
   WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock, 
-  WeatherKittyStatusBlock, WeatherKittySignalBlock,
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
 };
 
 // Function Weather Kitty
@@ -71,10 +71,10 @@ async function WeatherKittyStart() {
 
 // Function Weather Widget Initialization
 async function WeatherWidgetInit(path) {
-  if (config.WeatherKittyIsInit) return;
-  config.WeatherKittyIsInit = true;
+  if (config.WeatherKittyIsInit > 0) return;
+  config.WeatherKittyIsInit = 1;
 
-  if (Log.Info()) console.log("[WeatherKittyInit] Initializing Weather Kitty");
+  if (Log.Debug()) console.log("[WeatherKittyInit] Initializing Weather Kitty");
 
   InjectWeatherKittyStyles(path);
 
@@ -159,11 +159,22 @@ async function WeatherWidgetInit(path) {
       // SetAddLocationButton(widgets[0]);
       InsertGeoAddressElement(widgets[0]);
     }
+    if (Log.Info()) console.log("[WeatherKittyInit] Initialized.");
+    config.WeatherKittyIsInit = 2;
     return true;
   } else {
     if (Log.Debug()) console.log("[WeatherWidgetInit] Warning: Weather Kitty Elements Not Found");
+    if (Log.Info()) console.log("[WeatherKittyInit] Initialized.");
+    config.WeatherKittyIsInit = 2;
     return false;
   }
+}
+
+export async function WeatherKittyWaitOnInit() {
+  while (config.WeatherKittyIsInit < 2) {
+    await microSleep(100);
+  }
+  return;
 }
 
 // Function Weather Widget
@@ -183,7 +194,11 @@ export async function WeatherKitty() {
 
     // DATA --------------------------------------------------------------
     // Get/Update the Weather Data
-    let weather = await getWeatherAsync();
+    let LoadWeather = await WeatherKittyGetWeatherTypes();
+    let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this
+    let LoadWeatherCharts = ChartTypes?.Weather?.length > 0;
+    let weather;
+    if (LoadWeather || LoadWeatherCharts) weather = await getWeatherAsync();
 
     // Insert Local Radar here.
     // https://radar.weather.gov/ridge/standard/KMRX_loop.gif
@@ -195,8 +210,6 @@ export async function WeatherKitty() {
     // /Local Radar
 
     let historyStation = null;
-    let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this to the stationID as well.
-    // cj-optimize - Only get the station if we need it or already have it.
     if (ChartTypes.History.length > 0) {
       let location = await getWeatherLocationAsync();
       if (location && location?.latitude && location?.longitude) {
@@ -206,8 +219,11 @@ export async function WeatherKitty() {
       }
     }
 
-    if (!weather?.observationData || !weather?.forecastData) {
-      if (Log.Error()) console.log("[WeatherKitty] *** ERROR ***: No Weather Data Available");
+    if (
+      (LoadWeather || LoadWeatherCharts) &&
+      (!weather?.observationData || !weather?.forecastData)
+    ) {
+      if (Log.Info()) console.log("[WeatherKitty] No Weather Data Available");
       // return;  // we can't return here, it breaks the locks and other things.
     }
 
@@ -223,7 +239,7 @@ export async function WeatherKitty() {
       if (!shortText && Log.Warn()) console.log("[WeatherKitty] Warning: Null shortText");
       if (!img && Log.Warn()) console.log("[WeatherKitty] Warning: Null Icon");
 
-      // cj-debug
+      // debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
       // temp = 109;
       // precip = 100;
@@ -248,7 +264,7 @@ export async function WeatherKitty() {
       if (!shortText && Log.Warn()) console.log("[WeatherKitty] Warning: Null shortText");
       if (!img && Log.Warn()) console.log("[WeatherKitty] Warning: Null Icon");
 
-      // cj-debug
+      // debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
       // temp = 109;
       // precip = 100;
@@ -261,11 +277,31 @@ export async function WeatherKitty() {
       WeatherSquares("weather-kitty-forecast", text, img, altimg);
     }
 
-    // Long Forecast
     let locationName = null;
+    {
+      let response = (await getCache("/weatherkittycache/location"))?.response;
+      let cachedLocation = await response?.json();
+      if (response && response.ok) {
+        console.log("[WeatherKitty] Cached Location", cachedLocation);
+        locationName = cachedLocation.city ? cachedLocation.city : "";
+        locationName += cachedLocation.name ? cachedLocation.name : "";
+        locationName += cachedLocation.state ? ", " + cachedLocation.state : "";
+        locationName += cachedLocation.id ? " - " + cachedLocation.id : "";
+        if (!locationName) {
+          locationName = cachedLocation.latitude
+            ? parseFloat(cachedLocation?.latitude).toFixed(6)
+            : "";
+          locationName += cachedLocation.longitude
+            ? ", " + parseFloat(cachedLocation?.longitude).toFixed(6)
+            : "";
+        }
+      } else console.log("[WeatherKitty] No Cached Location", cachedLocation);
+    }
+
+    // Long Forecast
     if (weather?.pointData && weather?.stationsData && weather?.forecastData) {
       locationName = weather.pointData.properties.relativeLocation.properties.city;
-      // cj-debug
+      // debug
       // longname long name longest name
       // "100 lake shore, Village of Grosse Pointe Shores, Michigan"
       // "Chargoggagoggmanchauggagoggchaubunagungamaugg, MA";
@@ -323,7 +359,7 @@ export async function WeatherKitty() {
 
     // Forecast Matrix
 
-    ForecastMatrix(weather?.forecastData?.properties?.periods);
+    if (weather?.forecastData) ForecastMatrix(weather?.forecastData?.properties?.periods);
 
     // --------------------------------------------------------------
     // Charting
@@ -362,91 +398,34 @@ export async function WeatherKitty() {
     }
 
     // API Status.  Update the status of any api that isn't already updated.
-    // CheckApiStatus();
+    // CheckApiStatus(); // cj - I think I like this bettter disabled. Only load/check APIs as needed.
   });
   // console.log("[WeatherKitty] Exiting Weather Kitty");
 }
 
-// APISTATUS API-STATUS API STATUS
-// wkStatusTag is optional.  If provided, check only that tag.
-export async function CheckApiStatus(wkStatusTag) {
-  let response;
-  let result = true;
-  let APIs = [
-    { name: "wk-status-nws", url: "https://api.weather.gov/alerts/types" },
-    { name: "wk-status-aws", url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-version.txt" },
-    {
-      name: "wk-status-ncei",
-      url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
-    },
-    {
-      name: "wk-status-ncdc",
-      url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
-    },
-  ];
-
-  let checkTagName = false;
-  for (let api of APIs) {
-    if (wkStatusTag && api.name !== wkStatusTag) continue;
-    checkTagName = true;
-    let elements = document.getElementsByTagName(api.name);
-    for (let element of elements) element.innerHTML = "🟡";
+export async function WeatherKittyWaitOnLoad() {
+  while (!config.WeatherWidgetIsLoaded || (await WeatherKittyIsLoading())) {
+    await microSleep(100);
   }
-  if (!checkTagName && Log.Warn())
-    console.log(`[CheckApiStatus] *** ERROR ***: API Tag [${wkStatusTag}] Not Found.`);
-
-  let promiseArray = [];
-  for (let api of APIs) {
-    if (wkStatusTag && api.name !== wkStatusTag) continue;
-    if (Log.Verbose()) console.log(`Checking API: ${api.name}`);
-
-    // fetchCache
-    let url = api.url;
-    let options = fetchTimeoutOption(1000 * 5);
-
-    promiseArray.push(
-      fetchCache(url, options, config.StatusTtl, config.StatusTtl).then(async (response) => {
-        let value = response && response.ok && response.status === 200;
-        if (!value) result = false;
-        let elements = document.getElementsByTagName(`${api.name}`);
-        for (let element of elements) {
-          assert(null, value, element, "replace");
-        }
-      })
-    );
-  }
-  await Promise.all(promiseArray);
-  return result;
+  return;
 }
 
-// --------------------------------------------------------------
+export function WeatherKittyGetWeatherTypes() {
+  let elements;
+  elements = document.getElementsByTagName("weather-kitty");
+  if (elements.length > 0) return true;
+  elements = document.getElementsByTagName("weather-kitty-forecast");
+  if (elements.length > 0) return true;
+  elements = document.getElementsByTagName("weather-kitty-current");
+  if (elements.length > 0) return true;
+  elements = document.getElementsByTagName("weather-kitty-tooltip");
+  if (elements.length > 0) return true;
+  elements = document.getElementsByTagName("weather-kitty-week");
+  if (elements.length > 0) return true;
+  elements = document.getElementsByTagName("weather-kitty-radar-local");
+  if (elements.length > 0) return true;
 
-// Function assert
-export async function assert(message, condition, element, replace) {
-  if (Log.Verbose()) console.log("[Assert] ", message, condition, element != null, replace);
-  if (!element) {
-    if (!config.logOnce) {
-      if (Log.Warn()) console.log('[Assert] Log Once: "element not found."');
-      config.logOnce = true;
-    }
-    return;
-  }
-  let msg;
-  if (!condition) {
-    // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢, ✴️, ☐, ◯, ⍰, ❓, ❔
-    if (message) msg = `🔴 <span style="color: red;">${message}</span><br>`;
-    else msg = `🔴`;
-    if (replace) element.innerHTML = msg;
-    else element.innerHTML += msg;
-    if (Log.Error() && message) console.log("Assertion Failed: ", message);
-  } else {
-    if (message) msg = `🟢 ${message}<br>`;
-    else msg = `🟢`;
-    if (replace) element.innerHTML = msg;
-    else element.innerHTML += msg;
-  }
-  if (message) console.log("[Assert] ", message, condition);
-  return condition;
+  return false;
 }
 
 export function WeatherKittyErrorText(message) {
@@ -596,7 +575,7 @@ async function SetLoadingIndicatorMessage(kvpMap) {
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `Loading ${message}... &nbsp; `;
+        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `;
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
@@ -614,13 +593,6 @@ async function SetLoadingIndicatorMessage(kvpMap) {
   }
 }
 
-export async function WeatherKittyWaitOnLoad() {
-  while (!config.WeatherWidgetIsLoaded || (await WeatherKittyIsLoading())) {
-    await microSleep(100);
-  }
-  return;
-}
-
 // disable the widget and disable the initial loading of the widget
 // if you use this you may need to call WeatherKitty() to load the widget
 export function WeatherKittyPause(value) {
@@ -631,6 +603,7 @@ export function WeatherKittyPause(value) {
 async function WeatherMaps(elementName, Url, CacheTime) {
   WeatherKittyIsLoading(elementName.replace("weather-kitty-", ""), async () => {
     let maps = document.getElementsByTagName(elementName);
+    if (maps.length <= 0) return;
     let response = await corsCache(Url, null, CacheTime);
     if (response != null && response.ok) {
       let blob = await response.blob();
@@ -639,7 +612,7 @@ async function WeatherMaps(elementName, Url, CacheTime) {
         let img = map.getElementsByTagName("img")[0];
         img.src = url;
 
-        // cjm - I really probably shouldn't do this ... but it's my map so live with it.
+        // cj - I really probably shouldn't do this ... but it's my map so live with it.
         if (elementName === "weather-kitty-radar-local") {
           let boxTarget = map.getElementsByClassName("wk-BoxTarget")[0];
           if (boxTarget) {
@@ -1065,7 +1038,7 @@ async function ForecastMatrix(data) {
   let text = "";
   let i = 0;
   for (let period of data) {
-    // if (i === 3) period.shortForecast = "Slight Chance Rain Showers then Slight Chance Rain And Snow Showers"; // cj-debug Long Text
+    // if (i === 3) period.shortForecast = "Slight Chance Rain Showers then Slight Chance Rain And Snow Showers"; //  Long Text
     let leftRight = "";
     i++;
     if (i === 1) leftRight = 'class="wk-left"';
@@ -1213,7 +1186,7 @@ export async function WeatherCharts(chartData, locationName) {
       }
       chartType = chartType.trim();
 
-      // NO-DATA  CHART-NO-DATA // cj-no-data
+      // NO-DATA  CHART-NO-DATA // no-data
       if (types.includes(chartType) === false) {
         if (container.getAttribute("NoData")?.toLowerCase() === "hide")
           container.style.display = "none";
@@ -1250,7 +1223,7 @@ export async function CreateChart(
   WeatherKittyIsLoading(`${key}`, async () => {
     if (values == null || values.length == 0 || values[0].value === undefined) {
       if (Log.Verbose()) console.log(`[CreateChart] ${key}: values are empty`);
-      // return; // cj-no-data - I'm going to allow NO_DATA Charts to render blank. oops.
+      // return; // no-data - I'm going to allow NO_DATA Charts to render blank. oops.
     }
     if (
       timestamps === null ||
@@ -1261,7 +1234,7 @@ export async function CreateChart(
       if (Log.Verbose()) {
         console.log(`[CreateChart] ${key}: timestamps are empty`);
       }
-      // return; // cj-no-data - I'm going to allow NO_DATA Charts to render blank. oops.
+      // return; // no-data - I'm going to allow NO_DATA Charts to render blank. oops.
     }
     if (chartContainer === null || chartContainer === undefined || chartContainer.length === 0) {
       console.log("[CreateChart] *** ERROR *** chartContainer is Null! ");
@@ -1270,7 +1243,7 @@ export async function CreateChart(
     }
     if (key === "timestamp") return; // I should just leave that one in for fun.
 
-    // CHART ATTRIBUTES cj-chart
+    // CHART ATTRIBUTES chart
     // - [ ] MaxDataPoints = Set, Calc(MaxWidth/PixelsPerPoint), default: 8000
     // - [ ] PixelsPerPoint, default: 4 . 4 looks best visually to me.
     // - [ ] DataLength: Truncate, ReverseTruncate,
@@ -1633,7 +1606,7 @@ export async function CreateChart(
       chartAspect = expandedWidth / (height - 0 * oneEm);
     }
 
-    // cj-chart
+    // chart
     {
       let preFix = `${isHistory ? "History" : ""}${
         averageData != "none" ? `(${averageData})` : ""
@@ -1645,7 +1618,7 @@ export async function CreateChart(
       if (chartSpan)
         chartSpan.innerHTML = `${preFix} ${key} - ${
           values && values[0]?.unitCode ? values[0]?.unitCode : "NO-DATA"
-        } ${suffix}`; // cj-no-data
+        } ${suffix}`; // no-data
     }
 
     // ---
@@ -1654,7 +1627,7 @@ export async function CreateChart(
     let data = [];
     let time = [];
     await microSleep(1);
-    // cj-optimize
+    // optimize
     for (let i = 0; i < values?.length; i++) {
       data.push(values[i].value);
       let date = new Date(timestamps[i]);
@@ -1669,7 +1642,7 @@ export async function CreateChart(
       time.push(label);
     }
     await microSleep(1);
-    // cj-optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
+    // optimize this.  This is about (1 second / 20%) cpu per chart. maybe on-read or use a flag and for-loop reverse-for-loop
     if (!isHistory) {
       // Oldest to Newest
       data = data.reverse();
@@ -1689,7 +1662,7 @@ export async function CreateChart(
     // ------------------------------------------------------------------
     let chart = Chart.getChart(canvas);
 
-    // cj-chart
+    // chart
     // Decimation-Test
     // const decimation = {
     //   enabled: true,
@@ -1700,7 +1673,7 @@ export async function CreateChart(
 
     // NO CHART - CREATE NEW CHART
     if (chart === null || chart === undefined) {
-      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
+      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // no-data
       labelName = labelName.replace("wmoUnit:", "");
       await microSleep(1);
       let newChart = new Chart(canvas, {
@@ -1719,8 +1692,8 @@ export async function CreateChart(
           ],
         },
         options: {
-          animation: false, // cj-optimize, this cut render time in half.
-          // spanGaps: true, // cj-optimize, only a small performance gain, and it makes some of the charts wonky.
+          animation: false, // optimize, this cut render time in half.
+          // spanGaps: true, // optimize, only a small performance gain, and it makes some of the charts wonky.
 
           responsive: true,
           aspectRatio: chartAspect,
@@ -1735,7 +1708,7 @@ export async function CreateChart(
               ticks: {
                 maxRotation: 90,
                 minRotation: 60,
-                sampleSize: 100, // cj-optimize, this cut another 10%-20%
+                sampleSize: 100, // optimize, this cut another 10%-20%
               },
             },
           },
@@ -1747,7 +1720,7 @@ export async function CreateChart(
       await newChart.update();
     } else {
       // CHART EXISTS - UPDATE CHART
-      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // cj-no-data
+      let labelName = `${key} - ${values ? values[0]?.unitCode : "NO-DATA"}`; // no-data
       chart.data.labels = time;
       chart.data.datasets = [
         {
@@ -1806,7 +1779,7 @@ export async function ReCalcChartAspectAll() {
   }
 }
 
-// cj-chart
+// chart
 async function RecalculateChartAspect(chartContainer) {
   // chart-display chart-resize chart-reCalc
   let type = chartContainer.getAttribute("type");
@@ -1843,7 +1816,7 @@ async function WeatherSquares(elementId, replacementText, replacementImgUrl, alt
 
   for (let element of elements) {
     let weatherImg = element.querySelector("weather-kitty-current >  img");
-    let textDiv = element.querySelector("weather-kitty-current > clip > span"); // cj-clip-span
+    let textDiv = element.querySelector("weather-kitty-current > clip > span"); // clip-span
     if (weatherImg === null) {
       weatherImg = element.querySelector("weather-kitty-forecast > img");
       textDiv = element.querySelector("weather-kitty-forecast > clip  > span");
@@ -2076,41 +2049,6 @@ const specialUrlTable = {
   "/weatherkittycache/address": getWeatherLocationByAddressAsync,
 };
 
-let rateLimitCache = new Map();
-async function RateLimitFetch(url, ttl) {
-  ttl = ttl * 0.667; // force sleep .667, then randomize .667, for average of 1
-  // cj-rate-limit
-  const base = new URL(url).origin;
-  let elapsed = 0;
-  let now = 0;
-  do {
-    now = Date.now();
-    let lastFetch = rateLimitCache.get(base);
-    if (lastFetch == null) {
-      rateLimitCache.set(base, now);
-      if (Log.Trace()) console.log(`[RateLimit LOCK] ${url}`);
-      return;
-    }
-    elapsed = now - lastFetch;
-    let delta = ttl - elapsed;
-    if (Log.Trace()) console.log(`[RateLimit HOLD] ${url}`);
-    await microSleep(delta + Math.random() * ttl);
-  } while (elapsed < ttl + 1);
-  if (Log.Trace()) console.log(`[RateLimit FREE] ${url}`);
-  now = Date.now();
-  rateLimitCache.set(base, now);
-}
-
-export function fetchTimeoutOption(microseconds) {
-  if (!microseconds || microseconds <= 0) return null;
-  let controller = new AbortController();
-  let timeoutId = setTimeout(() => controller.abort("HTTP TIMEOUT"), microseconds);
-  let options = {
-    signal: controller.signal,
-  };
-  return options;
-}
-
 export async function fetchCache(url, options, ttl, failTtl) {
   if (Log.Trace()) console.log(`[fetchCache] ${url}`);
   if (ttl == null || ttl < 0) ttl = config.defaultCacheTime;
@@ -2150,7 +2088,7 @@ export async function fetchCache(url, options, ttl, failTtl) {
   if (url in specialUrlTable) {
     fetchResponse = await specialUrlTable[url](url, options, ttl);
   } else {
-    await RateLimitFetch(url, config.RateLimitTtl); // cj-rate-limit
+    await RateLimitFetch(url, config.RateLimitTtl); // rate-limit
     try {
       if (Log.Trace()) console.log(`[fetch] ${url}`);
       fetchResponse = await fetch(url, options);
@@ -2317,13 +2255,13 @@ async function HistoryReformatDataSets(dataSets) {
   // Create ALIAS
   // Create an Alias "TEMP" that used TOBS, TAVG, or an Average of TMAX and TMIN, in that order
   // Only average if TMAX and TMIN are the same length and start at the same time
-  // cj-TMXN
+  // TMXN
 
   let tMax = mapSets.get("TMAX");
   let tMin = mapSets.get("TMIN");
   if (tMax && tMin && tMax.timestamps.length > 1 && tMin.timestamps.length > 1) {
     let temp = { history: tMax.history, values: [], timestamps: [] };
-    // cj-TMXN - Synchronize TMAX and TMIN for mismatched sizes.
+    // TMXN - Synchronize TMAX and TMIN for mismatched sizes.
     let m = 0;
     let n = 0;
     let i = 0;

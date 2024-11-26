@@ -339,6 +339,9 @@ weather-kitty-status {
   letter-spacing: -0.2em;
   margin: 0;
   padding: 0;
+  div {
+    width: 1.2em;
+  }
 }
 
 /* ************************************************************************ ********************* */
@@ -359,7 +362,7 @@ weather-kitty-radar-local > .wk-BoxTarget {
   /* left: calc(51% - var(--box-size) / 2);
   bottom: calc(31% - var(--box-size) / 2); */
 
-  border: red 0.25px solid;
+  border: red 0.1px solid;
   box-sizing: border-box;
   height: var(--box-size);
   width: var(--box-size);

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
 
-  <body id="WeatherKittyBody">
+  <body id="WeatherKittyBody" style="height: 100%;">
     <header id="WeatherKittyHeader">
       <div id="HeaderRow1">
         <div>
@@ -33,7 +33,8 @@
           <weather-kitty-geoaddress> </weather-kitty-geoaddress>
         </div>
         <div id="WeatherKittyWidgetDiv">
-          <weather-kitty></weather-kitty>
+          <!-- // cjm  -->
+          <!-- <weather-kitty></weather-kitty> -->
         </div>
       </div>
       <div id="HeaderRow2">
@@ -43,8 +44,8 @@
           <a id="NavHistory"><span>History Charts</span></a>
           <a id="NavClimate"><span>Boston Climate Charts</span></a>
           <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-          <a id="NavExpire"><span>Expire Weather Cache ttl</span></a>
-          <a id="NavPurge"><span>Delete All Weather Data</span></a>
+          <a id="NavExpire"><span>Expire ttl</span></a>
+          <a id="NavPurge"><span>Purge Cache</span></a>
           <a id="NavTest"><span>Run Tests</span></a>
         </nav>
         <weather-kitty-status> </weather-kitty-status>
@@ -53,8 +54,23 @@
     </header>
 
     <main id="WeatherKittyMain">
-      <div id="WK-assert" style="margin: 1em; background-color: rgb(160, 160, 160)">
-        <span style="font-weight: bold; font-size: large">Test Area</span><br />
+      <div style="border: red 1px solid; margin: 3px; height: 100%; overflow: auto">
+        
+        <p class="HelpText">
+          <strong>Expire ttt</strong> - Expires the ttl on wk-cache objects.  This will force a fetch, if the fetch fails, stale data will be served from the expired cache.</b><br><br>
+          <strong>Purge Cache</strong> - Deletes all wk-cache objects.  This will force a fetch, if the fetch fails, no data will be served.</b>
+        </p>
+        
+        <div
+          id="WK-assert"
+          style="
+            margin: 1em;
+            background-color: rgb(160, 160, 160);
+          "
+        >
+          <span style="font-weight: bold; font-size: large"> ... </span><br />
+
+        </div>
       </div>
     </main>
 
@@ -63,5 +79,10 @@
     <script src="./WeatherKitty.mjs" type="module"></script>
     <script src="./script.js" type="module"></script>
     <script src="./test.js" type="module"></script>
+    <!-- <script type="module">
+      import { CheckApiStatus, WeatherKittyWaitOnInit, WeatherKittyWaitOnLoad} from "./WeatherKitty.mjs";
+      await WeatherKittyWaitOnInit();
+      CheckApiStatus();
+    </script> -->
   </body>
 </html>

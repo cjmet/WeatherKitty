@@ -79,19 +79,6 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] try 0.5 px on box target
-- [ ] Instructions on the Test Page and change the titles back.
-- [ ] Status
-  - [ ] try min/max content sizes on the status widget, so it can grow
-  - [ ] Reorder NWS AWS NCEI NCDC
-  - [ ] Try STarting Blank,a nd Growing? Or find an open circle?
-  - [ ] Don't pull weather data if there are no weather(vs history) widgets
-  - [ ] Don't Pull history if there are no history (vs weather) widgets
-  - [ ]
-- [ ] WK-Is-Initialized();
-
-- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
-  - [ ] Make it a class and apply it with Javascript on a 1 second delay?
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 

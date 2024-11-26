@@ -1,4 +1,5 @@
 import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
+import { fetchCache } from "./WeatherKitty.mjs";
 
 // Logging ---------------------------------------------------------------
 // LogLevel.Error     - Critical Errors Only.
@@ -126,7 +127,7 @@ let config = {
 
   // Static Status Variables
 
-  WeatherKittyIsInit: false,
+  WeatherKittyIsInit: 0,
   WeatherKittyIsLoaded: 0,
   WeatherWidgetIsLoaded: false,
   WeatherKittyPath: "",
@@ -465,6 +466,123 @@ async function getCache(url) {
   return { url: url, ttl: ttl, response: response };
 }
 
+let rateLimitCache = new Map();
+async function RateLimitFetch(url, ttl) {
+  ttl = ttl * 0.667; // force sleep .667, then randomize .667, for average of 1
+  // rate-limit
+  const base = new URL(url).origin;
+  let elapsed = 0;
+  let now = 0;
+  do {
+    now = Date.now();
+    let lastFetch = rateLimitCache.get(base);
+    if (lastFetch == null) {
+      rateLimitCache.set(base, now);
+      if (Log.Trace()) console.log(`[RateLimit LOCK] ${url}`);
+      return;
+    }
+    elapsed = now - lastFetch;
+    let delta = ttl - elapsed;
+    if (Log.Trace()) console.log(`[RateLimit HOLD] ${url}`);
+    await microSleep(delta + Math.random() * ttl);
+  } while (elapsed < ttl + 1);
+  if (Log.Trace()) console.log(`[RateLimit FREE] ${url}`);
+  now = Date.now();
+  rateLimitCache.set(base, now);
+}
+
+// APISTATUS API-STATUS API STATUS
+// wkStatusTag is optional.  If provided, check only that tag.
+async function CheckApiStatus(wkStatusTag) {
+  let response;
+  let result = true;
+  let APIs = [
+    { name: "wk-status-nws", url: "https://api.weather.gov/alerts/types" },
+    { name: "wk-status-aws", url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-version.txt" },
+    {
+      name: "wk-status-ncei",
+      url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+    },
+    {
+      name: "wk-status-ncdc",
+      url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
+    },
+  ];
+
+  let checkTagName = false;
+  for (let api of APIs) {
+    if (wkStatusTag && api.name !== wkStatusTag) continue;
+    checkTagName = true;
+    let elements = document.getElementsByTagName(api.name);
+    for (let element of elements) element.innerHTML = "🟡";
+  }
+  if (!checkTagName && Log.Warn())
+    console.log(`[CheckApiStatus] *** ERROR ***: API Tag [${wkStatusTag}] Not Found.`);
+
+  let promiseArray = [];
+  for (let api of APIs) {
+    if (wkStatusTag && api.name !== wkStatusTag) continue;
+    if (Log.Verbose()) console.log(`Checking API: ${api.name}`);
+
+    // fetchCache
+    let url = api.url;
+    let options = fetchTimeoutOption(1000 * 5);
+
+    promiseArray.push(
+      fetchCache(url, options, config.StatusTtl, config.StatusTtl).then(async (response) => {
+        let value = response && response.ok && response.status === 200;
+        if (!value) result = false;
+        let elements = document.getElementsByTagName(`${api.name}`);
+        for (let element of elements) {
+          assert(null, value, element, "replace");
+        }
+      })
+    );
+  }
+  await Promise.all(promiseArray);
+  return result;
+}
+
+// --------------------------------------------------------------
+
+// Function assert
+async function assert(message, condition, element, replace) {
+  if (Log.Verbose()) console.log("[Assert] ", message, condition, element != null, replace);
+  if (!element) {
+    if (!config.logOnce) {
+      if (Log.Warn()) console.log('[Assert] Log Once: "element not found."');
+      config.logOnce = true;
+    }
+    return;
+  }
+  let msg;
+  if (!condition) {
+    // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢, ✴️, ☐, ◯, ⍰, ❓, ❔
+    if (message) msg = `🔴 <span style="color: red;">${message}</span><br>`;
+    else msg = `🔴`;
+    if (replace) element.innerHTML = msg;
+    else element.innerHTML = msg + element.innerHTML;
+    if (Log.Error() && message) console.log("Assertion Failed: ", message);
+  } else {
+    if (message) msg = `🟢 ${message}<br>`;
+    else msg = `🟢`;
+    if (replace) element.innerHTML = msg;
+    else element.innerHTML = msg + element.innerHTML;
+  }
+  if (message) console.log("[Assert] ", message, condition);
+  return condition;
+}
+
+function fetchTimeoutOption(microseconds) {
+  if (!microseconds || microseconds <= 0) return null;
+  let controller = new AbortController();
+  let timeoutId = setTimeout(() => controller.abort("HTTP TIMEOUT"), microseconds);
+  let options = {
+    signal: controller.signal,
+  };
+  return options;
+}
+
 // HTML Blocks -----------------------------------
 // functions instead of variables, so that path updates to the images can take effect
 function WeatherKittyCurrentBlock() {
@@ -510,7 +628,7 @@ let WeatherKittyMapLocalRadarBlock = `
 `;
 
 function WeatherKittyGeoAddressBlock() {
-  let results = `<span>Loading ...</span>
+  let results = `<span>...</span>
   <label>Loading ... </label>
   <button>${config.SetLocationText}</button>`;
   return results;
@@ -524,7 +642,8 @@ let WeatherKittyStatusBlock = `
     <wk-status-ncdc></wk-status-ncdc>
 `;
 
-let WeatherKittySignalBlock = "❔";
+// ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢, ✴️, ☐, ◯, ⍰, ❓, ❔, ◯, ⚪, ⚫, ⚪️, 🔘, ◻️, ⬜️, ◽️
+let WeatherKittySignalBlock = `<div style="transform: rotate(180deg);">◯</div>`;
 
 // /Blocks -----------------------------------
 
@@ -534,5 +653,5 @@ export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, 
   WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
-  WeatherKittyStatusBlock, WeatherKittySignalBlock,
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
 };
