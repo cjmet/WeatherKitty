@@ -12,9 +12,9 @@ import {
   PurgeData,
   CheckApiStatus,
   sleep,
-} from "./WeatherKitty.mjs";
+} from "../WeatherKitty.mjs";
 
-import { RunTests } from "./test.js";
+import { RunTests } from "./test.mjs";
 
 // --- -------------------------------------
 // MAIN

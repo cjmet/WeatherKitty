@@ -1,5 +1,5 @@
 import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
-import { fetchCache } from "./WeatherKitty.mjs";
+import { fetchCache } from "../WeatherKitty.mjs";
 
 // Logging ---------------------------------------------------------------
 // LogLevel.Error     - Critical Errors Only.

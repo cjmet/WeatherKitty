@@ -11,7 +11,7 @@ import {
   fetchTimeoutOption,
   assert,
   CheckApiStatus,
-} from "./WeatherKitty.mjs";
+} from "../WeatherKitty.mjs";
 
 // -------------------------------------
 // TESTING

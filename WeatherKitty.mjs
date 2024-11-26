@@ -8,7 +8,7 @@ import { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
   WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
-} from "./config.mjs";
+} from "./src/config.mjs";
 
 // prettier-ignore
 export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, microSleep, TouchMoveAccelerated, isValidNumericString, MathAverage, 

@@ -225,7 +225,7 @@ weather-kitty-geoaddress button {
   flex-direction: column;
   flex: 1 0 auto;
 
-  background-image: url("./img/Background01g2.png");
+  background-image: url("../img/Background01g2.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
