@@ -23,33 +23,31 @@ https://cjmet.github.io/WeatherKitty/
 
 - Install as a git submodule. I'll make this a node module later.
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
-  - <small>I'll make this a Node.js module later.</small>
 - Add WeatherKitty.mjs to your scripts in your html file
-  - <small>Optionally you may need to add config.mjs or functions.mjs before WeatherKitty.mjs as well. I had wanted to keep this as simple as possible, however the file became too large and the editor broke. I'll try to organize this better later.</small>
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
 
 ## HTML Elements
 
-- <b>`<weather-kitty>`</b> - Widget, including Current Conditions and Forecast
-- <b>`<weather-kitty-current>`</b> - Current Conditions
-- <b>`<weather-kitty-forecast>`</b> - Forecast
-- <b>`<weather-kitty-geoaddress>`</b> - Manual Location Input.
-- <b>`<weather-kitty-week>`</b> - Forecast 7-day matrix for the next week.
-- <b>`<weather-kitty-radar-local>`</b> - Local Radar map.
-- <b>`<weather-kitty-radar-national>`</b> - National Radar map.
-- <b>`<weather-kitty-map-forecast>`</b> - Forecast map.
-- <b>`<weather-kitty-map-alerts>`</b> - Alerts map.
-- <b>`<weather-kitty-chart type="keyword">`</b> - Weather Charts. NOTE: Charts may require a defined or contained size.
-- <b>`<weather-kitty-tooltip>`</b> - Tooltip tags if you need to style them.
-- <b>`<weather-kitty-status>`</b> - API Status Widget.
+- <b><span style="font-size: large;">`<weather-kitty>`</span></b> - Widget, including Current Conditions and Forecast
+- <b><span style="font-size: large;">`<weather-kitty-current>`</span></b> - Current Conditions
+- <b><span style="font-size: large;">`<weather-kitty-forecast>`</span></b> - Forecast
+- <b><span style="font-size: large;">`<weather-kitty-geoaddress>`</span></b> - Manual Location Input.
+- <b><span style="font-size: large;">`<weather-kitty-week>`</span></b> - Forecast 7-day matrix for the next week.
+- <b><span style="font-size: large;">`<weather-kitty-radar-local>`</span></b> - Local Radar map.
+- <b><span style="font-size: large;">`<weather-kitty-radar-national>`</span></b> - National Radar map.
+- <b><span style="font-size: large;">`<weather-kitty-map-forecast>`</span></b> - Forecast map.
+- <b><span style="font-size: large;">`<weather-kitty-map-alerts>`</span></b> - Alerts map.
+- <b><span style="font-size: large;">`<weather-kitty-chart type="keyword">`</span></b> - Weather Charts. NOTE: Charts may require a defined or contained size.
+- <b><span style="font-size: large;">`<weather-kitty-tooltip>`</span></b> - Tooltip tags if you need to style them.
+- <b><span style="font-size: large;">`<weather-kitty-status>`</span></b> - API Status Widget.
   <details>
   <summary>Additional Status Subwidgets</summary>
 
-  `<wk-status-nws class="wk-status-signal">`
-  `<wk-status-aws class="wk-status-signal">`
-  `<wk-status-ncei class="wk-status-signal">`
-  `<wk-status-ncdc class="wk-status-signal">`
+  - `<wk-status-nws">`
+  - `<wk-status-aws">`
+  - `<wk-status-ncei">`
+  - `<wk-status-ncdc">`
   </details>
 
 ### CSS Classes and Tags
@@ -65,6 +63,8 @@ For ease of editing and customization
 - `.WeatherKittyMapForecast` - Forecast Map
 - `.WeatherKittyMapRadar` - Radar Map
 - `.WeatherKittyMapAlerts` - Alerts Map
+- `.WeatherKittyStatus` - API Status Widget
+- `.wk-status-signal` - Used for the stoplights in the Status Indicator
 - and more. See the dev tools inspector for more classes.
 
 ### HTML Element Details
@@ -129,7 +129,7 @@ For ease of editing and customization
 
 ## Credits, License, and Usage Summary
 
-- **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/_Angel%20Hornet%20Icon128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
+- **Art, Ascii Art, Logos, Trademark, etc.:** (c) 2024 <img src="https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/Logo128.png" style="height: 1em; margin: -0.1em 0;">Angel Hornet, All Rights Reserved.
 - **Software is Licensed:** MPL 2.0 or newer
 
   &nbsp;

@@ -75,18 +75,12 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Why does AbortController() kill some fetch() calls, but not others? If this worked I wouldn't have to worry about the next question.
-- [ ] How to handle the APIs are slow or not responding?
-  - [ ] AWS mirrors are online, HOWEVER, they are not updating.
-        `A critical system failure at NCEI is preventing updates to GHCN daily, including the by_station files.
-An update will be posted as soon as updates resume. `
-  - [ ] NCEI(primary) and NCDC(secondary) are the ones acting up randomly. NCEI would normally be the one to use.
-- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
-- [ ] CodeKy Project Completeness Review. Do you feel like I've completed the requirements?
+- [ ] ...
 
 ### Project Current Work and Fixes
 
 - [ ] setup a local copy of ghcnd, and links, etc.
+- [ ] Add local ghcnd to the api links rotations
 
 #### Project Priority 2
 
@@ -94,6 +88,7 @@ An update will be posted as soon as updates resume. `
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
+- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
 - [ ] Maybe deploy to readme instead of index?
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
