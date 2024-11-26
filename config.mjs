@@ -63,7 +63,9 @@ let config = {
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
   obsCacheTime: 60000 * 10, // 10 minutes
   forecastCacheTime: 60000 * 60, // 1 hour
+  mediumCacheTime: 60000 * 60 * 8, // 8 hours
   longCacheTime: 60000 * 60 * 24, // 24 hours
+  historyCacheTime: 60000 * 60 * 24 * 3, // 3 days
   archiveCacheTime: 60000 * 60 * 24 * 30, // 30 days
   defaultCacheTime: 60000 * 30, // 30 minutes
 
@@ -517,9 +519,9 @@ function WeatherKittyGeoAddressBlock() {
 let WeatherKittyStatusBlock = `
     <span>API:</span>
     <wk-status-nws></wk-status-nws>
+    <wk-status-aws></wk-status-aws>
     <wk-status-ncei></wk-status-ncei>
     <wk-status-ncdc></wk-status-ncdc>
-    <wk-status-aws></wk-status-aws>
 `;
 
 let WeatherKittySignalBlock = "❔";

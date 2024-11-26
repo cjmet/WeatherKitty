@@ -359,7 +359,7 @@ weather-kitty-radar-local > .wk-BoxTarget {
   /* left: calc(51% - var(--box-size) / 2);
   bottom: calc(31% - var(--box-size) / 2); */
 
-  border: red 1px solid;
+  border: red 0.25px solid;
   box-sizing: border-box;
   height: var(--box-size);
   width: var(--box-size);

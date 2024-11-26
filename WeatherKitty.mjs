@@ -362,7 +362,7 @@ export async function WeatherKitty() {
     }
 
     // API Status.  Update the status of any api that isn't already updated.
-    CheckApiStatus();
+    // CheckApiStatus();
   });
   // console.log("[WeatherKitty] Exiting Weather Kitty");
 }
@@ -700,7 +700,7 @@ export async function getWeatherLocationAsync() {
   response = await fetchCache("/weatherkittycache/location", null, config.shortCacheTime);
 
   if (response == null || response.ok == false) {
-    response = await fetchCache("/weatherkittycache/geoip", null, config.longCacheTime);
+    response = await fetchCache("/weatherkittycache/geoip", null, config.mediumCacheTime);
   }
 
   if (response == null || response.ok == false) {
@@ -756,7 +756,7 @@ export async function getLocationAsync() {
 // ipapi.co/json              30000     967       0.5
 async function getWeatherLocationByIPAsync() {
   let locationUrl = "https://ipapi.co/json/";
-  let response = await fetchCache(locationUrl, null, config.longCacheTime);
+  let response = await fetchCache(locationUrl, null, config.mediumCacheTime);
 
   // City, State, Country, ZipCode, Latitude, Longitude
   if (response != null && response.ok) {
@@ -2688,7 +2688,7 @@ async function HistoryGetCsvFile(stationId) {
       if (!(await CheckApiStatus(api.apiTag))) continue;
       let url = api.url;
       let options = fetchTimeoutOption(api.timeout);
-      response = await fetchCache(url, null, config.archiveCacheTime);
+      response = await fetchCache(url, null, config.historyCacheTime);
 
       if (response?.ok && response?.status === 200) {
         if (url.substring(url.length - 3) === ".gz") fileData = await DecompressCsvFile(response);
