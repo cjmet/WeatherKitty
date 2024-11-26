@@ -79,6 +79,8 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
+  - [ ] Make it a class and apply it with Javascript on a 1 second delay?
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 
@@ -88,7 +90,6 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
-- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
 - [ ] Maybe deploy to readme instead of index?
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries

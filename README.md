@@ -6,7 +6,7 @@ https://cjmet.github.io/WeatherKitty/
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/img/DemoImage.jpg)
 <span style="font-size: x-small;"> <br>Github Copilot was used during the development of this project.</span>
 
-**GHCND Note:** The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion. If you want to explore the historical data it's advised that you download a local copy from: [NCEI](https://www.ncei.noaa.gov/pub/data/ghcn/daily/)
+**GHCND Note:** The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion. If you want to explore the historical data it's advised that you download a local copy from: [NCEI](https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz) (33gb)
 
 **CodeKy Note:** See the project.md for CodeKy Specific Info.
 

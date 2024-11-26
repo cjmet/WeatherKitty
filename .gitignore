@@ -6,6 +6,9 @@ config.json
 # ghcnd
 *.gz
 *.csv
+*.tar
+*.dly
+*.crdownload
 
 # compiled output
 /dist

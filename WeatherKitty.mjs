@@ -2,7 +2,6 @@
 
 import "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
-import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
 
 // prettier-ignore
 import { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, microSleep, TouchMoveAccelerated, isValidNumericString, MathAverage, 
@@ -640,6 +639,22 @@ async function WeatherMaps(elementName, Url, CacheTime) {
         let img = map.getElementsByTagName("img")[0];
         img.src = url;
 
+        // cjm - I really probably shouldn't do this ... but it's my map so live with it.
+        if (elementName === "weather-kitty-radar-local") {
+          let boxTarget = map.getElementsByClassName("wk-BoxTarget")[0];
+          if (boxTarget) {
+            if (Url.includes("KMRX")) {
+              boxTarget.style.display = "block";
+              boxTarget.style.left = "calc(52% - var(--box-size) / 2)";
+              boxTarget.style.bottom = "calc(63.66% - var(--box-size) / 2)";
+            } else if (Url.includes("KJKL")) {
+              boxTarget.style.display = "block";
+              boxTarget.style.left = "calc(51% - var(--box-size) / 2)";
+              boxTarget.style.bottom = "calc(31% - var(--box-size) / 2)";
+            } else boxTarget.style.display = "none";
+          }
+        }
+
         // --------------------------------------------------------------
         // Thruple Events
         img.removeEventListener("touchstart", () => {
@@ -938,6 +953,7 @@ async function getWeatherAsync() {
   // Notes
   // -----
   // https://noaa-ghcn-pds.s3.amazonaws.com/index.html - just added
+  // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz
   // https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312
   // https://api.weather.gov/gridpoints/JKL/65,16/stations
   // https://api.weather.gov/stations/${Station_ID}/observations

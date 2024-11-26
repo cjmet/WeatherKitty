@@ -1,3 +1,5 @@
+import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
+
 // Logging ---------------------------------------------------------------
 // LogLevel.Error     - Critical Errors Only.
 // **LogLevel.Warn**  - DEFAULT: Startup Notification, Warnings, and Errors. We don't want to annoy someone that uses our module with info they don't need.
@@ -500,7 +502,10 @@ let WeatherKittyMapRadarBlock = `<img alt="NWS Radar" />`;
 
 let WeatherKittyMapAlertsBlock = `<img alt="US Weather Alerts Map" />`;
 
-let WeatherKittyMapLocalRadarBlock = `<img alt="Local Radar" />`;
+let WeatherKittyMapLocalRadarBlock = `
+<img alt="Local Radar" />
+<div class="wk-BoxTarget"/>
+`;
 
 function WeatherKittyGeoAddressBlock() {
   let results = `<span>Loading ...</span>

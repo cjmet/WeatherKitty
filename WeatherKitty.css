@@ -340,3 +340,32 @@ weather-kitty-status {
   margin: 0;
   padding: 0;
 }
+
+/* ************************************************************************ ********************* */
+/* wk-BoxTarget // cjm - I really probably shouldn't do this ... but it's my map so live with it. */
+weather-kitty-radar-local {
+  position: relative;
+}
+weather-kitty-radar-local > .wk-BoxTarget {
+  position: absolute;
+  /* 52x, 63.66y */
+  --box-size: 1%;
+
+  /* KMRX */
+  left: calc(52% - var(--box-size) / 2);
+  bottom: calc(63.66% - var(--box-size) / 2);
+
+  /* KJKL */
+  /* left: calc(51% - var(--box-size) / 2);
+  bottom: calc(31% - var(--box-size) / 2); */
+
+  border: red 1px solid;
+  box-sizing: border-box;
+  height: var(--box-size);
+  width: var(--box-size);
+
+  flex: 1 0 auto;
+  display: none;
+}
+/* /wk-BoxTarget */
+/* ************************************************************************ ********************* */

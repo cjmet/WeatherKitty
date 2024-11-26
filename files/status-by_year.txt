@@ -1,4 +1,0 @@
-April 25, 2021
-
-A critical systems failure at NCEI is preventing updates to GHCN daily, including the by_year files.
-An update will be posted as soon as updates resume.
