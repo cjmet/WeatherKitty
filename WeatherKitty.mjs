@@ -221,6 +221,8 @@ export async function WeatherKitty() {
       let img = weather.observationData.features[0].properties.icon;
       let altimg = config.WeatherKittyObsImage;
       let precip = weather?.forecastData?.properties.periods[0].probabilityOfPrecipitation.value;
+      if (!shortText && Log.Warn()) console.log("[WeatherKitty] Warning: Null shortText");
+      if (!img && Log.Warn()) console.log("[WeatherKitty] Warning: Null Icon");
 
       // cj-debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
@@ -228,7 +230,7 @@ export async function WeatherKitty() {
       // precip = 100;
 
       let text = `${shortText}<br>`;
-      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°f`;
+      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`; // There just isn't room for an ellipse or symbol if the deg/precip is 100% &hellip;
 
@@ -244,6 +246,8 @@ export async function WeatherKitty() {
       let img = weather.forecastData.properties.periods[0].icon;
       let altimg = config.WeatherKittyForeImage;
       let precip = weather.forecastData.properties.periods[0].probabilityOfPrecipitation.value;
+      if (!shortText && Log.Warn()) console.log("[WeatherKitty] Warning: Null shortText");
+      if (!img && Log.Warn()) console.log("[WeatherKitty] Warning: Null Icon");
 
       // cj-debug
       // shortText = "Debugging Clear Cloudy Thunder-Storms Overflow Bottom";
@@ -251,7 +255,7 @@ export async function WeatherKitty() {
       // precip = 100;
 
       let text = `${shortText}<br>`;
-      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°f`;
+      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}%`;
 
@@ -284,18 +288,23 @@ export async function WeatherKitty() {
       let img = weather.forecastData.properties.periods[0].icon;
       let altimg = config.WeatherKittyForeImage;
       let text = "";
+      {
+        let locationTest = weather.pointData.properties.relativeLocation.properties.city;
+        if (!locationTest && Log.Warn()) console.log("[WeatherKitty] Warning: Null forecast");
+        if (!forecast && Log.Warn()) console.log("[WeatherKitty] Warning: Null forecast");
+      }
 
       // text += `<b>${locationName}</b><br><br>`;
 
       text += `<b>Current:</b><br>`;
       text += `${shortText}`;
-      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°F`;
+      if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
       if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
         text += ` - ${precip}% precipitation`;
       text += `<br><br>`;
 
       text += `<b>Forecast:</b><br>`;
-      text += `${forecast} ${temp}°F`;
+      text += `${forecast} ${temp}°`; // degrees °f
 
       let widgets = document.getElementsByTagName("weather-kitty-tooltip");
       for (let widget of widgets) {

@@ -154,6 +154,11 @@ weather-kitty-forecast:hover {
     width: 12em;
     height: max-content;
   }
+  weather-kitty-tooltip,
+  weather-kitty-tooltip span {
+    width: 11.2em;
+    height: max-content;
+  }
 }
 
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
