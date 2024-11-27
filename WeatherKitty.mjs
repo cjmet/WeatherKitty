@@ -286,6 +286,7 @@ export async function WeatherKitty() {
       if (response && response.ok) {
       } else console.log("[WeatherKitty] No Cached Location", cachedLocation);
 
+      if (cachedLocation?.name) locationName = cachedLocation.name;
       if (cachedLocation?.city) locationName = cachedLocation.city;
       else if (historyStation?.name) locationName = historyStation.name;
 
@@ -297,8 +298,9 @@ export async function WeatherKitty() {
 
       if (!locationName) {
         if (cachedLocation?.latitude)
-          locationName = parseFloat(cachedLocation?.latitude).toFixed(6);
-        if (cachedLocation?.longitude) locationName += cachedLocation.longitude;
+          locationName = parseFloat(cachedLocation?.latitude).toFixed(3);
+        if (cachedLocation?.longitude)
+          locationName += ", " + parseFloat(cachedLocation.longitude).toFixed(3);
       }
       if (locationName) locationName += "&nbsp;";
 

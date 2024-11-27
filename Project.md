@@ -79,6 +79,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] Clean up console.log statements
 - [ ] Explorer
   - [ ] Return ghcnd Name as well as lat/lon when history only data.
   - [ ] GetNearbyLocations(location);
