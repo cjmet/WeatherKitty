@@ -958,7 +958,9 @@ export async function getWeatherAsync(locData) {
 
     CheckApiStatus("wk-status-nws"); // Required API and there is no roll-over
 
-    response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
+    await WeatherKittyIsLoading("Nws Points", async () => {
+      response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
+    });
     if (response && response.ok) {
       let data = await response.json();
       pointData = data;
@@ -980,7 +982,9 @@ export async function getWeatherAsync(locData) {
 
     let observationStationID = null;
     if (observationStationsUrl) {
-      response = await fetchCache(observationStationsUrl, null, config.longCacheTime);
+      await WeatherKittyIsLoading("Nws Obs Stations", async () => {
+        response = await fetchCache(observationStationsUrl, null, config.longCacheTime);
+      });
       if (response && response.ok) {
         let data = await response.json();
         stationsData = data;
@@ -999,7 +1003,9 @@ export async function getWeatherAsync(locData) {
 
     if (observationStationID) {
       let observationUrl = `https://api.weather.gov/stations/${observationStationID}/observations`;
-      response = await fetchCache(observationUrl, null, config.obsCacheTime);
+      await WeatherKittyIsLoading("Nws Obs Data", async () => {
+        response = await fetchCache(observationUrl, null, config.obsCacheTime);
+      });
       if (response && response.ok) {
         let data = await response.json();
 
@@ -1021,7 +1027,9 @@ export async function getWeatherAsync(locData) {
     // https://api.weather.gov/gridpoints/JKL/65,16/forecast
 
     if (weatherForecastUrl) {
-      response = await fetchCache(weatherForecastUrl, null, config.forecastCacheTime);
+      await WeatherKittyIsLoading("Nws Forecast Data", async () => {
+        response = await fetchCache(weatherForecastUrl, null, config.forecastCacheTime);
+      });
       if (response && response.ok) {
         let data = await response.json();
         forecastData = data;
