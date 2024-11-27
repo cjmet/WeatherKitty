@@ -80,10 +80,13 @@ It sounds so neat and simple, and it so very much isn't.
 ### Project Current Work and Fixes
 
 - [ ] Clean up console.log statements
+- [ ] Live Server Speed Note
 - [ ] Explorer
   - [ ] Return ghcnd Name as well as lat/lon when history only data.
   - [ ] GetNearbyLocations(location);
     - [ ] filter by type(s) as well
+- [ ] Better organized dependancies
+- [ ] VITE ... I don't think I can wait much longer.    
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 

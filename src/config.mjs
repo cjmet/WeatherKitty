@@ -741,7 +741,7 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
-let WeatherKittyChartBlock = `<chartSpan>...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
+let WeatherKittyChartBlock = `<chartSpan> Select a Chart </chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast" />`;
