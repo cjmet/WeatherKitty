@@ -1,5 +1,7 @@
 import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
-import { fetchCache } from "../WeatherKitty.mjs";
+import { fetchCache, getWeatherLocationAsync } from "../WeatherKitty.mjs";
+// prettier-ignore
+import { getWeatherAsync, HistoryGetChartData, GetObservationChartData, WeatherKittyIsLoading,  } from "../WeatherKitty.mjs";
 
 // Logging ---------------------------------------------------------------
 // LogLevel.Error     - Critical Errors Only.
@@ -583,7 +585,133 @@ function fetchTimeoutOption(microseconds) {
   return options;
 }
 
-// HTML Blocks -----------------------------------
+async function WeatherKittyGetAvailableChartTypes() {
+  // cjm
+  let weather = await getWeatherAsync();
+  let weatherChartData = await GetObservationChartData(weather?.observationData?.features);
+  let historyChartData = await HistoryGetChartData();
+  let weatherChartTypes = weatherChartData?.keys()?.toArray();
+  let historyChartTypes = historyChartData?.keys()?.toArray();
+  return { weather: weatherChartTypes, history: historyChartTypes };
+}
+
+async function WeatherKittyGetNearbyStations(latitude, longitude, radius, count) {
+  return WeatherKittyIsLoading("GetNearbyStations", async () => {
+    if (!latitude || !longitude) {
+      let location = await getWeatherLocationAsync();
+      latitude = location.latitude;
+      longitude = location.longitude;
+    }
+    // GEMINI AI: One degree of latitude is approximately 69 miles.
+    if (!radius) radius = 1;
+    if (!count) count = 1000;
+
+    if (Log.Debug()) console.log("[GetNearbyStations]", latitude, longitude, radius, count);
+
+    let response;
+    let APIs = [
+      {
+        url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
+        timeout: null,
+        apiTag: "wk-status-aws",
+      },
+      {
+        url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+        apiTag: "wk-status-ncei",
+      },
+      {
+        url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+        apiTag: "wk-status-ncdc",
+      },
+    ];
+
+    for (let api of APIs) {
+      let url = api.url;
+      if (!(await CheckApiStatus(api.apiTag))) continue;
+      let options = fetchTimeoutOption(api.timeout);
+      response = await fetchCache(url, options, config.archiveCacheTime);
+
+      if (response && response?.ok && response?.status === 200) break;
+    }
+
+    if (!response || !response?.ok || response?.status !== 200) {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+
+    let lines;
+    if (response?.ok) {
+      let result = await response.text();
+      lines = result.split("\n");
+      if (lines?.length <= 0 || lines[0].length <= 12) {
+        if (Log.Error())
+          console.log(
+            `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
+          );
+        return null;
+      }
+    } else {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+
+    let data = [];
+
+    for (let line of lines) {
+      let location = {};
+      location.id = line.substring(0, 11).trim();
+      location.lat = parseFloat(line.substring(12, 20).trim());
+      location.lon = parseFloat(line.substring(21, 30).trim());
+      location.elev = line.substring(31, 37).trim();
+      location.state = line.substring(38, 40).trim();
+      location.name = line.substring(41, 71).trim();
+      location.gsn = line.substring(72, 75).trim();
+      location.hcn = line.substring(76, 79).trim();
+      location.wmo = line.substring(80, 85).trim();
+
+      let distance = ManhattanDistance(
+        latitude,
+        longitude,
+        parseFloat(location.lat),
+        parseFloat(location.lon)
+      );
+      location.distance = distance;
+      data.push(location);
+    }
+
+    data.sort((a, b) => a.distance - b.distance);
+    data = data.slice(0, count);
+    // data = data where distance < radius
+    // Copilot AI
+    data = data.filter((location) => location.distance < radius);
+
+    return data;
+  });
+}
+
+async function OnWeatherKitty(callback) {
+  if (!callback) config.WeatherKittyCallBacks = [];
+
+  if (!config.WeatherKittyCallBacks) config.WeatherKittyCallBacks = [];
+  if (callback) {
+    config.WeatherKittyCallBacks.push(callback);
+    return;
+  }
+}
+
+// ----------- ----------------------------------- -------------------- ------------------------ -------------------
+
+// HTML Blocks ----------------------------------- -------------------- ------------------------ -------------------
+
+// ----------- ----------------------------------- -------------------- ------------------------ -------------------
 // functions instead of variables, so that path updates to the images can take effect
 function WeatherKittyCurrentBlock() {
   let results = `<weather-kitty-tooltip>
@@ -613,7 +741,7 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
   <div style="width: 0.5em;"></div>
   <weather-kitty-forecast></weather-kitty-forecast>`;
 
-let WeatherKittyChartBlock = `<chartSpan>Loading ...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
+let WeatherKittyChartBlock = `<chartSpan>...</chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
 let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast" />`;
@@ -653,5 +781,6 @@ export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, 
   WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
-  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption, WeatherKittyGetAvailableChartTypes, 
+  WeatherKittyGetNearbyStations, OnWeatherKitty,
 };

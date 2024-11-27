@@ -7,7 +7,8 @@ import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
 import { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, microSleep, TouchMoveAccelerated, isValidNumericString, MathAverage, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock,
-  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption, WeatherKittyGetAvailableChartTypes, 
+  WeatherKittyGetNearbyStations, OnWeatherKitty,
 } from "./src/config.mjs";
 
 // prettier-ignore
@@ -15,7 +16,8 @@ export { Log, LogLevel, config, GetPixels, AddPixels, DecompressCsvFile, sleep, 
   MathDistance, ManhattanDistance, Fahrenheit, wkElapsedTime, BadHyphen, getWidthInEm, WeatherKittyCheckPath, isMobile, IsMobileByBowser, ExpireData, 
   PurgeData, clearCache, setCache, getCache, WeatherKittyCurrentBlock, WeatherKittyForecastBlock, WeatherKittyWidgetBlock, WeatherKittyChartBlock, 
   WeatherKittyMapForecastBlock, WeatherKittyMapRadarBlock, WeatherKittyMapAlertsBlock, WeatherKittyMapLocalRadarBlock, WeatherKittyGeoAddressBlock, 
-  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption
+  WeatherKittyStatusBlock, WeatherKittySignalBlock, RateLimitFetch, CheckApiStatus, assert, fetchTimeoutOption, WeatherKittyGetAvailableChartTypes, 
+  WeatherKittyGetNearbyStations, OnWeatherKitty,
 };
 
 // Function Weather Kitty
@@ -282,7 +284,7 @@ export async function WeatherKitty() {
       let response = (await getCache("/weatherkittycache/location"))?.response;
       let cachedLocation = await response?.json();
       if (response && response.ok) {
-        console.log("[WeatherKitty] Cached Location", cachedLocation);
+        // console.log("[WeatherKitty] Cached Location", cachedLocation);
         locationName = cachedLocation.city ? cachedLocation.city : "";
         locationName += cachedLocation.name ? cachedLocation.name : "";
         locationName += cachedLocation.state ? ", " + cachedLocation.state : "";
@@ -399,7 +401,19 @@ export async function WeatherKitty() {
 
     // API Status.  Update the status of any api that isn't already updated.
     // CheckApiStatus(); // cj - I think I like this bettter disabled. Only load/check APIs as needed.
+
+    console.log("[WeatherKitty Call Backs]", config.WeatherKittyCallBacks);
+    WeatherKittyIsLoading("Call_Backs", async () => {
+      if (!config.WeatherKittyCallBacks) return;
+      for (let callback of config.WeatherKittyCallBacks) {
+        if (callback) {
+          if (Log.Debug()) console.log("[WeatherKitty] Callback: ", callback.name);
+          await callback();
+        }
+      }
+    });
   });
+
   // console.log("[WeatherKitty] Exiting Weather Kitty");
 }
 
@@ -568,14 +582,16 @@ async function SetLoadingIndicatorMessage(kvpMap) {
     let array = [...kvpMap.entries()];
     let [message, value] = array[array.length - 1];
     message = message.trim().toLowerCase();
-    if (message && message.length > 8) message = message.substring(0, 8);
+    let MAX_MESSAGE_SIZE = 16;
+    if (message && message.length > MAX_MESSAGE_SIZE)
+      message = message.substring(0, MAX_MESSAGE_SIZE); // LOADING MESSAGE TRUNCATE
     let widgets = document.getElementsByTagName("weather-kitty-geoaddress");
     for (let widget of widgets) {
       let span = widget.getElementsByTagName("span")[0];
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `Loading ${message} ... &nbsp; `;
+        if (message) label.innerHTML = `${message} &nbsp; `; // LOADING MESSAGE
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
@@ -755,6 +771,7 @@ async function getWeatherLocationByIPAsync() {
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
 // City, State, Country, ZipCode, Latitude, Longitude
 export async function getWeatherLocationByAddressAsync(address) {
+  // cjm this is the one we want to hook a call-back into.
   let error = new Response("Address Error", { status: 400, ok: false });
   if (!address)
     address = prompt(
@@ -902,128 +919,130 @@ async function CreateResponse(data) {
 // it's possible we would want to set this as low as 4 or 5 minutes to
 // catch weather alerts, or as high as 4 hours which is the forecast interval.
 */
-async function getWeatherAsync() {
-  let pointData = null;
-  let stationsData = null;
-  let observationData = null;
-  let forecastData = null;
-  let radarStation = null;
-  let resultString = "";
+export async function getWeatherAsync(locData) {
+  return WeatherKittyIsLoading("Weather_Async", async () => {
+    let pointData = null;
+    let stationsData = null;
+    let observationData = null;
+    let forecastData = null;
+    let radarStation = null;
+    let resultString = "";
 
-  let locData = await getWeatherLocationAsync();
-  let lat = locData?.latitude;
-  let lon = locData?.longitude;
-  if (!(lat && lon)) {
-    window.alert("No Location Data Available");
-    if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Location Data Available");
-    return;
-  }
+    if (!locData) locData = await getWeatherLocationAsync();
+    let lat = locData?.latitude;
+    let lon = locData?.longitude;
+    if (!(lat && lon)) {
+      window.alert("No Location Data Available");
+      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Location Data Available");
+      return;
+    }
 
-  // Get Location and check cached location, ... use, update, etc.
-  // check the cached forecasturl, cwa, gridId, gridX, gridY ... use, update, etc.
-  // ...
+    // Get Location and check cached location, ... use, update, etc.
+    // check the cached forecasturl, cwa, gridId, gridX, gridY ... use, update, etc.
+    // ...
 
-  // Notes
-  // -----
-  // https://noaa-ghcn-pds.s3.amazonaws.com/index.html - just added
-  // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz
-  // https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312
-  // https://api.weather.gov/gridpoints/JKL/65,16/stations
-  // https://api.weather.gov/stations/${Station_ID}/observations
+    // Notes
+    // -----
+    // https://noaa-ghcn-pds.s3.amazonaws.com/index.html - just added
+    // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz
+    // https://api.weather.gov/points/36.82565689086914%2C-83.32009887695312
+    // https://api.weather.gov/gridpoints/JKL/65,16/stations
+    // https://api.weather.gov/stations/${Station_ID}/observations
 
-  // We need the GridID, GridX, GridY to get the forecast
+    // We need the GridID, GridX, GridY to get the forecast
 
-  let stationLocationUrl = `https://api.weather.gov/points/${lat},${lon}`;
-  let weatherForecastUrl = null;
-  let observationStationsUrl = null;
-  let response = null;
+    let stationLocationUrl = `https://api.weather.gov/points/${lat},${lon}`;
+    let weatherForecastUrl = null;
+    let observationStationsUrl = null;
+    let response = null;
 
-  CheckApiStatus("wk-status-nws"); // Required API and there is no roll-over
+    CheckApiStatus("wk-status-nws"); // Required API and there is no roll-over
 
-  response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
-  if (response && response.ok) {
-    let data = await response.json();
-    pointData = data;
-    weatherForecastUrl = String(data.properties.forecast);
-    observationStationsUrl = String(data.properties.observationStations);
-    radarStation = String(data.properties.radarStation);
-    let city = data.properties.relativeLocation.properties.city;
-    let state = data.properties.relativeLocation.properties.state;
-    let locationName = `${city}, ${state}`;
-    resultString += locationName;
-  } else {
-    if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Point Data Available");
-    WeatherKittyErrorText("ERROR Location");
-    return;
-  }
-
-  // Get "Featured" Observation Station ... from Stations
-  // https://api.weather.gov/stations/KI35/observations
-
-  let observationStationID = null;
-  if (observationStationsUrl) {
-    response = await fetchCache(observationStationsUrl, null, config.longCacheTime);
+    response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
     if (response && response.ok) {
       let data = await response.json();
-      stationsData = data;
-
-      observationStationID = String(data.features[0].properties.stationIdentifier);
-
-      resultString += `, ${observationStationID}`;
+      pointData = data;
+      weatherForecastUrl = String(data.properties.forecast);
+      observationStationsUrl = String(data.properties.observationStations);
+      radarStation = String(data.properties.radarStation);
+      let city = data.properties.relativeLocation.properties.city;
+      let state = data.properties.relativeLocation.properties.state;
+      let locationName = `${city}, ${state}`;
+      resultString += locationName;
     } else {
-      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Stations Data Available");
+      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Point Data Available");
+      WeatherKittyErrorText("ERROR Location");
+      return;
     }
-  } else {
-    if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Observation Stations URL");
-  }
 
-  // Get Current Observation
+    // Get "Featured" Observation Station ... from Stations
+    // https://api.weather.gov/stations/KI35/observations
 
-  if (observationStationID) {
-    let observationUrl = `https://api.weather.gov/stations/${observationStationID}/observations`;
-    response = await fetchCache(observationUrl, null, config.obsCacheTime);
-    if (response && response.ok) {
-      let data = await response.json();
+    let observationStationID = null;
+    if (observationStationsUrl) {
+      response = await fetchCache(observationStationsUrl, null, config.longCacheTime);
+      if (response && response.ok) {
+        let data = await response.json();
+        stationsData = data;
 
-      observationData = data;
-      let temp = data.features[0].properties.temperature.value;
-      let units = data.features[0].properties.temperature.unitCode;
-      temp = Fahrenheit(temp, units);
-      let obs = data.features[0].properties.textDescription;
+        observationStationID = String(data.features[0].properties.stationIdentifier);
 
-      resultString += `, ${temp} ${obs}`;
+        resultString += `, ${observationStationID}`;
+      } else {
+        if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Stations Data Available");
+      }
     } else {
-      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Obs Data Available");
+      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Observation Stations URL");
     }
-  } else {
-    if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Observation Station ID");
-  }
 
-  // Get the forecast
-  // https://api.weather.gov/gridpoints/JKL/65,16/forecast
+    // Get Current Observation
 
-  if (weatherForecastUrl) {
-    response = await fetchCache(weatherForecastUrl, null, config.forecastCacheTime);
-    if (response && response.ok) {
-      let data = await response.json();
-      forecastData = data;
+    if (observationStationID) {
+      let observationUrl = `https://api.weather.gov/stations/${observationStationID}/observations`;
+      response = await fetchCache(observationUrl, null, config.obsCacheTime);
+      if (response && response.ok) {
+        let data = await response.json();
 
-      let temp = data.properties.periods[0].temperature;
-      let units = data.properties.periods[0].temperatureUnit;
-      temp = Fahrenheit(temp, units);
-      let forecast = data.properties.periods[0].shortForecast;
+        observationData = data;
+        let temp = data.features[0].properties.temperature.value;
+        let units = data.features[0].properties.temperature.unitCode;
+        temp = Fahrenheit(temp, units);
+        let obs = data.features[0].properties.textDescription;
 
-      resultString += `, ${temp} ${forecast}`;
+        resultString += `, ${temp} ${obs}`;
+      } else {
+        if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Obs Data Available");
+      }
     } else {
-      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Forecast Data Available");
+      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Observation Station ID");
     }
-  } else {
-    if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Forecast URL");
-  }
 
-  // Call the callback function:
-  // callBack(cached);
-  return { pointData, stationsData, observationData, forecastData, radarStation };
+    // Get the forecast
+    // https://api.weather.gov/gridpoints/JKL/65,16/forecast
+
+    if (weatherForecastUrl) {
+      response = await fetchCache(weatherForecastUrl, null, config.forecastCacheTime);
+      if (response && response.ok) {
+        let data = await response.json();
+        forecastData = data;
+
+        let temp = data.properties.periods[0].temperature;
+        let units = data.properties.periods[0].temperatureUnit;
+        temp = Fahrenheit(temp, units);
+        let forecast = data.properties.periods[0].shortForecast;
+
+        resultString += `, ${temp} ${forecast}`;
+      } else {
+        if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Forecast Data Available");
+      }
+    } else {
+      if (Log.Error()) console.log("[getWeatherAsync] *** ERROR ***: No Forecast URL");
+    }
+
+    // Call the callback function:
+    // callBack(cached);
+    return { pointData, stationsData, observationData, forecastData, radarStation };
+  });
 }
 // /Function getWeatherAsync ----------------------------------------------
 0;
@@ -1076,89 +1095,91 @@ async function ForecastMatrix(data) {
 }
 
 // Function ObservationCharts
-async function GetObservationChartData(data) {
-  let obsArray = ["timestamp"];
+export async function GetObservationChartData(data) {
+  return WeatherKittyIsLoading("Obs_Chart Data", async () => {
+    let obsArray = ["timestamp"];
 
-  if (data !== null && data !== undefined && data.length > 0) {
-    let keys = Object.keys(data[0].properties);
-    for (let key of keys) {
-      if (key == "__proto__")
-        throw new Error("[ObservationCharts] *** ERROR *** : __proto__ is not a safe type");
-      if (key == "timestamp") continue;
-      let unitCode = data[0]?.properties[key]?.unitCode;
-      if (
-        unitCode != null &&
-        unitCode != undefined &&
-        unitCode != "" &&
-        obsArray.includes(key) === false
-      )
-        obsArray.push(key);
+    if (data !== null && data !== undefined && data.length > 0) {
+      let keys = Object.keys(data[0].properties);
+      for (let key of keys) {
+        if (key == "__proto__")
+          throw new Error("[ObservationCharts] *** ERROR *** : __proto__ is not a safe type");
+        if (key == "timestamp") continue;
+        let unitCode = data[0]?.properties[key]?.unitCode;
+        if (
+          unitCode != null &&
+          unitCode != undefined &&
+          unitCode != "" &&
+          obsArray.includes(key) === false
+        )
+          obsArray.push(key);
+      }
+    } else {
+      console.log("[ObservationCharts] *** ERROR ***: No Data Available");
+      return;
     }
-  } else {
-    console.log("[ObservationCharts] *** ERROR ***: No Data Available");
-    return;
-  }
 
-  // refactored into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[], data.values[].value, data.values[].unitCode
-  // such that current obs and historical obs are the same format and can be charted by the same functions/together
-  let chartData = new Map();
-  for (let i = 0; i < obsArray.length; i++) {
-    chartData.set(obsArray[i], { unitcode: "", timestamps: [], values: [] });
-  }
+    // refactored into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[], data.values[].value, data.values[].unitCode
+    // such that current obs and historical obs are the same format and can be charted by the same functions/together
+    let chartData = new Map();
+    for (let i = 0; i < obsArray.length; i++) {
+      chartData.set(obsArray[i], { unitcode: "", timestamps: [], values: [] });
+    }
 
-  // is there data to process?
-  if (data.length > 0) {
-    for (let observation of obsArray) {
-      for (let i = 0; i < data.length; i++) {
-        let item = data[i]?.properties[observation];
-        let timestamp = data[0]?.properties["timestamp"];
-        if (item == null || item == "") {
-          chartData.get(observation).push(NaN);
-        } else {
-          // Convert to Fahrenheit
-          let value = data[i].properties[observation].value;
-          let unitCode = data[i].properties[observation].unitCode;
-          if (unitCode !== null && unitCode !== undefined && unitCode === "wmoUnit:degC") {
-            data[i].properties[observation].value = Fahrenheit(value, "°C");
-            data[i].properties[observation].unitCode = "°F";
+    // is there data to process?
+    if (data.length > 0) {
+      for (let observation of obsArray) {
+        for (let i = 0; i < data.length; i++) {
+          let item = data[i]?.properties[observation];
+          let timestamp = data[0]?.properties["timestamp"];
+          if (item == null || item == "") {
+            chartData.get(observation).push(NaN);
+          } else {
+            // Convert to Fahrenheit
+            let value = data[i].properties[observation].value;
+            let unitCode = data[i].properties[observation].unitCode;
+            if (unitCode !== null && unitCode !== undefined && unitCode === "wmoUnit:degC") {
+              data[i].properties[observation].value = Fahrenheit(value, "°C");
+              data[i].properties[observation].unitCode = "°F";
+            }
+            // /Convert to Fahrenheit
+
+            chartData.get(observation).values.push(data[i].properties[observation]);
           }
-          // /Convert to Fahrenheit
-
-          chartData.get(observation).values.push(data[i].properties[observation]);
         }
       }
-    }
-    if (Log.Info()) {
-      let stationID = data[0].properties.station;
-      stationID = stationID.substring(stationID.length - 4);
+      if (Log.Info()) {
+        let stationID = data[0].properties.station;
+        stationID = stationID.substring(stationID.length - 4);
 
-      let message = `[Observations] ${stationID}, `;
-      for (let key of obsArray) {
-        let unitCode = data[0].properties[key].unitCode;
-        if (unitCode !== null && unitCode !== undefined)
-          unitCode = unitCode.replace("wmoUnit:", "");
-        message += ` ${key}`;
+        let message = `[Observations] ${stationID}, `;
+        for (let key of obsArray) {
+          let unitCode = data[0].properties[key].unitCode;
+          if (unitCode !== null && unitCode !== undefined)
+            unitCode = unitCode.replace("wmoUnit:", "");
+          message += ` ${key}`;
 
-        message += `, `;
+          message += `, `;
+        }
+        console.log(message);
       }
-      console.log(message);
+    } else {
+      if (Log.Error()) console.log("[ObservationCharts] *** ERROR ***: No Data");
     }
-  } else {
-    if (Log.Error()) console.log("[ObservationCharts] *** ERROR ***: No Data");
-  }
 
-  // reformat the data into the new format
-  // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
-  // aka add timestamps to each observation type
-  for (let observation of obsArray) {
-    if (observation == "timestamp") continue;
-    chartData.get(observation).unitCode = data[0].properties[observation].unitCode;
-    chartData.get(observation).timestamps = chartData.get("timestamp").values;
-  }
-  chartData.delete("timestamp");
+    // reformat the data into the new format
+    // refactor into data/timestamp pairs: map.get(key).data.unitCode, data.timestamps[], data.values[],
+    // aka add timestamps to each observation type
+    for (let observation of obsArray) {
+      if (observation == "timestamp") continue;
+      chartData.get(observation).unitCode = data[0].properties[observation].unitCode;
+      chartData.get(observation).timestamps = chartData.get("timestamp").values;
+    }
+    chartData.delete("timestamp");
 
-  return chartData;
-  // containers
+    return chartData;
+    // containers
+  });
 }
 
 // Function Process Chart Elements
@@ -2143,101 +2164,104 @@ export async function corsCache(url, options, ttl, failTtl) {
 // Returns:
 //    Map("TMAX", {timestamps: [timestamps], values: [{value: int, unitCode: string}]})
 
-async function HistoryGetChartData(station, latitude, longitude) {
-  let location;
-  if (station) location = await HistoryGetStation(station);
-  if (location?.latitude && location?.longitude) {
-  } else if (latitude && longitude) {
-    location = { latitude: latitude, longitude: longitude };
-  } else {
-    location = await getWeatherLocationAsync();
-  }
-  if (location && location.latitude && location.longitude) {
-  } else {
-    if (Log.Error()) console.log("[GetHistoryChartData] *** ERROR *** : Location Error ");
-    return;
-  }
-
-  station = await HistoryGetStation(null, location.latitude, location.longitude);
-  if (station?.id && station?.id.length == 11) {
-  } else {
-    if (Log.Error())
-      console.log(`[GetHistoryChartData] *** ERROR *** : Station Error [${station?.id}]`);
-    return;
-  }
-
-  let fileData;
-  fileData = await HistoryGetCsvFile(station.id);
-
-  if (fileData && fileData?.length > 0) {
-  } else {
-    if (Log.Error())
-      console.log(`[GetHistoryChartData] *** ERROR *** : File Data Error [${station.id}]`);
-    return;
-  }
-
-  // ... Process the File Data into Data Sets
-  // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
-  // USW00014739,19360101,TMAX, 17,,,0,2400
-
-  // Data is a mixed hodgepodge so we have to use an array for the first read.
-  let dataSets;
-  dataSets = {};
-  let lineCount = 0;
-  for (let line of fileData) {
-    lineCount++;
-    let properties = line.split(",");
-    let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
-    if (type == "__proto__")
-      throw new Error(
-        `[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type [${station.id}]`
-      );
-    if (id == "ID") continue;
-    if (id != null && id.length > 0) {
-      if (dataSets[type] == null) {
-        dataSets[type] = {};
-        dataSets[type].history = true; // weather history data
-        dataSets[type].timestamps = [];
-        dataSets[type].values = [];
-      }
-
-      if (date != null) {
-        let fDate = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
-        date = fDate;
-        if (obsTime != null && obsTime.length > 0) {
-          let time = obsTime.substring(0, 2) + ":" + obsTime.substring(2, 4) + ":00";
-          date += "T" + time;
-        } else {
-          date += "T24:00:00";
-        }
-        dataSets[type].timestamps.push(date);
-        let value = { value: val, unitCode: type };
-        dataSets[type].values.push(value);
-      } else {
-        if (Log.Error())
-          console.log(
-            `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}] ${val} ${date}`
-          );
-      }
-    } else if (lineCount === fileData.length) {
-      // EOF
+export async function HistoryGetChartData(station, latitude, longitude) {
+  return WeatherKittyIsLoading("History_Chart Data", async () => {
+    let location;
+    if (station) location = await HistoryGetStation(station);
+    if (location?.latitude && location?.longitude) {
+    } else if (latitude && longitude) {
+      location = { latitude: latitude, longitude: longitude };
     } else {
-      if (Log.Error()) {
-        console.log(`[GetHistoryChartData] id is null: [${line}]`);
-        console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+      location = await getWeatherLocationAsync();
+    }
+    if (location && location.latitude && location.longitude) {
+    } else {
+      if (Log.Error()) console.log("[GetHistoryChartData] *** ERROR *** : Location Error ");
+      return;
+    }
+
+    station = await HistoryGetStation(null, location.latitude, location.longitude);
+    if (station?.id && station?.id.length == 11) {
+    } else {
+      if (Log.Error())
+        console.log(`[GetHistoryChartData] *** ERROR *** : Station Error [${station?.id}]`);
+      return;
+    }
+
+    let fileData;
+    fileData = await HistoryGetCsvFile(station.id);
+
+    if (fileData && fileData?.length > 0) {
+    } else {
+      if (Log.Error())
+        console.log(`[GetHistoryChartData] *** ERROR *** : File Data Error [${station.id}]`);
+      return;
+    }
+
+    // ... Process the File Data into Data Sets
+    // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
+    // USW00014739,19360101,TMAX, 17,,,0,2400
+
+    // Data is a mixed hodgepodge so we have to use an array for the first read.
+    let dataSets;
+    dataSets = {};
+    let lineCount = 0;
+    for (let line of fileData) {
+      lineCount++;
+      let properties = line.split(",");
+      let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
+      if (type == "__proto__")
+        throw new Error(
+          `[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type [${station.id}]`
+        );
+      if (id == "ID") continue;
+      if (id != null && id.length > 0) {
+        if (dataSets[type] == null) {
+          dataSets[type] = {};
+          dataSets[type].history = true; // weather history data
+          dataSets[type].timestamps = [];
+          dataSets[type].values = [];
+        }
+
+        if (date != null) {
+          let fDate =
+            date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
+          date = fDate;
+          if (obsTime != null && obsTime.length > 0) {
+            let time = obsTime.substring(0, 2) + ":" + obsTime.substring(2, 4) + ":00";
+            date += "T" + time;
+          } else {
+            date += "T24:00:00";
+          }
+          dataSets[type].timestamps.push(date);
+          let value = { value: val, unitCode: type };
+          dataSets[type].values.push(value);
+        } else {
+          if (Log.Error())
+            console.log(
+              `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}] ${val} ${date}`
+            );
+        }
+      } else if (lineCount === fileData.length) {
+        // EOF
+      } else {
+        if (Log.Error()) {
+          console.log(`[GetHistoryChartData] id is null: [${line}]`);
+          console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+        }
       }
     }
-  }
 
-  await microSleep(1);
-  dataSets = await HistoryReformatDataSets(dataSets);
-  if (Log.Info()) {
-    let keys = [];
-    for (let key of dataSets.keys()) keys.push(key);
-    console.log(`[History] [${station.id}] ${keys.join(", ")}`);
-  }
+    await microSleep(1);
+    dataSets = await HistoryReformatDataSets(dataSets);
+    if (Log.Info()) {
+      let keys = [];
+      for (let key of dataSets.keys()) keys.push(key);
+      console.log(`[History] [${station.id}] ${keys.join(", ")}`);
+    }
 
-  return dataSets;
+    return dataSets;
+  });
 }
 
 // Reformat, Convert, and Create Aliases for Data Sets

@@ -73,7 +73,7 @@ For ease of editing and customization
 
 <b>`<weather-kitty-chart type="value" MaxDataPoints="value" pixelsPerDataPoint="value" trimData="value" width="value" height="value" noData="value">`</b>
 
-<small>NOTE: Charts may require a defined or contained size. Charts will attempt to size to their parent container. This can sometimes cause issues with dynamic undefined sizing.</small>
+<small>NOTE: Charts may require flex, grid, a defined size, or a contained size. Charts will attempt to size to their parent container. This can sometimes cause issues with dynamic undefined sizing. This can include grid or flex all the way to the root.</small>
 
 ##### Type - <small>required</small>
 
