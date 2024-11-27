@@ -284,20 +284,27 @@ export async function WeatherKitty() {
       let response = (await getCache("/weatherkittycache/location"))?.response;
       let cachedLocation = await response?.json();
       if (response && response.ok) {
-        // console.log("[WeatherKitty] Cached Location", cachedLocation);
-        locationName = cachedLocation.city ? cachedLocation.city : "";
-        locationName += cachedLocation.name ? cachedLocation.name : "";
-        locationName += cachedLocation.state ? ", " + cachedLocation.state : "";
-        locationName += cachedLocation.id ? " - " + cachedLocation.id : "";
-        if (!locationName) {
-          locationName = cachedLocation.latitude
-            ? parseFloat(cachedLocation?.latitude).toFixed(6)
-            : "";
-          locationName += cachedLocation.longitude
-            ? ", " + parseFloat(cachedLocation?.longitude).toFixed(6)
-            : "";
-        }
       } else console.log("[WeatherKitty] No Cached Location", cachedLocation);
+
+      if (cachedLocation?.city) locationName = cachedLocation.city;
+      else if (historyStation?.name) locationName = historyStation.name;
+
+      if (cachedLocation?.state) locationName += ", " + cachedLocation.state;
+      else if (historyStation?.state) locationName += ", " + historyStation.state;
+
+      if (cachedLocation?.id) locationName += " - " + cachedLocation.id;
+      else if (historyStation?.id) locationName += " - " + historyStation.id;
+
+      if (!locationName) {
+        if (cachedLocation?.latitude)
+          locationName = parseFloat(cachedLocation?.latitude).toFixed(6);
+        if (cachedLocation?.longitude) locationName += cachedLocation.longitude;
+      }
+      if (locationName) locationName += "&nbsp;";
+
+      console.log("[HistoryStation] ", historyStation);
+      console.log("[CachedLocation]", cachedLocation);
+      console.log("[LocationName]", locationName);
     }
 
     // Long Forecast
@@ -416,6 +423,10 @@ export async function WeatherKitty() {
 
   // console.log("[WeatherKitty] Exiting Weather Kitty");
 }
+
+// ------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------
 
 export async function WeatherKittyWaitOnLoad() {
   while (!config.WeatherWidgetIsLoaded || (await WeatherKittyIsLoading())) {
@@ -771,7 +782,6 @@ async function getWeatherLocationByIPAsync() {
 // https://geocoding.geo.census.gov/geocoder/locations/address?street=4600+Silver+Hill+Rd&city=Washington&state=DC&zip=20233&benchmark=Public_AR_Current&format=json
 // City, State, Country, ZipCode, Latitude, Longitude
 export async function getWeatherLocationByAddressAsync(address) {
-  // cjm this is the one we want to hook a call-back into.
   let error = new Response("Address Error", { status: 400, ok: false });
   if (!address)
     address = prompt(

@@ -80,7 +80,7 @@ It sounds so neat and simple, and it so very much isn't.
 ### Project Current Work and Fixes
 
 - [ ] Explorer
-  - [ ] OnWeatherKittyCallBack(callback);
+  - [ ] Return ghcnd Name as well as lat/lon when history only data.
   - [ ] GetNearbyLocations(location);
     - [ ] filter by type(s) as well
 - [ ] setup a local copy of ghcnd, and links, etc.
