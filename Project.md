@@ -79,6 +79,15 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] Shade Night Cards
+- [ ] Replace 0% with &emsp;
+- [ ] Radar Maps, KML, Box Target to Lat/Lon
+- [ ] Local Radar, Forecast, No History on init Load
+- [ ] Cache Clean 30 days past due
+- [ ] Baxter Looks up wrong, using name instead of id or lat lon. Use Lat/Lon of ID?
+- [ ] Add an API test to the Test Links Page, for testing the API Only.
+- [ ] Add 4 letter station search equal priority to 11 letter station search, both higher priority than city search, but try city on fail for both
+- [ ] ...
 - [ ] Clean up console.log statements
 - [ ] Live Server Speed Note
 - [ ] Explorer
@@ -86,7 +95,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] GetNearbyLocations(location);
     - [ ] filter by type(s) as well
 - [ ] Better organized dependancies
-- [ ] VITE ... I don't think I can wait much longer.    
+- [ ] VITE ... I don't think I can wait much longer.
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 

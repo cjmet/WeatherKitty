@@ -8,7 +8,10 @@ https://cjmet.github.io/WeatherKitty/
 
 **GHCND Note:** The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion. If you want to explore the historical data it's advised that you download a local copy from: [NCEI](https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz) (33gb)
 
-**CodeKy Note:** See the project.md for CodeKy Specific Info.
+**CodeKy Notes**
+
+- See the project.md for CodeKy Specific Info.
+- The demo runs very slowly in LiveServer, I recommend using https://cjmet.github.io/WeatherKitty/, or other robust server tech.
 
 ## Usage
 
