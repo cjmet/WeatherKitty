@@ -154,6 +154,11 @@ weather-kitty-forecast:hover {
     width: 12em;
     height: max-content;
   }
+  weather-kitty-tooltip,
+  weather-kitty-tooltip span {
+    width: 11.2em;
+    height: max-content;
+  }
 }
 
 /* Hide the sub-tooltip when inside a weather-kitty element.  */
@@ -190,6 +195,10 @@ weather-kitty-week-card {
   max-width: 7.5em;
   min-width: 7.5em;
   overflow: visible;
+}
+
+.wk-card-night {
+  background-color: rgb(192, 192, 192);
 }
 
 weather-kitty-week-title {
@@ -334,4 +343,36 @@ weather-kitty-status {
   letter-spacing: -0.2em;
   margin: 0;
   padding: 0;
+  div {
+    width: 1.2em;
+  }
 }
+
+/* ************************************************************************ ********************* */
+/* wk-BoxTarget // cjm - I really probably shouldn't do this ... but it's my map so live with it. */
+weather-kitty-radar-local {
+  position: relative;
+}
+weather-kitty-radar-local > .wk-BoxTarget {
+  position: absolute;
+  /* 52x, 63.66y */
+  --box-size: 1%;
+
+  /* KMRX */
+  left: calc(52% - var(--box-size) / 2);
+  bottom: calc(63.66% - var(--box-size) / 2);
+
+  /* KJKL */
+  /* left: calc(51% - var(--box-size) / 2);
+  bottom: calc(31% - var(--box-size) / 2); */
+
+  border: red 0.1px solid;
+  box-sizing: border-box;
+  height: var(--box-size);
+  width: var(--box-size);
+
+  flex: 1 0 auto;
+  display: none;
+}
+/* /wk-BoxTarget */
+/* ************************************************************************ ********************* */

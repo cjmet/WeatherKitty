@@ -1,0 +1,15 @@
+/* Page Layout */
+/* Over-Rides to default styles.css */
+:root {
+}
+
+#WeatherKittyMain {
+  /* border: red 1px solid; */
+  box-sizing: border-box;
+  padding: 1em;
+}
+
+#ExplorerChart {
+  min-height: 20em;
+  flex: 0 0 auto;
+}

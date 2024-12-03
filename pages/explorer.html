@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico" />
+    <title>Weather Kitty Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="explorer.css" />
+  </head>
+
+  <body id="WeatherKittyBody" style="height: 100%">
+    <header id="WeatherKittyHeader">
+      <div id="HeaderRow1">
+        <div>
+          <img id="LogoImg" src="../img/Logo128.png" alt="Angle Hornet Logo" />
+        </div>
+        <div id="NavImg">
+          <img src="../img/CatBurger.png" alt="Hamburger Image" />
+          <nav id="HamLinks">
+            <a id="HamToHome" href="../"><span>Home</span></a>
+            <!-- <a id="HamWeather"><span>Weather Charts</span></a>
+            <a id="HamHistory"><span>History Charts</span></a>
+            <a id="HamClimate"><span>Boston Climate Charts</span></a>
+            <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+            <!-- <a id="HamExpire"><span>Expire ttl</span></a>
+            <a id="HamPurge"><span>Purge Cache</span></a> -->
+            <!-- <a id="HamTest"><span>Run Tests</span></a> -->
+          </nav>
+        </div>
+
+        <div id="HeaderTitle">
+          <h1>Weather Kitty Demo</h1>
+          <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+        </div>
+        <div id="WeatherKittyWidgetDiv">
+          <!-- // cjm  -->
+          <!-- <weather-kitty></weather-kitty> -->
+        </div>
+      </div>
+      <div id="HeaderRow2">
+        <nav id="NavLinks">
+          <a id="NavToHome" href="../"><span>Home</span></a>
+          <!--<a id="NavWeather"><span>Weather Charts</span></a>
+          <a id="NavHistory"><span>History Charts</span></a>
+          <a id="NavClimate"><span>Boston Climate Charts</span></a>
+          <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+          <!-- <a id="NavExpire"><span>Expire ttl</span></a>
+          <a id="NavPurge"><span>Purge Cache</span></a> -->
+          <!-- <a id="NavTest"><span>Run Tests</span></a> -->
+        </nav>
+        <weather-kitty-status> </weather-kitty-status>
+        <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+      </div>
+    </header>
+
+    <main id="WeatherKittyMain">
+      <p class="HelpText"><strong>Weather Explorer (Alpha)</strong></p>
+      <weather-kitty-chart id="ExplorerChart" type=""></weather-kitty-chart>
+      <div id="ChartTypes"></div>
+    </main>
+
+    <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
+
+    <script src="../WeatherKitty.mjs" type="module"></script>
+    <script src="../src/script.js" type="module"></script>
+    <script src="../src/test.mjs" type="module"></script>
+
+    <!-- // ------------------------------------------------------------------------- -->
+    <!-- // ------------------------------------------------------------------------- -->
+    <!-- // ------------------------------------------------------------------------- -->
+
+    <script type="module">
+      import {
+        WeatherKittyGetAvailableChartTypes,
+        Log,
+        LogLevel,
+        WeatherKitty,
+        WeatherKittyGetNearbyStations,
+        SetLocationAddress,
+        WeatherKittyWaitOnLoad,
+        WeatherKittyWaitOnInit,
+        WeatherKittyIsLoading,
+        OnWeatherKitty,
+        config,
+        sleep,
+        WeatherKittyPause,
+      } from "../WeatherKitty.mjs";
+
+      await OnWeatherKitty(ExplorerFunction);
+
+      async function ExplorerFunction() {
+        WeatherKittyIsLoading("ExplorerFunction", async () => {
+          console.log("[ExplorerFunction] *** *** ***");
+          let charts = await WeatherKittyGetAvailableChartTypes();
+          let nearbyStations = await WeatherKittyGetNearbyStations(null, null, 2, 16);
+          let target = document.getElementById("ChartTypes");
+          target.innerHTML = "";
+
+          {
+            let p = document.createElement("p");
+            p.className = "HelpText";
+            p.innerHTML = "<strong>Weather Chart Types</strong>";
+            target.appendChild(p);
+            if (charts?.weather)
+              for (let weatherChart of charts?.weather) {
+                let button = document.createElement("button");
+                button.innerHTML = weatherChart;
+                button.onclick = async function () {
+                  console.log("Setting chart type to " + weatherChart);
+                  document.getElementById("ExplorerChart").setAttribute("type", weatherChart);
+                  WeatherKitty();
+                };
+                target.appendChild(button);
+              }
+          }
+
+          {
+            let p = document.createElement("p");
+            p.className = "HelpText";
+            p.innerHTML = "<strong>History Chart Types </strong>";
+            target.appendChild(p);
+            let button = document.createElement("button");
+            button.innerHTML = "ghcnd codes";
+            button.onclick = function () {
+              console.log("ghcnd codes");
+              // window.location.href = "../ghcn/ghcnd-codes.txt";
+              window.open("../ghcn/ghcnd-codes.txt", "_blank");
+            };
+            p.appendChild(button);
+            if (charts?.history)
+              for (let historyChart of charts?.history) {
+                let button = document.createElement("button");
+                button.innerHTML = historyChart;
+                button.onclick = async function () {
+                  console.log("Setting chart type to " + historyChart);
+                  document.getElementById("ExplorerChart").setAttribute("type", historyChart);
+                  WeatherKitty();
+                };
+                target.appendChild(button);
+              }
+          }
+
+          // add nearby stations later
+          {
+            let hr = document.createElement("hr");
+            hr.style.width = "80%";
+            hr.style.border = "black 1px solid";
+            target.appendChild(hr);
+          }
+
+          {
+            let p = document.createElement("p");
+            p.className = "HelpText";
+            p.innerHTML = "<strong>Nearby Weather Stations</strong>";
+            target.appendChild(p);
+
+            console.log("Nearby stations: ", nearbyStations);
+            for (let station of nearbyStations) {
+              let button = document.createElement("button");
+              button.innerHTML = `${station.id} - ${station.name}, ${station.state}`;
+              button.onclick = async function () {
+                console.log("Setting station to: " + station.id);
+                await SetLocationAddress(`${station.lat}, ${station.lon}`);
+                WeatherKitty();
+              };
+              target.appendChild(button);
+            }
+          }
+        });
+      }
+      // ExplorerFunction(); // call this with OnWeatherKitty(callback);
+    </script>
+  </body>
+</html>

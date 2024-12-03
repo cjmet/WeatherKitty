@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="./img/favicon.ico" />
     <title>Weather Kitty Demo</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="./pages/styles.css" />
   </head>
 
   <body id="WeatherKittyBody">
     <header id="WeatherKittyHeader">
       <div id="HeaderRow1">
-        <img id="LogoImg" src="Logo128.png" alt="Angle Hornet Logo" />
+        <img id="LogoImg" src="./img/Logo128.png" alt="Angle Hornet Logo" />
         <div id="NavImg">
           <img src="img/CatBurger.png" alt="Hamburger Image" />
           <nav id="HamLinks">
@@ -19,10 +19,8 @@
             <a id="HamWeather"><span>Weather Charts</span></a>
             <a id="HamHistory"><span>History Charts</span></a>
             <a id="HamClimate"><span>Climate Charts</span></a>
-            <!-- <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-            <!-- <a id="HamExpire"><span>Expire Data</span></a>
-            <a id="HamPurge"><span>Purge Data</span></a> -->
-            <a id="HamTestPage" href="./test.html"><span>Tests Page</span></a>
+            <a id="ExplorerPage" href="./pages/explorer.html"><span>Weather Explorer</span></a>
+            <a id="HamTestPage" href="./pages/test.html"><span>Tests Page</span></a>
           </nav>
         </div>
 
@@ -40,10 +38,8 @@
           <a id="NavWeather"><span>Weather Charts</span></a>
           <a id="NavHistory"><span>History Charts</span></a>
           <a id="NavClimate"><span>Climate Charts</span></a>
-          <!-- <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
-          <!-- <a id="NavExpire"><span>Expire Data</span></a>
-          <a id="NavPurge"><span>Purge Data</span></a> -->
-          <a id="NavTestPage" href="./test.html"><span>Tests Page</span></a>
+          <a id="ExplorerPage" href="./pages/explorer.html"><span>Weather Explorer</span></a>
+          <a id="NavTestPage" href="./pages/test.html"><span>Tests Page</span></a>
         </nav>
         <weather-kitty-status></weather-kitty-status>
         <weather-kitty-geoaddress> </weather-kitty-geoaddress>
@@ -246,6 +242,6 @@
     <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
 
     <script src="./WeatherKitty.mjs" type="module"></script>
-    <script src="./script.js" type="module"></script>
+    <script src="./src/script.js" type="module"></script>
   </body>
 </html>

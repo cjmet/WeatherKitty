@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico" />
+    <title>Weather Kitty Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body id="WeatherKittyBody" style="height: 100%;">
+    <header id="WeatherKittyHeader">
+      <div id="HeaderRow1">
+        <div>
+          <img id="LogoImg" src="../img/Logo128.png" alt="Angle Hornet Logo" />
+        </div>
+        <div id="NavImg">
+          <img src="../img/CatBurger.png" alt="Hamburger Image" />
+          <nav id="HamLinks">
+            <a id="HamToHome" href="../"><span>Home</span></a>
+            <!-- <a id="HamWeather"><span>Weather Charts</span></a>
+            <a id="HamHistory"><span>History Charts</span></a>
+            <a id="HamClimate"><span>Boston Climate Charts</span></a>
+            <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+            <a id="HamExpire"><span>Expire ttl</span></a>
+            <a id="HamPurge"><span>Purge Cache</span></a>
+            <a id="HamTest"><span>Run Tests</span></a>
+          </nav>
+        </div>
+
+        <div id="HeaderTitle">
+          <h1>Weather Kitty Demo</h1>
+          <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+        </div>
+        <div id="WeatherKittyWidgetDiv">
+          <!-- // cjm  -->
+          <!-- <weather-kitty></weather-kitty> -->
+        </div>
+      </div>
+      <div id="HeaderRow2">
+        <nav id="NavLinks">
+          <a id="NavToHome" href="../"><span>Home</span></a>
+          <!--<a id="NavWeather"><span>Weather Charts</span></a>
+          <a id="NavHistory"><span>History Charts</span></a>
+          <a id="NavClimate"><span>Boston Climate Charts</span></a>
+          <hr style="width: 0.33em; margin: 0.33em; align-self: center; justify-self: center" /> -->
+          <a id="NavExpire"><span>Expire ttl</span></a>
+          <a id="NavPurge"><span>Purge Cache</span></a>
+          <a id="NavTest"><span>Run Tests</span></a>
+        </nav>
+        <weather-kitty-status> </weather-kitty-status>
+        <weather-kitty-geoaddress> </weather-kitty-geoaddress>
+      </div>
+    </header>
+
+    <main id="WeatherKittyMain">
+      <div style="border: red 1px solid; margin: 3px; height: 100%; overflow: auto">
+        
+        <p class="HelpText">
+          <strong>Expire ttt</strong> - Expires the ttl on wk-cache objects.  This will force a fetch, if the fetch fails, stale data will be served from the expired cache.</b><br><br>
+          <strong>Purge Cache</strong> - Deletes all wk-cache objects.  This will force a fetch, if the fetch fails, no data will be served.</b>
+        </p>
+        
+        <div
+          id="WK-assert"
+          style="
+            margin: 1em;
+            background-color: rgb(160, 160, 160);
+          "
+        >
+          <span style="font-weight: bold; font-size: large"> ... </span><br />
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
+
+    <script src="../WeatherKitty.mjs" type="module"></script>
+    <script src="../src/script.js" type="module"></script>
+    <script src="../src/test.mjs" type="module"></script>
+    <!-- <script type="module">
+      import { CheckApiStatus, WeatherKittyWaitOnInit, WeatherKittyWaitOnLoad} from "./WeatherKitty.mjs";
+      await WeatherKittyWaitOnInit();
+      CheckApiStatus();
+    </script> -->
+  </body>
+</html>

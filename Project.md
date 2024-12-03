@@ -75,21 +75,22 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Why does AbortController() kill some fetch() calls, but not others? If this worked I wouldn't have to worry about the next question.
-- [ ] How to handle the APIs are slow or not responding?
-  - [ ] AWS mirrors are online, HOWEVER, they are not updating.
-        `A critical system failure at NCEI is preventing updates to GHCN daily, including the by_station files.
-An update will be posted as soon as updates resume. `
-  - [ ] NCEI(primary) and NCDC(secondary) are the ones acting up randomly. NCEI would normally be the one to use.
-- [ ] "NavTitle Shrink" on Load is causing some of the oddness, but I like the shrink animation any time other than load?
-- [ ] CodeKy Project Completeness Review. Do you feel like I've completed the requirements?
+- [ ] ...
 
 ### Project Current Work and Fixes
 
-- [ ] setup a local copy of ghcnd, and links, etc.
+- [ ] Better organized dependencies
+- [ ] VITE ... I don't think I can wait much longer.
 
 #### Project Priority 2
 
+- [ ] setup a local copy of ghcnd, and links, etc.
+- [ ] Add local ghcnd to the api links rotations
+- [ ] Add 4 letter station search equal priority to 11 letter station search, both higher priority than city search, but try city on fail for both
+  - [ ] This will take multiple calls to various endpoints, the simple version is no longer online/valid
+- [ ] Radar Maps, KML, Box Target to Lat/Lon
+  - [ ] leaflet.js
+- [ ] Cache Clean 30 days past due
 - [ ] dynamic chart create?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
