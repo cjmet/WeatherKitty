@@ -11,6 +11,7 @@ https://cjmet.github.io/WeatherKitty/
 **CodeKy Notes**
 
 - See the project.md for CodeKy Specific Info.
+- Request an API Key if corsproxy.io is not working. It decided to break today, and is required for the map images.
 - The demo runs very slowly in LiveServer, I recommend using https://cjmet.github.io/WeatherKitty/, or other robust server tech.
 
 ## Usage
@@ -141,11 +142,14 @@ For ease of editing and customization
 - **bowser.js:** MIT License.
 - **chart.js:** MIT License.
 - **corsproxy.io:** Unknown License. **Limit:** Unknown Limit, assume limit 1 call per second.
-  - **INSECURE. YOU ARE TRUSTING** corsproxy.io not to exploit Data or XSS in both directions.
-- **fflate:** Mit License.
+  - **INSECURE. YOU ARE TRUSTING** the proxy not to exploit Data or XSS in both directions.
+- **fflate:** MIT License.
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
 <!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
 - **GHCND:** Public Data. **Limit:** Unknown Limit, assume 1 call per second.
+- **proxy.cors.sh:** API KEY REQUIRED. MIT License. Limit 500k/mth, 5mb, 500gb, approx 1 per 6 seconds.
+
+  - **INSECURE. YOU ARE TRUSTING** the proxy not to exploit Data or XSS in both directions.
 
   ```
   https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt

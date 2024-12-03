@@ -248,7 +248,7 @@ export async function WeatherKitty() {
 
       let text = `${shortText}<br>`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
-      if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
+      if (precip !== null && precip !== undefined && !isNaN(precip) && parseInt(precip) > 0)
         text += ` - ${precip}%`; // There just isn't room for an ellipse or symbol if the deg/precip is 100% &hellip;
 
       WeatherSquares("weather-kitty-current", text, img, altimg);
@@ -273,7 +273,7 @@ export async function WeatherKitty() {
 
       let text = `${shortText}<br>`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
-      if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
+      if (precip !== null && precip !== undefined && !isNaN(precip) && parseInt(precip) > 0)
         text += ` - ${precip}%`;
 
       WeatherSquares("weather-kitty-forecast", text, img, altimg);
@@ -304,9 +304,11 @@ export async function WeatherKitty() {
       }
       if (locationName) locationName += "&nbsp;";
 
-      console.log("[HistoryStation] ", historyStation);
-      console.log("[CachedLocation]", cachedLocation);
-      console.log("[LocationName]", locationName);
+      if (Log.Debug()) {
+        console.log("[HistoryStation] ", historyStation);
+        console.log("[CachedLocation]", cachedLocation);
+        console.log("[LocationName]", locationName);
+      }
     }
 
     // Long Forecast
@@ -345,7 +347,7 @@ export async function WeatherKitty() {
       text += `<b>Current:</b><br>`;
       text += `${shortText}`;
       if (temp !== null && temp !== undefined && !isNaN(temp)) text += ` ${temp}°`; // degrees °f
-      if (precip !== null && precip !== undefined && !isNaN(precip) && precip)
+      if (precip !== null && precip !== undefined && !isNaN(precip) && parseInt(precip))
         text += ` - ${precip}% precipitation`;
       text += `<br><br>`;
 
@@ -411,7 +413,6 @@ export async function WeatherKitty() {
     // API Status.  Update the status of any api that isn't already updated.
     // CheckApiStatus(); // cj - I think I like this bettter disabled. Only load/check APIs as needed.
 
-    console.log("[WeatherKitty Call Backs]", config.WeatherKittyCallBacks);
     WeatherKittyIsLoading("Call_Backs", async () => {
       if (!config.WeatherKittyCallBacks) return;
       for (let callback of config.WeatherKittyCallBacks) {
@@ -878,13 +879,14 @@ export async function getWeatherLocationByAddressAsync(address) {
 
   // *** WARNING *** CORS Proxy Required
 
-  let locationUrl = `https://corsproxy.io/?https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
+  let locationUrl;
+  locationUrl = `https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
   if (city !== "") locationUrl += `&city=${city}`;
   if (state !== "") locationUrl += `&state=${state}`;
   if (zip !== "") locationUrl += `&zip=${zip}`;
   locationUrl += `&benchmark=Public_AR_Current&format=json`;
   locationUrl = locationUrl.toLowerCase();
-  let response = await fetchCache(locationUrl, null, config.FOREVER);
+  let response = await corsCache(locationUrl, null, config.FOREVER);
 
   // City, State, Country, ZipCode, Latitude, Longitude
   if (response && response.ok) {
@@ -1077,13 +1079,20 @@ async function ForecastMatrix(data) {
   let text = "";
   let i = 0;
   for (let period of data) {
-    // if (i === 3) period.shortForecast = "Slight Chance Rain Showers then Slight Chance Rain And Snow Showers"; //  Long Text
-    let leftRight = "";
+    // if (i === 3) period.shortForecast = "Slight Chance Rain Showers then Slight Chance Rain And Snow Showers"; //  Debug Long Text
+    let wkCardNight = "";
+    if (period.isDaytime === false) wkCardNight = `class="wk-card-night"`;
     i++;
-    if (i === 1) leftRight = 'class="wk-left"';
-    else if (i === data.length) leftRight = 'class="wk-right"';
+    let leftRight;
+    if (i === 1) leftRight += `class="wk-left"`;
+    else if (i === data.length) leftRight += `class="wk-right"`;
+    let precip = period.probabilityOfPrecipitation.value; // cjm
+    if (!precip || isNaN(precip) || parseInt(precip) < 1)
+      precip = `<span> &nbsp; </span><span> &emsp; </small></span>`;
+    else precip = `<span> &nbsp </span><span> ${precip}% </small></span>`; // cjm
+
     text += `
-      <weather-kitty-week-card>
+      <weather-kitty-week-card ${wkCardNight}>
     <weather-kitty-week-title>${period.name}</weather-kitty-week-title>    
     <clip style="display: block;">
       <weather-kitty-week-tip ${leftRight}>
@@ -1094,12 +1103,9 @@ async function ForecastMatrix(data) {
           <span>
             ${period.temperature}<small>${period.temperatureUnit.toLowerCase()}</small> 
           </span>
-          <span> - </span> 
-          <span>
-            ${(period.probabilityOfPrecipitation.value ??= 0)}<small>${period.probabilityOfPrecipitation.unitCode.replace(
-      "wmoUnit:percent",
-      "%"
-    )}</small></span>
+          
+          
+            ${precip}
         </weather-kitty-week-summary>
         <weather-kitty-week-forecast> ${BadHyphen(
           period.shortForecast
@@ -2174,6 +2180,11 @@ export async function fetchCache(url, options, ttl, failTtl) {
 }
 
 export async function corsCache(url, options, ttl, failTtl) {
+  if (config.CORSApiKey) {
+    if (!options) options = {};
+    if (!options.headers) options.headers = {};
+    options.headers["x-cors-api-key"] = config.CORSApiKey;
+  }
   let corsUrl = `${config.CORSProxy}${url}`;
   return fetchCache(corsUrl, options, ttl, failTtl);
 }

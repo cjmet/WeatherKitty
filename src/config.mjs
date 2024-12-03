@@ -58,96 +58,115 @@ let Log = {
 };
 // /Logging
 
+let config = {};
+// read config.json for api key
+{
+  let response = await fetch("/wkConfig.json");
+  if (response && response.ok) config = await response.json();
+}
+
 // CONFIG ---------------------------------------------------------------
-let config = {
-  PAUSE: false,
-  FOREVER: Number.MAX_SAFE_INTEGER / 2,
-  locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
-  shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
-  obsCacheTime: 60000 * 10, // 10 minutes
-  forecastCacheTime: 60000 * 60, // 1 hour
-  mediumCacheTime: 60000 * 60 * 8, // 8 hours
-  longCacheTime: 60000 * 60 * 24, // 24 hours
-  historyCacheTime: 60000 * 60 * 24 * 3, // 3 days
-  archiveCacheTime: 60000 * 60 * 24 * 30, // 30 days
-  defaultCacheTime: 60000 * 30, // 30 minutes
+config = {
+  ...config,
+  ...{
+    PAUSE: false,
+    FOREVER: Number.MAX_SAFE_INTEGER / 2,
+    locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
+    shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
+    obsCacheTime: 60000 * 10, // 10 minutes
+    forecastCacheTime: 60000 * 60, // 1 hour
+    mediumCacheTime: 60000 * 60 * 8, // 8 hours
+    longCacheTime: 60000 * 60 * 24, // 24 hours
+    historyCacheTime: 60000 * 60 * 24 * 3, // 3 days
+    archiveCacheTime: 60000 * 60 * 24 * 30, // 30 days
+    defaultCacheTime: 60000 * 30, // 30 minutes
 
-  fetchTimeout: 1000 * 30, // 30 seconds
-  RateLimitTtl: 6000 * 1.1, // x seconds
-  StatusTtl: 1000 * 60 * 15, // About 15 minutes
+    fetchTimeout: 1000 * 30, // 30 seconds
+    RateLimitTtl: 6000 * 1.1, // x seconds
+    StatusTtl: 1000 * 60 * 15, // About 15 minutes
 
-  CORSProxy: "https://corsproxy.io/?", // CORS Proxy "https://corsproxy.io/?" or "" for no-proxy
+    // CORS PROXY
+    // https://corsproxy.io/?
+    // https://cors-proxy.htmldriven.com/?url=
+    // https://cors.sh/pricing
 
-  ForecastMapUrl: "https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137",
-  ForecastMapCacheTime: 60000 * 60 * 1, // 1 hours
-  RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS-LARGE_loop.gif",
-  RadarMapCacheTime: 60000 * 10, // 10 minutes
-  AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
-  AlertsMapCacheTime: 60000 * 10, // 10 minutes
+    CORSProxy: config.CORSApiKey ? "https://proxy.cors.sh/" : "https://corsproxy.io/?",
+    // CORSApiKey: "insert key here or use ./config.json",
 
-  SetLocationText: "Set Location",
+    ForecastMapUrl: "https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137",
+    ForecastMapCacheTime: 60000 * 60 * 1, // 1 hours
+    // RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS_LARGE_loop.gif",
+    RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS_loop.gif",
+    RadarMapCacheTime: 60000 * 10, // 10 minutes
+    AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
+    AlertsMapCacheTime: 60000 * 10, // 10 minutes
 
-  KvpTimers: new Map(),
+    SetLocationText: "Set Location",
 
-  // These only apply to the HISTORY charts
-  CHARTMAXWIDTH: 32000, // this is a constant, more will crash chart.js and/or the browser
+    KvpTimers: new Map(),
 
-  ChartTrimDefault: { weather: "average", history: "truncate" }, // truncate, reverse, average,
-  ChartPixelsPerPointDefault: {
-    auto: 4,
-    default: 4,
-    small: 4,
-    medium: 14,
-    large: 24,
-  },
-  ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),
-  ChartAspectDefault: 2.7,
-  ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
+    // These only apply to the HISTORY charts
+    CHARTMAXWIDTH: 32000, // this is a constant, more will crash chart.js and/or the browser
 
-  maxWidth: 30720,
-  maxHeight: 17280,
-  defaultWidth: 1920,
-  defaultHeight: 1080,
+    ChartTrimDefault: { weather: "average", history: "truncate" }, // truncate, reverse, average,
+    ChartPixelsPerPointDefault: {
+      auto: 4,
+      default: 4,
+      small: 4,
+      medium: 14,
+      large: 24,
+    },
+    ChartMaxPointsDefault: 510, // "Auto", 510, or Int.  "Calc" = Math.Floor(config.CHARTMAXWIDTH / ChartPixelsPerPoint),
+    ChartAspectDefault: 2.7,
+    ChartHeightPuntVh: 66, // in vh   The charts were hidden or failed or errored out.
 
-  // /History
+    maxWidth: 30720,
+    maxHeight: 17280,
+    defaultWidth: 1920,
+    defaultHeight: 1080,
 
-  historyFormat: {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  },
-  timeFormat: {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "numeric",
-    hour12: true, // Delete for 24-hour format
-    minute: "2-digit",
-  },
+    // /History
 
-  WeatherKittyObsImage: "img/WeatherKittyE8.jpeg",
-  WeatherKittyForeImage: "img/WeatherKittyC.jpeg",
+    historyFormat: {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    },
+    timeFormat: {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "numeric",
+      hour12: true, // Delete for 24-hour format
+      minute: "2-digit",
+    },
 
-  // Static Status Variables
+    WeatherKittyObsImage: "img/WeatherKittyE8.jpeg",
+    WeatherKittyForeImage: "img/WeatherKittyC.jpeg",
 
-  WeatherKittyIsInit: 0,
-  WeatherKittyIsLoaded: 0,
-  WeatherWidgetIsLoaded: false,
-  WeatherKittyPath: "",
+    // Static Status Variables
 
-  SanityChecks: function () {
-    if (config.ChartMaxPointsDefault === "Calc" || config.ChartMaxPointsDefault === "calc")
-      config.ChartMaxPointsDefault = Math.floor(
-        config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault["default"]
-      );
-    if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
-    if (config.longCacheTime < 60000) config.longCacheTime = 60000;
-    if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
-    if (config.locCacheTime < 60000) config.locCacheTime = 60000;
-    if (config.ForecastMapCacheTime < 60000) config.ForecastMapCacheTime = 60000;
-    if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
-    if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
+    WeatherKittyIsInit: 0,
+    WeatherKittyIsLoaded: 0,
+    WeatherWidgetIsLoaded: false,
+    WeatherKittyPath: "",
+
+    SanityChecks: function () {
+      if (config.ChartMaxPointsDefault === "Calc" || config.ChartMaxPointsDefault === "calc")
+        config.ChartMaxPointsDefault = Math.floor(
+          config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault["default"]
+        );
+      if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
+      if (config.longCacheTime < 60000) config.longCacheTime = 60000;
+      if (config.defaultCacheTime < 60000) config.defaultCacheTime = 60000;
+      if (config.locCacheTime < 60000) config.locCacheTime = 60000;
+      if (config.ForecastMapCacheTime < 60000) config.ForecastMapCacheTime = 60000;
+      if (config.RadarMapCacheTime < 60000) config.RadarMapCacheTime = 60000;
+      if (config.AlertsMapCacheTime < 60000) config.AlertsMapCacheTime = 60000;
+    },
   },
 };
+
+if (Log.Debug()) console.log("config", config);
 
 // /CONFIG ---------------------------------------------------------------
 

@@ -161,7 +161,7 @@
               button.innerHTML = `${station.id} - ${station.name}, ${station.state}`;
               button.onclick = async function () {
                 console.log("Setting station to: " + station.id);
-                SetLocationAddress(station.name);
+                await SetLocationAddress(`${station.lat}, ${station.lon}`);
                 WeatherKitty();
               };
               target.appendChild(button);

@@ -197,6 +197,10 @@ weather-kitty-week-card {
   overflow: visible;
 }
 
+.wk-card-night {
+  background-color: rgb(192, 192, 192);
+}
+
 weather-kitty-week-title {
   height: 2.5em;
   display: flex;
