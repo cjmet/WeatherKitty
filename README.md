@@ -6,12 +6,14 @@ https://cjmet.github.io/WeatherKitty/
 ![DemoImage](https://raw.githubusercontent.com/cjmet/WeatherKitty/refs/heads/main/img/DemoImage.jpg)
 <span style="font-size: x-small;"> <br>Github Copilot was used during the development of this project.</span>
 
-**GHCND Note:** The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion. If you want to explore the historical data it's advised that you download a local copy from: [NCEI](https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd_all.tar.gz) (33gb)
+**GHCND Note:**
 
-**CodeKy Notes**
+- The History APIs were taken out by the fall Hurricanes. While they are partially back online now, they still suffer from frequent outages, and congestion.
+
+**CodeKy Notes:**
 
 - See the project.md for CodeKy Specific Info.
-- Request an API Key if corsproxy.io is not working. It decided to break today, and is required for the map images.
+- Request an API Key if corsproxy.io is not working. It decided to break today, so I added an optional cors.sh API key.
 - The demo runs very slowly in LiveServer, I recommend using https://cjmet.github.io/WeatherKitty/, or other robust server tech.
 
 ## Usage
@@ -147,9 +149,10 @@ For ease of editing and customization
 - **ipapi.co:** Unknown License. **Limit:** 35 calls per hour.
 <!-- - **nominatim.openstreetmap.org:** Non-Commercial, Attribution and ODbL License. **Limit:** Limited Use, Demo Use Only, Must Cache Results. -->
 - **GHCND:** Public Data. **Limit:** Unknown Limit, assume 1 call per second.
-- **proxy.cors.sh:** API KEY REQUIRED. MIT License. Limit 500k/mth, 5mb, 500gb, approx 1 per 6 seconds.
+- ~~**proxy.cors.sh:**~~ API KEY REQUIRED. MIT License. Limit 500k/mth, 5mb, 500gb, approx 1 per 6 seconds.
 
   - **INSECURE. YOU ARE TRUSTING** the proxy not to exploit Data or XSS in both directions.
+  - **WARNING** there does not appear to be an easy way to cancel this subscription. Cancellation and Updates Pending.
 
   ```
   https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt

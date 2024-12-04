@@ -81,16 +81,21 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] Better organized dependencies
 - [ ] VITE ... I don't think I can wait much longer.
+- [ ] Cancel cors.sh
 
 #### Project Priority 2
 
-- [ ] setup a local copy of ghcnd, and links, etc.
-- [ ] Add local ghcnd to the api links rotations
+- [ ] Better Explorer
+  - [ ] Filter nearby by types of charts/data?
+  - [ ] Add Maps?
+  - [ ] leaflet.js?
 - [ ] Add 4 letter station search equal priority to 11 letter station search, both higher priority than city search, but try city on fail for both
   - [ ] This will take multiple calls to various endpoints, the simple version is no longer online/valid
 - [ ] Radar Maps, KML, Box Target to Lat/Lon
   - [ ] leaflet.js
 - [ ] Cache Clean 30 days past due
+- [ ] setup a local copy of ghcnd, and links, etc.
+- [ ] Add local ghcnd to the api links rotations
 - [ ] dynamic chart create?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
 - [ ] Hardware Dev Machine
@@ -109,6 +114,7 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] HTML Element API
 - [ ] Separate (optional) API / Widget Libraries
 - [ ] Express Server
+- [ ] https://github.com/Rob--W/cors-anywhere
 
 ### Project Priority 4
 

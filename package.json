@@ -1,0 +1,34 @@
+{
+  "name": "weatherkitty",
+  "version": "1.0.0",
+  "description": "Weather Widgets and API",
+  "main": "index.html",
+  "dependencies": {
+    "esbuild": "^0.21.5",
+    "nanoid": "^3.3.7",
+    "picocolors": "^1.1.1",
+    "postcss": "^8.4.49",
+    "rollup": "^4.27.2",
+    "source-map-js": "^1.2.1",
+    "vite": "^5.4.11"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjmet/WeatherKitty.git"
+  },
+  "keywords": [
+    "weather",
+    "widgets",
+    "api"
+  ],
+  "author": "cjmet",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/cjmet/WeatherKitty/issues"
+  },
+  "homepage": "https://github.com/cjmet/WeatherKitty#readme"
+}

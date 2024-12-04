@@ -1,5 +1,5 @@
 Art, Ascii Art, Logos, Trademark, etc., are (c) 2024 Angel Hornet, All Rights Reserved.
 
-Software is Licensed: LGPL 3.0 or newer
+Software is Licensed: MPL-2.0 or newer
 
 
