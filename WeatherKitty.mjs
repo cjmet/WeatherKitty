@@ -1083,9 +1083,9 @@ async function ForecastMatrix(data) {
     let wkCardNight = "";
     if (period.isDaytime === false) wkCardNight = `class="wk-card-night"`;
     i++;
-    let leftRight;
-    if (i === 1) leftRight += `class="wk-left"`;
-    else if (i === data.length) leftRight += `class="wk-right"`;
+    let leftRight = "";
+    if (i === 1) leftRight = `class="wk-left"`;
+    else if (i === data.length) leftRight = `class="wk-right"`;
     let precip = period.probabilityOfPrecipitation.value; // cjm
     if (!precip || isNaN(precip) || parseInt(precip) < 1)
       precip = `<span> &nbsp; </span><span> &emsp; </small></span>`;
