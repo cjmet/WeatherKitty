@@ -79,9 +79,9 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Better organized dependencies
-- [ ] VITE ... I don't think I can wait much longer.
-- [ ] Cancel cors.sh
+- [ ] Working on Vite Build
+  - [ ] Better organized dependencies
+  - [ ] Split getweatherasync and history up into subfunctions so we can wrap them in a weatherkittyisloading, but keep the superfunction for bundling/controlling and ease of use as well.
 
 #### Project Priority 2
 
