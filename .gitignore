@@ -3,6 +3,7 @@
 # config file
 config.json
 wkConfig.json
+tmp.*
 
 # ghcnd
 *.gz

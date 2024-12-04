@@ -10,8 +10,6 @@ import {
   getWeatherLocationAsync,
   ExpireData,
   PurgeData,
-  CheckApiStatus,
-  sleep,
 } from "../WeatherKitty.mjs";
 
 import { RunTests } from "./test.mjs";
@@ -31,11 +29,9 @@ let Test_FubarDisplay = false;
 // ---
 let savedLocation = null;
 WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Info); // cjm
+if (CodeKy) Log.SetLogLevel(LogLevel.Verbose); // cjm
 WeatherKittyPause(false);
-if (Test_FubarDisplay) NavHome(); // this order forces render of hidden elements, and makes a mess of them, hence the extensive testing and refactoring.
-WeatherKitty();
-await WeatherKittyWaitOnLoad();
+await WeatherKittyWaitOnLoad(); // this probably needs work
 NavHome();
 LoadButtons();
 

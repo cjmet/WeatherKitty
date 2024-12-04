@@ -9,12 +9,16 @@
     "picocolors": "^1.1.1",
     "postcss": "^8.4.49",
     "rollup": "^4.27.2",
-    "source-map-js": "^1.2.1",
-    "vite": "^5.4.11"
+    "source-map-js": "^1.2.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "vite": "^6.0.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",

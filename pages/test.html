@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%;">
+<html lang="en" style="height: 100%">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
 
-  <body id="WeatherKittyBody" style="height: 100%;">
+  <body id="WeatherKittyBody" style="height: 100%">
     <header id="WeatherKittyHeader">
       <div id="HeaderRow1">
         <div>
@@ -55,28 +55,22 @@
 
     <main id="WeatherKittyMain">
       <div style="border: red 1px solid; margin: 3px; height: 100%; overflow: auto">
-        
         <p class="HelpText">
-          <strong>Expire ttt</strong> - Expires the ttl on wk-cache objects.  This will force a fetch, if the fetch fails, stale data will be served from the expired cache.</b><br><br>
-          <strong>Purge Cache</strong> - Deletes all wk-cache objects.  This will force a fetch, if the fetch fails, no data will be served.</b>
+          <strong>Expire ttt</strong> - Expires the ttl on wk-cache objects. This will force a
+          fetch, if the fetch fails, stale data will be served from the expired cache.<br /><br />
+          <strong>Purge Cache</strong> - Deletes all wk-cache objects. This will force a fetch, if
+          the fetch fails, no data will be served.
         </p>
-        
-        <div
-          id="WK-assert"
-          style="
-            margin: 1em;
-            background-color: rgb(160, 160, 160);
-          "
-        >
-          <span style="font-weight: bold; font-size: large"> ... </span><br />
 
+        <div id="WK-assert" style="margin: 1em; background-color: rgb(160, 160, 160)">
+          <span style="font-weight: bold; font-size: large"> ... </span><br />
         </div>
       </div>
     </main>
 
-    <footer id="WeatherKittyFooter"><p>&copy 2024 Angel Hornet.</p></footer>
+    <footer id="WeatherKittyFooter"><p>&copy; 2024 Angel Hornet.</p></footer>
 
-    <script src="../WeatherKitty.mjs" type="module"></script>
+    <!-- <script src="../WeatherKitty.mjs" type="module"></script> -->
     <script src="../src/script.js" type="module"></script>
     <script src="../src/test.mjs" type="module"></script>
     <!-- <script type="module">
