@@ -235,4 +235,112 @@ async function GetObservationChartData(data) {
   // containers
 }
 
-export { GetObservationChartData, getWeatherAsync };
+// -- -------------------------------------------------------------------------
+
+// Function GetNwsPointData
+async function getNwsPointData(locData) {
+  if (!locData || !locData?.latitude || !locData?.longitude) {
+    if (Log.Error())
+      console.log("[getNwsPointData] *** ERROR ***: Argument Error: No Location Data Provided");
+    return;
+  }
+  let lat = locData?.latitude;
+  let lon = locData?.longitude;
+
+  let stationLocationUrl = `https://api.weather.gov/points/${lat},${lon}`;
+
+  CheckApiStatus("wk-status-nws"); // Required API and there is no roll-over
+
+  let response = await fetchCache(stationLocationUrl, null, config.longCacheTime);
+
+  if (response && response.ok) {
+    let data = await response.json();
+    if (data) return data;
+  }
+  if (Log.Error()) console.log("[getNwsPointData] *** ERROR ***: No Point Data Available");
+  return;
+}
+
+// -- -------------------------------------------------------------------------
+
+// Function GetNwsObservationStation
+async function getNwsObservationStations(pointData) {
+  if (!pointData || !pointData?.properties?.observationStations) {
+    if (Log.Error())
+      console.log(
+        "[getNwsObservationStation] *** ERROR ***: Argument Error: No Point Data Provided"
+      );
+    return;
+  }
+
+  let observationStationsUrl = pointData?.properties?.observationStations;
+
+  let response = await fetchCache(observationStationsUrl, null, config.longCacheTime);
+
+  if (response && response.ok) {
+    let data = await response.json();
+    if (data) return data;
+  }
+  if (Log.Error())
+    console.log("[getNwsObservationStation] *** ERROR ***: No Stations Data Available");
+  return;
+}
+
+// -- -------------------------------------------------------------------------
+
+// Function GetNwsObservationData
+async function getNwsObservationData(stationData) {
+  if (!stationData || !stationData?.features[0]?.properties?.stationIdentifier) {
+    if (Log.Error())
+      console.log(
+        "[getNwsObservationData] *** ERROR ***: Argument Error: No Station Data Provided"
+      );
+    return;
+  }
+
+  let observationStationID = stationData?.features[0]?.properties?.stationIdentifier;
+
+  let observationUrl = `https://api.weather.gov/stations/${observationStationID}/observations`;
+
+  let response = await fetchCache(observationUrl, null, config.obsCacheTime);
+
+  if (response && response.ok) {
+    let data = await response.json();
+    if (data) return data;
+  }
+  if (Log.Error()) console.log("[getNwsObservationData] *** ERROR ***: No Obs Data Available");
+}
+
+// -- -------------------------------------------------------------------------
+
+// Function GetNwsForecastData
+async function GetNwsForecastData(pointData) {
+  if (!pointData || !pointData?.properties?.forecast) {
+    if (Log.Error())
+      console.log("[getNwsForecastData] *** ERROR ***: Argument Error: No Point Data Provided");
+    return;
+  }
+
+  let weatherForecastUrl = pointData?.properties?.forecast;
+
+  let response = await fetchCache(weatherForecastUrl, null, config.forecastCacheTime);
+
+  if (response && response.ok) {
+    let data = await response.json();
+    if (data) return data;
+  }
+  if (Log.Error()) console.log("[getNwsForecastData] *** ERROR ***: No Forecast Data Available");
+}
+
+// -- -------------------------------------------------------------------------
+
+// Function LegacyCombineWeatherData
+async function LegacyCombineWeatherData(pointData, stationsData, observationData, forecastData) {
+  let radarStation = pointData?.properties?.radarStation;
+  return { pointData, stationsData, observationData, forecastData, radarStation };
+}
+
+// prettier-ignore
+export { GetObservationChartData, getWeatherAsync, getNwsPointData, getNwsObservationStations, getNwsObservationData, 
+  GetNwsForecastData, LegacyCombineWeatherData
+ };

@@ -75,7 +75,7 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] ...
+- [ ] Slow initial load even with Vite, but not github.io.
 
 ### Project Current Work and Fixes
 

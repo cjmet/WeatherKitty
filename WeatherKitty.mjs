@@ -10,12 +10,14 @@ import {
 } from "./src/config.mjs";
 import { Log, LogLevel } from "./src/log.mjs";
 // prettier-ignore
-import {
-  microSleep, sleep, TouchMoveAccelerated, DecompressCsvFile, wkElapsedTime, Fahrenheit, BadHyphen, GetPixels, AddPixels } from "./src/functions.mjs";
+import { microSleep, sleep, TouchMoveAccelerated, DecompressCsvFile, wkElapsedTime, Fahrenheit, BadHyphen, GetPixels, 
+  AddPixels, ManhattanDistance, } from "./src/functions.mjs";
 // prettier-ignore
 import { getCache, corsCache, fetchCache, fetchTimeoutOption, ExpireData, PurgeData, } from "./src/fetchCache.mjs";
 import { CheckApiStatus } from "./src/checkApiStatus.mjs";
-import { getWeatherAsync, GetObservationChartData } from "./src/weather.mjs";
+// prettier-ignore
+import { getWeatherAsync, GetObservationChartData, getNwsPointData, getNwsObservationStations, getNwsObservationData, 
+  GetNwsForecastData, LegacyCombineWeatherData } from "./src/weather.mjs";
 // prettier-ignore
 import { getWeatherLocationAsync, getWeatherLocationByAddressAsync, SetLocationAddress, } from "./src/location.mjs";
 import { HistoryGetStation, HistoryGetChartData } from "./src/history.mjs";
@@ -24,7 +26,14 @@ import { assert } from "./src/assert.mjs";
 // prettier-ignore
 export { config, Log, LogLevel, microSleep, sleep, getCache, CheckApiStatus, DecompressCsvFile, HistoryGetStation, 
   HistoryGetChartData, assert, corsCache, fetchCache, fetchTimeoutOption, getWeatherLocationByAddressAsync, wkElapsedTime, 
-  ExpireData, PurgeData, SetLocationAddress, getWeatherLocationAsync, Fahrenheit, BadHyphen };
+  ExpireData, PurgeData, SetLocationAddress, getWeatherLocationAsync, Fahrenheit, BadHyphen, OnWeatherKitty,  
+  WeatherKittyGetAvailableChartTypes, WeatherKittyGetNearbyStations, };
+
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
 
 // Function Weather Kitty
 async function WeatherKittyStart() {
@@ -38,28 +47,21 @@ async function WeatherKittyStart() {
     }
     config.WeatherKittyIsLoaded = 1;
     await microSleep(1); // Just long enough that you can set the log level before it starts.
-    let path = "";
+    let path;
     let results;
 
-    let scripts = document.getElementsByTagName("script");
-    let script = null;
-    for (let subScript of scripts) {
-      if (subScript.src.includes("WeatherKitty")) {
-        script = subScript;
-        break;
-      }
+    let scriptSrc = import.meta.url;
+    let url = new URL(scriptSrc);
+    path = url.pathname;
+    const lastSlashIndex = path.lastIndexOf("/");
+    if (lastSlashIndex >= 0) path = path.substring(0, lastSlashIndex + 1); // Include the trailing slash
+    config.WeatherKittyPath = path;
+
+    if (Log.Warn()) {
+      console.log("[WeatherKittyStart] Loading From: ", path);
     }
-    if (script === null) {
-    } else {
-      let url = new URL(script.src);
-      path = url.pathname;
-      const lastSlashIndex = path.lastIndexOf("/");
-      if (lastSlashIndex >= 0) path = path.substring(0, lastSlashIndex + 1); // Include the trailing slash
-      if (Log.Warn()) {
-        console.log("[WeatherKittyStart] Loading From: ", path);
-      }
-      config.WeatherKittyPath = path;
-    }
+
+    if (!path) path = "";
 
     config.WeatherKittyObsImage = path + config.WeatherKittyObsImage;
     config.WeatherKittyForeImage = path + config.WeatherKittyForeImage;
@@ -208,8 +210,29 @@ export async function WeatherKitty() {
     let LoadWeatherCharts = ChartTypes?.Weather?.length > 0;
     let weather;
     if (LoadWeather || LoadWeatherCharts) {
-      let locData = await getWeatherLocationAsync();
-      weather = await getWeatherAsync(locData);
+      let locData = await WeatherKittyIsLoading("Location Data", () => {
+        return getWeatherLocationAsync();
+      });
+      let pointData = await WeatherKittyIsLoading("Point Data", () => {
+        return getNwsPointData(locData);
+      });
+      let observationStations = await WeatherKittyIsLoading("Obs Stations", () => {
+        return getNwsObservationStations(pointData);
+      });
+      let observationData = await WeatherKittyIsLoading("Obs Data", () => {
+        return getNwsObservationData(observationStations);
+      });
+      let forecastData = await WeatherKittyIsLoading("Forecast Data", () => {
+        return GetNwsForecastData(pointData);
+      });
+      weather = await WeatherKittyIsLoading("Legacy Data", () => {
+        return LegacyCombineWeatherData(
+          pointData,
+          observationStations,
+          observationData,
+          forecastData
+        );
+      });
     }
 
     // Insert Local Radar here.
@@ -1630,6 +1653,135 @@ async function AssignTouchMoveToCharts(charts) {
     TouchMoveAccelerated(element);
   }
 }
+
+async function OnWeatherKitty(callback) {
+  if (!callback) config.WeatherKittyCallBacks = [];
+
+  if (!config.WeatherKittyCallBacks) config.WeatherKittyCallBacks = [];
+  if (callback) {
+    config.WeatherKittyCallBacks.push(callback);
+    return;
+  }
+}
+
+async function WeatherKittyGetAvailableChartTypes() {
+  // cjm
+  let locData = await getWeatherLocationAsync();
+  let weather = await getWeatherAsync(locData);
+  let weatherChartData = await GetObservationChartData(weather?.observationData?.features);
+  let historyChartData = await HistoryGetChartData(null, locData.latitude, locData.longitude);
+  let weatherChartTypes = weatherChartData?.keys()?.toArray();
+  let historyChartTypes = historyChartData?.keys()?.toArray();
+  return { weather: weatherChartTypes, history: historyChartTypes };
+}
+
+async function WeatherKittyGetNearbyStations(latitude, longitude, radius, count) {
+  return WeatherKittyIsLoading("GetNearbyStations", async () => {
+    if (!latitude || !longitude) {
+      let location = await getWeatherLocationAsync();
+      latitude = location.latitude;
+      longitude = location.longitude;
+    }
+    // GEMINI AI: One degree of latitude is approximately 69 miles.
+    if (!radius) radius = 1;
+    if (!count) count = 1000;
+
+    if (Log.Debug()) console.log("[GetNearbyStations]", latitude, longitude, radius, count);
+
+    let response;
+    let APIs = [
+      {
+        url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
+        timeout: null,
+        apiTag: "wk-status-aws",
+      },
+      {
+        url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+        apiTag: "wk-status-ncei",
+      },
+      {
+        url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+        timeout: config.fetchTimeout,
+        apiTag: "wk-status-ncdc",
+      },
+    ];
+
+    for (let api of APIs) {
+      let url = api.url;
+      if (!(await CheckApiStatus(api.apiTag))) continue;
+      let options = fetchTimeoutOption(api.timeout);
+      response = await fetchCache(url, options, config.archiveCacheTime);
+
+      if (response && response?.ok && response?.status === 200) break;
+    }
+
+    if (!response || !response?.ok || response?.status !== 200) {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+
+    let lines;
+    if (response?.ok) {
+      let result = await response.text();
+      lines = result.split("\n");
+      if (lines?.length <= 0 || lines[0].length <= 12) {
+        if (Log.Error())
+          console.log(
+            `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
+          );
+        return null;
+      }
+    } else {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+
+    let data = [];
+
+    for (let line of lines) {
+      let location = {};
+      location.id = line.substring(0, 11).trim();
+      location.lat = parseFloat(line.substring(12, 20).trim());
+      location.lon = parseFloat(line.substring(21, 30).trim());
+      location.elev = line.substring(31, 37).trim();
+      location.state = line.substring(38, 40).trim();
+      location.name = line.substring(41, 71).trim();
+      location.gsn = line.substring(72, 75).trim();
+      location.hcn = line.substring(76, 79).trim();
+      location.wmo = line.substring(80, 85).trim();
+
+      let distance = ManhattanDistance(
+        latitude,
+        longitude,
+        parseFloat(location.lat),
+        parseFloat(location.lon)
+      );
+      location.distance = distance;
+      data.push(location);
+    }
+
+    data.sort((a, b) => a.distance - b.distance);
+    data = data.slice(0, count);
+    // data = data where distance < radius
+    // Copilot AI
+    data = data.filter((location) => location.distance < radius);
+
+    return data;
+  });
+}
+
+// ------------------------------------------------------------------
+
+// ------------------------------------------------------------------
+
+// ------------------------------------------------------------------
 
 // Run Weather Kitty
 async function Main() {
