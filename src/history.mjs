@@ -202,27 +202,24 @@ let HistoryDataConversion = {
 // HistoricalGetStation(null, latitude, longitude);
 // HistoricalGetStation(null, null, null, city);
 // HistoricalGetStation(null, null, null, city, state);
+// Get List of Stations ghcnd-stations.txt, cache it for a month?
+// https://docs.opendata.aws/noaa-ghcn-pds/readme.html
+// https://noaa-ghcn-pds.s3.amazonaws.com/index.html
+// https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz
+// https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv
+// http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
+// https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+// https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+// https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
+// https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
+// if state is not 2-letter-state, then try to fix it ... ghcnd-states ...
+
 async function HistoryGetStation(station, latitude, longitude, city, state) {
-  // if state is not 2-letter-state, then try to fix it ... ghcnd-states ...
   if (state && state.length != 2) {
     let result = await HistoryGetState(state);
     if (result && result.length == 2) state = result;
   }
 
-  // ERROR BLOCK ghcnd-stations.txt
-  // Why does the mobile version die on SSL and CORS errors while desktop works just fine?
-  // ---
-  // Get List of Stations ghcnd-stations.txt, cache it for a month?
-  // https://docs.opendata.aws/noaa-ghcn-pds/readme.html
-  // https://noaa-ghcn-pds.s3.amazonaws.com/index.html
-  // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/${stationId}.csv.gz
-  // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/${stationId}.csv
-
-  // http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
-  // https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
-  // https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
-  // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
-  // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
   let response;
   let APIs = [
     {
@@ -264,8 +261,6 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
       );
     return null;
   }
-
-  // /ERROR BLOCK
 
   let lines;
   if (response?.ok) {

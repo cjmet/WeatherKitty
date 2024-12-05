@@ -4,8 +4,12 @@ import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
 let configFile = {};
 // read config.json for api key
 {
-  let response = await fetch("/wkConfig.json");
-  if (response && response.ok) configFile = await response.json();
+  let response;
+  // prettier-ignore
+  try { response = await fetch("/wkConfig.json"); } catch {}
+  // prettier-ignore
+  if (response && response.ok) try { configFile = await response.json(); } catch {}
+  if (configFile != {}) console.log("[WeatherKitty] Config file loaded.");
 }
 
 // CONFIG ---------------------------------------------------------------

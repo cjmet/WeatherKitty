@@ -75,13 +75,14 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Questions (may be duplicated below in fixes)
 
-- [ ] Slow initial load even with Vite, but not github.io.
+- [ ] ...
 
 ### Project Current Work and Fixes
 
+- [ ] WeatherKittyEnable({widgets: true, weather: true, history: true}) instead of PAUSE.
 - [ ] Working on Vite Build
   - [ ] Better organized dependencies
-  - [ ] Split getweatherasync and history up into subfunctions so we can wrap them in a weatherkittyisloading, but keep the superfunction for bundling/controlling and ease of use as well.
+  - [ ] Split history up into subfunctions so we can wrap them in a weatherkittyisloading, but keep the superfunction for legacy/bundling/controlling and ease of use as well.
 
 #### Project Priority 2
 
