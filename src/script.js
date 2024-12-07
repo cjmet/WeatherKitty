@@ -5,7 +5,7 @@ import {
   SetLocationAddress,
   WeatherKitty,
   WeatherKittyWaitOnLoad,
-  WeatherKittyPause,
+  WeatherKittyEnable,
   WeatherKittyIsLoading,
   getWeatherLocationAsync,
   ExpireData,
@@ -22,17 +22,16 @@ import { RunTests } from "./test.mjs";
 let CodeKy = true;
 
 // Default False
-let BostonClimate = false;
+
 let DisableWhileLoading = false;
-let Test_FubarDisplay = false;
 
 // ---
 let savedLocation = null;
-WeatherKittyPause(true); // stop the widget and disable the initial load so we can mess with options and stuff
-if (CodeKy) Log.SetLogLevel(LogLevel.Verbose); // cjm
-WeatherKittyPause(false);
+await WeatherKittyEnable(false); // stop the widget and disable the initial load so we can mess with options and stuff
+if (CodeKy) Log.SetLogLevel(LogLevel.Info); // cjm
+await WeatherKittyEnable({ widgets: true, weather: true, history: false });
 await WeatherKittyWaitOnLoad(); // this probably needs work
-NavHome();
+NavHome(null, true);
 LoadButtons();
 
 // ---
@@ -77,8 +76,12 @@ function LoadButtons() {
 // FUNCTIONS -------------------------------------
 // ---
 
-async function NavToClass(classNames) {
+async function NavToClass(classNames, InitialLoad) {
   if (DisableWhileLoading && (await WeatherKittyIsLoading())) return;
+  if (!InitialLoad && (await WeatherKittyEnable().history) === false) {
+    await WeatherKittyEnable({ history: true });
+    await WeatherKitty();
+  }
   if (!classNames) classNames = [];
   let classList = [
     "MapsAlpha",
@@ -103,47 +106,20 @@ async function NavToClass(classNames) {
   await microSleep(1);
 }
 
-async function SaveLocation() {
-  savedLocation = await getWeatherLocationAsync();
-}
-
-async function RestoreLocation() {
-  if (!BostonClimate) return; // disable this feature unless we are forcing Boston
-  let locData = await getWeatherLocationAsync();
-  if (savedLocation && locData && JSON.stringify(savedLocation) !== JSON.stringify(locData)) {
-    await SetLocationAddress(`${savedLocation.latitude}, ${savedLocation.longitude}`);
-    WeatherKitty();
-  }
-  savedLocation = null;
-}
-
-async function NavHome() {
-  await RestoreLocation();
-  await NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"]);
+async function NavHome(event, initialLoad) {
+  await NavToClass(["MapsAlpha", "WeekAlpha", "WeatherKittyHomeCharts"], initialLoad);
 }
 
 async function NavWeather() {
-  await RestoreLocation();
   await NavToClass(["WeatherKittyWeatherCharts"]);
 }
 
 async function NavHistory() {
-  await RestoreLocation();
   await NavToClass(["WeatherKittyHistoryCharts"]);
 }
 
 // Always go to Boston for "Boston Climate Data", StationId "USW00014739"
 async function NavClimate() {
-  if (BostonClimate) {
-    let locData = await getWeatherLocationAsync();
-    let id = locData.id;
-    if (id !== "USW00014739") {
-      await SaveLocation();
-      await SetLocationAddress("USW00014739");
-      WeatherKitty();
-    }
-  }
-
   await NavToClass(["WeatherKittyClimateCharts"]);
 }
 

@@ -9,12 +9,11 @@ let configFile = {};
   try { response = await fetch("/wkConfig.json"); } catch {}
   // prettier-ignore
   if (response && response.ok) try { configFile = await response.json(); } catch {}
-  if (configFile != {}) console.log("[WeatherKitty] Config file loaded.");
 }
 
 // CONFIG ---------------------------------------------------------------
 let config = {
-  PAUSE: false,
+  ENABLE: { widgets: true, weather: true, history: true },
   FOREVER: Number.MAX_SAFE_INTEGER / 2,
   locCacheTime: 60000 * 5, // 5? minutes just in case we are in a car and chasing a tornado?
   shortCacheTime: 60000 * 6, // 7 (-1) minutes so we can catch weather alerts
@@ -31,11 +30,12 @@ let config = {
   StatusTtl: 1000 * 60 * 15, // About 15 minutes
 
   // CORS PROXY
-  // https://corsproxy.io/?
-  // https://cors-proxy.htmldriven.com/?url=
-  // https://cors.sh/pricing
+  // https://corsproxy.io/?...
+  // https://corsproxy.io/?url=...
+  // https://cors-proxy.htmldriven.com/?url=...
+  // https://proxy.cors.sh/...
 
-  CORSProxy: "https://corsproxy.io/?",
+  CORSProxy: "https://corsproxy.io/?url=",
   // CORSApiKey: "insert key here or use ./config.json",
 
   ForecastMapUrl: "https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137",

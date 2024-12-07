@@ -117,14 +117,12 @@ async function getWeatherLocationByAddressAsync(address) {
 
   address = "" + address;
   let array = address.split(",");
-  let street = "";
-  let city = "";
-  let state = "";
-  let zip = "";
+  let [street, city, state, zip] = ["", "", "", ""];
 
   switch (array.length) {
     case 1: {
       // GHCND Station
+      [street, city, state, zip] = ["", "", "", ""];
       let station = array[0].trim();
       let length = station.length;
       if (length == 11) {
@@ -154,6 +152,7 @@ async function getWeatherLocationByAddressAsync(address) {
       break;
     }
     case 2:
+      [street, city, state, zip] = ["", "", "", ""];
       let word1 = array[0].trim();
       let word2 = array[1].trim();
       word1 = word1.replace(",", "");
@@ -175,17 +174,21 @@ async function getWeatherLocationByAddressAsync(address) {
         let result = await HistoryGetStation(null, null, null, city, state);
         if (result && result.latitude && result.longitude) {
           return CreateResponse(result);
+        } else {
+          [city, state] = ["", ""];
         }
         street = array[0].trim();
         zip = array[1].trim();
       }
       break;
     case 3:
+      [street, city, state, zip] = ["", "", "", ""];
       street = array[0].trim();
       city = array[1].trim();
       state = array[2].trim();
       break;
     case 4:
+      [street, city, state, zip] = ["", "", "", ""];
       street = array[0].trim();
       city = array[1].trim();
       state = array[2].trim();
@@ -197,7 +200,6 @@ async function getWeatherLocationByAddressAsync(address) {
   }
 
   // *** WARNING *** CORS Proxy Required
-
   let locationUrl;
   locationUrl = `https://geocoding.geo.census.gov/geocoder/locations/address?street=${street}`;
   if (city !== "") locationUrl += `&city=${city}`;

@@ -13,7 +13,7 @@ import { Log, LogLevel } from "./src/log.mjs";
 import { microSleep, sleep, TouchMoveAccelerated, DecompressCsvFile, wkElapsedTime, Fahrenheit, BadHyphen, GetPixels, 
   AddPixels, ManhattanDistance, } from "./src/functions.mjs";
 // prettier-ignore
-import { getCache, corsCache, fetchCache, fetchTimeoutOption, ExpireData, PurgeData, } from "./src/fetchCache.mjs";
+import { getCache, setCache, clearCache, corsCache, fetchCache, fetchTimeoutOption, ExpireData, PurgeData, } from "./src/fetchCache.mjs";
 import { CheckApiStatus } from "./src/checkApiStatus.mjs";
 // prettier-ignore
 import { getWeatherAsync, GetObservationChartData, getNwsPointData, getNwsObservationStations, getNwsObservationData, 
@@ -27,7 +27,7 @@ import { assert } from "./src/assert.mjs";
 export { config, Log, LogLevel, microSleep, sleep, getCache, CheckApiStatus, DecompressCsvFile, HistoryGetStation, 
   HistoryGetChartData, assert, corsCache, fetchCache, fetchTimeoutOption, getWeatherLocationByAddressAsync, wkElapsedTime, 
   ExpireData, PurgeData, SetLocationAddress, getWeatherLocationAsync, Fahrenheit, BadHyphen, OnWeatherKitty,  
-  WeatherKittyGetAvailableChartTypes, WeatherKittyGetNearbyStations, };
+  WeatherKittyGetAvailableChartTypes, WeatherKittyGetNearbyStations, WeatherKittyEnable, };
 
 // ----------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ export { config, Log, LogLevel, microSleep, sleep, getCache, CheckApiStatus, Dec
 
 // Function Weather Kitty
 async function WeatherKittyStart() {
-  let PAUSE = config.PAUSE;
+  let PAUSE = config.ENABLE.widgets === false;
   WeatherKittyIsLoading("Startup", async () => {
     config.SanityChecks();
     if (config.WeatherKittyIsLoaded > 0) {
@@ -74,7 +74,7 @@ async function WeatherKittyStart() {
     config.WeatherKittyIsLoaded = 2;
 
     if (Log.Warn() && PAUSE) {
-      console.log("[WeatherKittyStart] Warning: PAUSED.");
+      console.log("[WeatherKittyStart] *** DISABLED *** : Widgets Disabled");
       console.log("\tYou may need to unpause and load WeatherKitty() manually.");
     }
   });
@@ -193,8 +193,8 @@ export async function WeatherKitty() {
   WeatherKittyIsLoading("WeatherKitty", async () => {
     if (config.WeatherKittyIsLoaded < 2) return;
     config.WeatherWidgetIsLoaded = true;
-    if (config.PAUSE) {
-      if (Log.Warn()) console.log("[WeatherKitty] Warning: Temporarily PAUSED");
+    if (config.ENABLE.widgets === false) {
+      if (Log.Warn()) console.log("[WeatherKitty] *** DISABLED *** : Widgets Disabled");
       return;
     }
 
@@ -209,7 +209,9 @@ export async function WeatherKitty() {
     let ChartTypes = await WeatherKittyGetChartTypes(); // Move from below so we can apply this
     let LoadWeatherCharts = ChartTypes?.Weather?.length > 0;
     let weather;
-    if (LoadWeather || LoadWeatherCharts) {
+    // prettier-ignore
+    if (config.ENABLE.weather === false) { if (Log.Info()) console.log("[WeatherKitty] *** DISABLED*** : Weather Disabled"); }
+    if ((LoadWeather || LoadWeatherCharts) && config.ENABLE.weather) {
       let locData = await WeatherKittyIsLoading("Location Data", () => {
         return getWeatherLocationAsync();
       });
@@ -245,7 +247,9 @@ export async function WeatherKitty() {
     // /Local Radar
 
     let historyStation = null;
-    if (ChartTypes.History.length > 0) {
+    // prettier-ignore
+    if (config.ENABLE.history === false) { if (Log.Info()) console.log("[WeatherKitty] *** DISABLED *** : History Disabled"); }
+    if (ChartTypes.History.length > 0 && config.ENABLE.history) {
       let location = await getWeatherLocationAsync();
       if (location && location?.latitude && location?.longitude) {
         let latitude = location.latitude;
@@ -419,11 +423,11 @@ export async function WeatherKitty() {
       let chartData = new Map();
       let historyData = new Map();
 
-      if (ChartTypes?.Weather?.length > 0) {
+      if (ChartTypes?.Weather?.length > 0 && config.ENABLE.weather) {
         chartData = await GetObservationChartData(weather?.observationData.features);
       }
 
-      if (ChartTypes?.History.length > 0) {
+      if (ChartTypes?.History.length > 0 && config.ENABLE.history) {
         let locData = await getWeatherLocationAsync();
         historyData = await HistoryGetChartData(null, locData?.latitude, locData?.longitude);
       }
@@ -645,8 +649,19 @@ async function SetLoadingIndicatorMessage(kvpMap) {
 
 // disable the widget and disable the initial loading of the widget
 // if you use this you may need to call WeatherKitty() to load the widget
-export function WeatherKittyPause(value) {
-  config.PAUSE = value;
+function WeatherKittyEnable(valueObject) {
+  if (valueObject === undefined || valueObject === null) return config.ENABLE;
+  if (valueObject === true) config.ENABLE.widgets = true;
+  else if (valueObject === false) config.ENABLE.widgets = false;
+  else {
+    if (valueObject.widgets === true) config.ENABLE.widgets = true;
+    else if (valueObject.widgets === false) config.ENABLE.widgets = false;
+    if (valueObject.weather === true) config.ENABLE.weather = true;
+    else if (valueObject.weather === false) config.ENABLE.weather = false;
+    if (valueObject.history === true) config.ENABLE.history = true;
+    else if (valueObject.history === false) config.ENABLE.history = false;
+  }
+  return config.ENABLE;
 }
 
 // Function WeatherMaps

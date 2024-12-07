@@ -83,10 +83,11 @@
         OnWeatherKitty,
         config,
         sleep,
-        WeatherKittyPause,
+        WeatherKittyEnable,
       } from "../WeatherKitty.mjs";
 
       await OnWeatherKitty(ExplorerFunction);
+      await WeatherKittyEnable({ history: true });
 
       async function ExplorerFunction() {
         WeatherKittyIsLoading("ExplorerFunction", async () => {

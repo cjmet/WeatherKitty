@@ -4,6 +4,7 @@
 config.json
 wkConfig.json
 tmp.*
+*.del
 
 # ghcnd
 *.gz

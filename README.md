@@ -13,7 +13,7 @@ https://cjmet.github.io/WeatherKitty/
 **CodeKy Notes:**
 
 - See the project.md for CodeKy Specific Info.
-- Request an API Key if corsproxy.io is not working. It decided to break today, so I added an optional cors.sh API key.
+- Request an API Key if corsproxy.io is misfiring. It looks like they are actively updating and modifying, so I added an optional cors.sh API key.
 - The demo runs very slowly in LiveServer, I recommend using https://cjmet.github.io/WeatherKitty/, or other robust server tech.
   - <small>It takes LiveServer about 15 minutes to load up enough that it runs smoothly. Other server tech is instantaneous.</small>
 
