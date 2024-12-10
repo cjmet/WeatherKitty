@@ -1715,7 +1715,7 @@ async function WeatherKittyGetAvailableChartTypes() {
     locData = await HistorySearchStationList(stationList, locData?.latitude, locData?.longitude);
   }
   let fileData = await HistoryGetCsvFile(locData?.id);
-  historyData = await HistoryParseCsvFile(fileData);
+  let historyChartData = await HistoryParseCsvFile(fileData);
   // let historyChartData = await HistoryGetChartData(null, locData.latitude, locData.longitude);
   let weatherChartTypes = weatherChartData?.keys()?.toArray();
   let historyChartTypes = historyChartData?.keys()?.toArray();

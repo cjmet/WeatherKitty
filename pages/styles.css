@@ -499,9 +499,23 @@ weather-kitty-chart {
     font-size: small;
     margin: 0.5em;
   }
+  #NavImg {
+    margin-left: 0em;
+    margin-right: 0em;
+  }
+  #HeaderTitle {
+    display: none;
+  }
+  #WeatherWidgetDiv {
+    margin-left: 0em;
+  }
+
+  weather-kitty-status {
+    font-size: x-small;
+  }
 }
 
-@media (max-width: 250px) {
+@media (max-width: 270px) {
   #HeaderRow1 {
     height: calc(var(--headerHeight) * 2 / 3);
   }
