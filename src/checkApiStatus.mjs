@@ -19,6 +19,10 @@ async function CheckApiStatus(wkStatusTag) {
       name: "wk-status-ncdc",
       url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-version.txt",
     },
+    {
+      name: "wk-status-gnis",
+      url: "https://prd-tnm.s3.amazonaws.com/StagedProducts/GeographicNames/DomesticNames/DomesticNames_MP_Text.jpg",
+    },
   ];
 
   let checkTagName = false;

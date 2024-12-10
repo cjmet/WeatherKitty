@@ -20,6 +20,11 @@ function AddPixels(array) {
   return result;
 }
 
+// Overload
+async function DecompressGzFile(response) {
+  return await DecompressCsvFile(response);
+}
+
 async function DecompressCsvFile(response) {
   let fileData;
   // let sleep = await new Promise((r) => setTimeout(r, 1000));

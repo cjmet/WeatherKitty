@@ -163,11 +163,12 @@ function WeatherKittyGeoAddressBlock() {
 }
 
 let WeatherKittyStatusBlock = `
-    <span>API:</span>
+    <span></span>
     <wk-status-nws></wk-status-nws>
     <wk-status-aws></wk-status-aws>
     <wk-status-ncei></wk-status-ncei>
     <wk-status-ncdc></wk-status-ncdc>
+    <wk-status-gnis></wk-status-gnis>
 `;
 
 // ✅, 🟢, 🔴, 🟨, 🔴, 🟡, 🟢, ✴️, ☐, ◯, ⍰, ❓, ❔, ◯, ⚪, ⚫, ⚪️, 🔘, ◻️, ⬜️, ◽️

@@ -117,6 +117,7 @@ async function WeatherWidgetInit(path) {
   FindAndReplaceTags("wk-status-aws", WeatherKittySignalBlock, "wk-status-signal");
   FindAndReplaceTags("wk-status-ncei", WeatherKittySignalBlock, "wk-status-signal");
   FindAndReplaceTags("wk-status-ncdc", WeatherKittySignalBlock, "wk-status-signal");
+  FindAndReplaceTags("wk-status-gnis", WeatherKittySignalBlock, "wk-status-signal");
 
   result = FindAndReplaceTags(
     "weather-kitty-forecast",

@@ -79,7 +79,6 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] GNIS to replace Census API?
 - [ ] Working on Vite Build
 
 #### Project Priority 2
@@ -93,6 +92,7 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Radar Maps, KML, Box Target to Lat/Lon
   - [ ] leaflet.js
 - [ ] Cache Clean 30 days past due
+- [ ] https://opengeo.ncep.noaa.gov/geoserver/www/index.html
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 - [ ] dynamic chart create?

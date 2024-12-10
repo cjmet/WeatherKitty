@@ -3,6 +3,7 @@ import { Log } from "./log.mjs";
 import { fetchCache, corsCache, specialUrlTable, CreateResponse, setCache } from "./fetchCache.mjs";
 import { isValidNumericString, microSleep } from "./functions.mjs";
 import { HistoryGetStation } from "./history.mjs";
+import { GetGnisStation } from "./gnis.mjs";
 
 // specialUrlTable = {
 //   "/weatherkittycache/location": getLocationAsync,
@@ -152,6 +153,7 @@ async function getWeatherLocationByAddressAsync(address) {
       break;
     }
     case 2:
+      // (Lat, Lon), (City, State, ), (Street, Zip)
       [street, city, state, zip] = ["", "", "", ""];
       let word1 = array[0].trim();
       let word2 = array[1].trim();
@@ -171,12 +173,20 @@ async function getWeatherLocationByAddressAsync(address) {
         // insert city, state ghcnd search here
         city = array[0].trim();
         state = array[1].trim();
+
         let result = await HistoryGetStation(null, null, null, city, state);
         if (result && result.latitude && result.longitude) {
           return CreateResponse(result);
-        } else {
-          [city, state] = ["", ""];
         }
+
+        let verbose = true;
+        result = await GetGnisStation(city, state, verbose); // cjm
+        if (result && result.latitude && result.longitude) {
+          if (Log.Info()) console.log("[GNIS] Station: ", result); // cjm
+          return CreateResponse(result);
+        }
+
+        [city, state] = ["", ""];
         street = array[0].trim();
         zip = array[1].trim();
       }
