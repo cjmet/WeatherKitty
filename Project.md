@@ -79,10 +79,8 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] WeatherKittyEnable({widgets: true, weather: true, history: true}) instead of PAUSE.
+- [ ] GNIS to replace Census API?
 - [ ] Working on Vite Build
-  - [ ] Better organized dependencies
-  - [ ] Split history up into subfunctions so we can wrap them in a weatherkittyisloading, but keep the superfunction for legacy/bundling/controlling and ease of use as well.
 
 #### Project Priority 2
 

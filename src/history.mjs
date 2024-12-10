@@ -9,6 +9,7 @@ import { ManhattanDistance, DecompressCsvFile, microSleep, Fahrenheit } from "./
 //    Map("TMAX", {timestamps: [timestamps], values: [{value: int, unitCode: string}]})
 
 async function HistoryGetChartData(station, latitude, longitude) {
+  // cjm
   let location;
   if (station) location = await HistoryGetStation(station);
   if (location?.latitude && location?.longitude) {
@@ -368,6 +369,7 @@ async function HistoryGetStation(station, latitude, longitude, city, state) {
   return result;
 }
 
+// return state code
 async function HistoryGetState(state) {
   if (!state) {
     if (Log.Error()) console.log("[HistoricalGetState] *** ERROR *** : Input Argument Error");
@@ -518,4 +520,253 @@ async function HistoryGetCsvFile(stationId) {
 // ---
 // / GetHistoryChartData ------------------------------------------------
 
-export { HistoryGetChartData, HistoryGetStation };
+// return list of lines
+async function HistoryGetStationList() {
+  let response;
+  let APIs = [
+    {
+      url: "https://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt",
+      timeout: null,
+      apiTag: "wk-status-aws",
+    },
+    {
+      url: "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+      timeout: config.fetchTimeout,
+      apiTag: "wk-status-ncei",
+    },
+    {
+      url: "https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+      timeout: config.fetchTimeout,
+      apiTag: "wk-status-ncdc",
+    },
+  ];
+
+  for (let api of APIs) {
+    let url = api.url;
+    if (!(await CheckApiStatus(api.apiTag))) continue;
+    let options = fetchTimeoutOption(api.timeout);
+    response = await fetchCache(url, options, config.archiveCacheTime);
+
+    // Doesn't Help, if it's broke it's broke.
+    // if (!response || !response?.ok || response?.status !== 200) {
+    //   response = await corsCache(url, null, config.archiveCacheTime);
+    //   console.log("RESPONSE:", response);
+    // }
+
+    if (response && response?.ok && response?.status === 200) break;
+  }
+
+  if (!response || !response?.ok || response?.status !== 200) {
+    if (Log.Error())
+      console.log(
+        `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`
+      );
+    return null;
+  }
+
+  let lines;
+  if (response?.ok) {
+    let result = await response.text();
+    lines = result.split("\n");
+    if (lines?.length <= 0 || lines[0].length <= 12) {
+      if (Log.Error())
+        console.log(
+          `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
+        );
+      return null;
+    }
+  } else {
+    if (Log.Error())
+      console.log(
+        `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
+      );
+    return null;
+  }
+
+  return lines;
+}
+
+// return station id object;
+// input list, (station id, city, city and state, lat and lon)
+// input (list, station)
+// input (list, city)
+// input (list, city, state)
+// input (list, lat, lon)
+async function HistorySearchStationList(list, StationCityOrLat, StateOrLon) {
+  let lines = list;
+  let data = [];
+
+  // overloads
+  console.log("StationCityOrLat", StationCityOrLat, "StateOrLon", StateOrLon);
+  let latitude = parseFloat(StationCityOrLat);
+  let longitude = parseFloat(StateOrLon);
+  let station = StationCityOrLat ? StationCityOrLat + "" : null;
+  let city = StationCityOrLat ? StationCityOrLat + "" : null;
+  let state = StateOrLon ? StateOrLon + "" : null;
+  if (state && state.length != 2) {
+    let tmp = await HistoryGetState(state);
+    if (tmp && tmp.length == 2) state = tmp;
+  }
+
+  // /overloads
+
+  let result = {
+    id: null,
+    latitude: null,
+    longitude: null,
+    distance: Number.MAX_SAFE_INTEGER,
+  };
+
+  for (let line of lines) {
+    let location = {};
+    location.id = line.substring(0, 11).trim();
+    location.lat = parseFloat(line.substring(12, 20).trim());
+    location.lon = parseFloat(line.substring(21, 30).trim());
+    location.elev = line.substring(31, 37).trim();
+    location.state = line.substring(38, 40).trim();
+    location.name = line.substring(41, 71).trim();
+    location.gsn = line.substring(72, 75).trim();
+    location.hcn = line.substring(76, 79).trim();
+    location.wmo = line.substring(80, 85).trim();
+
+    data.push(location);
+    let distance = ManhattanDistance(latitude, longitude, location.lat, location.lon);
+
+    let idString = "" + location.id;
+    idString = idString.toLowerCase();
+    let stationString = "" + station;
+    stationString = stationString.toLowerCase();
+
+    // STATION ID MATCH
+    if (!state && idString.includes(stationString) && location.id.substring(0, 2) === "US") {
+      console.log("MATCH", station, state, "==", location.id, stationString);
+      result.id = location.id;
+      result.distance = 0;
+      result.latitude = location.lat;
+      result.longitude = location.lon;
+      result.name = location.name;
+      result.state = location.state;
+      return result; // there should only be one match
+    }
+    // LOCATION DISTANCE MATCH
+    // TestFL: USW000xxxxx
+    else if (distance < result.distance) {
+      result.id = location.id;
+      result.distance = distance;
+      result.latitude = location.lat;
+      result.longitude = location.lon;
+      result.name = location.name;
+      result.state = location.state;
+    }
+    // CITY ONLY MATCH
+    // US Cities Only  id === US*
+    // Order of Preference USW, USC, US*
+    // Return the first match in highest preference category
+    // TestFL: USW000xxxxx
+    else if (
+      city &&
+      location.name.toLowerCase().includes(city.toLowerCase()) &&
+      location.id.substring(0, 2) === "US" &&
+      (!state || state.toLowerCase() == location.state.toLowerCase())
+    ) {
+      let locationIdSubString = location.id.substring(0, 3);
+      let resultIdSubString = result?.id?.substring(0, 3);
+
+      if (locationIdSubString === "USW" && resultIdSubString !== "USW") result.id = null;
+      if (
+        locationIdSubString === "USC" &&
+        resultIdSubString !== "USC" &&
+        resultIdSubString !== "USW"
+      )
+        result.id = null;
+
+      if (!result.id) {
+        result.id = location.id;
+        result.distance = distance;
+        result.latitude = location.lat;
+        result.longitude = location.lon;
+        result.name = location.name;
+        result.state = location.state;
+        if (locationIdSubString === "USW") break;
+      }
+    }
+  }
+
+  return result;
+}
+
+async function HistoryParseCsvFile(fileData) {
+  if (fileData && fileData?.length > 0) {
+  } else {
+    if (Log.Error())
+      console.log(`[GetHistoryChartData] *** ERROR *** : File Data Error [${station.id}]`);
+    return;
+  }
+
+  // ... Process the File Data into Data Sets
+  // Id, YYYYMMDD, Type, Value, Measurement-Flag, Quality-Flag, Source-Flag, OBS-TIME
+  // USW00014739,19360101,TMAX, 17,,,0,2400
+
+  // Data is a mixed hodgepodge so we have to use an array for the first read.
+  let dataSets;
+  dataSets = {};
+  let lineCount = 0;
+  for (let line of fileData) {
+    lineCount++;
+    let properties = line.split(",");
+    let [id, date, type, val, mFlag, qFlag, sFlag, obsTime] = properties;
+    if (type == "__proto__")
+      throw new Error(
+        `[GetHistoryChartData] *** CRITICAL *** : __proto__ is not a safe type [${station.id}]`
+      );
+    if (id == "ID") continue;
+    if (id != null && id.length > 0) {
+      if (dataSets[type] == null) {
+        dataSets[type] = {};
+        dataSets[type].history = true; // weather history data
+        dataSets[type].timestamps = [];
+        dataSets[type].values = [];
+      }
+
+      if (date != null) {
+        let fDate = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
+        date = fDate;
+        if (obsTime != null && obsTime.length > 0) {
+          let time = obsTime.substring(0, 2) + ":" + obsTime.substring(2, 4) + ":00";
+          date += "T" + time;
+        } else {
+          date += "T24:00:00";
+        }
+        dataSets[type].timestamps.push(date);
+        let value = { value: val, unitCode: type };
+        dataSets[type].values.push(value);
+      } else {
+        if (Log.Error())
+          console.log(
+            `[GetHistoryChartData] *** ERROR *** : date is null, Line: [${line}] [${station.id}] ${val} ${date}`
+          );
+      }
+    } else if (lineCount === fileData.length) {
+      // EOF
+    } else {
+      if (Log.Error()) {
+        console.log(`[GetHistoryChartData] id is null: [${line}]`);
+        console.log(`lineCount: ${lineCount} of ${fileData.length}`);
+      }
+    }
+  }
+
+  await microSleep(1);
+  dataSets = await HistoryReformatDataSets(dataSets);
+  if (Log.Info()) {
+    let keys = [];
+    for (let key of dataSets.keys()) keys.push(key);
+    console.log(`[History] ${keys.join(", ")}`);
+  }
+
+  return dataSets;
+}
+
+// prettier-ignore
+export { HistoryGetChartData, HistoryGetStation, HistoryGetStationList, HistorySearchStationList, 
+  HistoryGetState, HistoryGetCsvFile, HistoryParseCsvFile };

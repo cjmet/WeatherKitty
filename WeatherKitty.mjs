@@ -20,14 +20,17 @@ import { getWeatherAsync, GetObservationChartData, getNwsPointData, getNwsObserv
   GetNwsForecastData, LegacyCombineWeatherData } from "./src/weather.mjs";
 // prettier-ignore
 import { getWeatherLocationAsync, getWeatherLocationByAddressAsync, SetLocationAddress, } from "./src/location.mjs";
-import { HistoryGetStation, HistoryGetChartData } from "./src/history.mjs";
+// prettier-ignore
+import {HistoryGetChartData, HistoryGetStation, HistoryGetStationList, HistorySearchStationList, HistoryGetState,
+  HistoryGetCsvFile, HistoryParseCsvFile, } from "./src/history.mjs";
 import { assert } from "./src/assert.mjs";
 
 // prettier-ignore
 export { config, Log, LogLevel, microSleep, sleep, getCache, CheckApiStatus, DecompressCsvFile, HistoryGetStation, 
   HistoryGetChartData, assert, corsCache, fetchCache, fetchTimeoutOption, getWeatherLocationByAddressAsync, wkElapsedTime, 
   ExpireData, PurgeData, SetLocationAddress, getWeatherLocationAsync, Fahrenheit, BadHyphen, OnWeatherKitty,  
-  WeatherKittyGetAvailableChartTypes, WeatherKittyGetNearbyStations, WeatherKittyEnable, };
+  WeatherKittyGetAvailableChartTypes, WeatherKittyGetNearbyStations, WeatherKittyEnable,  HistoryGetStationList, 
+  HistorySearchStationList, HistoryGetState, HistoryGetCsvFile, HistoryParseCsvFile, };
 
 // ----------------------------------------------------------------------------
 
@@ -254,7 +257,13 @@ export async function WeatherKitty() {
       if (location && location?.latitude && location?.longitude) {
         let latitude = location.latitude;
         let longitude = location.longitude;
-        historyStation = await HistoryGetStation(null, latitude, longitude);
+        let list = await WeatherKittyIsLoading("Get Station List", () => {
+          return HistoryGetStationList();
+        });
+        historyStation = await WeatherKittyIsLoading("Search Station List", () => {
+          return HistorySearchStationList(list, latitude, longitude);
+        });
+        // historyStation = await HistoryGetStation(null, latitude, longitude);
       }
     }
 
@@ -429,7 +438,23 @@ export async function WeatherKitty() {
 
       if (ChartTypes?.History.length > 0 && config.ENABLE.history) {
         let locData = await getWeatherLocationAsync();
-        historyData = await HistoryGetChartData(null, locData?.latitude, locData?.longitude);
+
+        if (!locData?.id) {
+          let stationList = await WeatherKittyIsLoading("Get Station List", () => {
+            return HistoryGetStationList();
+          });
+          locData = await WeatherKittyIsLoading("Search Station List", () => {
+            return HistorySearchStationList(stationList, locData?.latitude, locData?.longitude);
+          });
+        }
+        console.log("locData.id:", locData.id);
+        let fileData = await WeatherKittyIsLoading("Get Csv File", () => {
+          return HistoryGetCsvFile(locData?.id);
+        });
+        historyData = await WeatherKittyIsLoading("Parse Csv File", () => {
+          return HistoryParseCsvFile(fileData);
+        });
+        // historyData = await HistoryGetChartData(null, locData?.latitude, locData?.longitude);
       }
 
       // append the history data
@@ -1684,7 +1709,14 @@ async function WeatherKittyGetAvailableChartTypes() {
   let locData = await getWeatherLocationAsync();
   let weather = await getWeatherAsync(locData);
   let weatherChartData = await GetObservationChartData(weather?.observationData?.features);
-  let historyChartData = await HistoryGetChartData(null, locData.latitude, locData.longitude);
+  console.log("locData.id:", locData.id);
+  if (!locData?.id) {
+    let stationList = await HistoryGetStationList();
+    locData = await HistorySearchStationList(stationList, locData?.latitude, locData?.longitude);
+  }
+  let fileData = await HistoryGetCsvFile(locData?.id);
+  historyData = await HistoryParseCsvFile(fileData);
+  // let historyChartData = await HistoryGetChartData(null, locData.latitude, locData.longitude);
   let weatherChartTypes = weatherChartData?.keys()?.toArray();
   let historyChartTypes = historyChartData?.keys()?.toArray();
   return { weather: weatherChartTypes, history: historyChartTypes };
