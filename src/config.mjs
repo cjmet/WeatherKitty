@@ -1,6 +1,3 @@
-import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
-// prettier-ignore
-
 let configFile = {};
 // read config.json for api key
 {

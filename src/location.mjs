@@ -215,7 +215,13 @@ async function getWeatherLocationByAddressAsync(address) {
     try {
       data = await response.json();
     } catch (e) {
-      if (Log.Error()) console.log("[getAddress] Error: ", e);
+      if (Log.Error()) {
+        console.log("[getAddress] Error: ", e);
+        console.log(
+          "[getAddress] Error: This may be caused by a CorsProxy.io vs Census API issue.  Request a Cors.sh configuration file and API key if you need address geocoding"
+        );
+        console.log("[getAddress] Error: The Census API may be replaced by GNIS in the future.");
+      }
       return errorReponse;
     }
 

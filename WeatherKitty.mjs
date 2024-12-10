@@ -11,7 +11,7 @@ import {
 import { Log, LogLevel } from "./src/log.mjs";
 // prettier-ignore
 import { microSleep, sleep, TouchMoveAccelerated, DecompressCsvFile, wkElapsedTime, Fahrenheit, BadHyphen, GetPixels, 
-  AddPixels, ManhattanDistance, } from "./src/functions.mjs";
+  AddPixels, ManhattanDistance, isMobile } from "./src/functions.mjs";
 // prettier-ignore
 import { getCache, setCache, clearCache, corsCache, fetchCache, fetchTimeoutOption, ExpireData, PurgeData, } from "./src/fetchCache.mjs";
 import { CheckApiStatus } from "./src/checkApiStatus.mjs";

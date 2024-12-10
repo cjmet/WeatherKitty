@@ -1,4 +1,6 @@
+import Bowser from "https://cdn.jsdelivr.net/npm/bowser@2.11.0/+esm";
 import "https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js";
+import { config } from "./config.mjs";
 
 // FUNCTIONS
 
