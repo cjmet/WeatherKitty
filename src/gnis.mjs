@@ -170,6 +170,10 @@ async function GetGnisStation(locationString, stateCode, verbose) {
   let gnisData = await GetGnisData(stateCode);
   let searchResults = await SearchGnisLocation(gnisData, locationString);
   let formattedData = await FormatGnisData(searchResults);
+  if (!formattedData || formattedData.length < 1) {
+    if (Log.Error()) console.log("[GNIS] Error: No data found for", locationString);
+    return null;
+  }
 
   if (Log.Verbose() || verbose) console.log("[GNIS] formattedData", formattedData);
 

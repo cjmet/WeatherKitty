@@ -91,6 +91,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] This will take multiple calls to various endpoints, the simple version is no longer online/valid
 - [ ] Radar Maps, KML, Box Target to Lat/Lon
   - [ ] leaflet.js
+  - [ ] USGS GNIS geolocation picker API would integrate well with this? Need to lookup that api link again.
 - [ ] Cache Clean 30 days past due
 - [ ] https://opengeo.ncep.noaa.gov/geoserver/www/index.html
 - [ ] setup a local copy of ghcnd, and links, etc.
