@@ -603,7 +603,9 @@ export function SetAddLocationButton(widget) {
   button = RemoveAllEventListeners(button);
   button.addEventListener("click", async () => {
     if (await WeatherKittyIsLoading()) return;
-    let result = await getWeatherLocationByAddressAsync();
+    let result = await WeatherKittyIsLoading("Address Async", () => {
+      return getWeatherLocationByAddressAsync();
+    });
     if (result && result.ok) {
       // Override the location cache, and make it permanent.
       await setCache("/weatherkittycache/location", result, config.FOREVER);
