@@ -79,7 +79,9 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Working on Vite Build
+- [ ] "GNIS ID" ... ".id" is reserved for history station id. oops. I may need to check that elsewhere as well.
+  - [ ] double check the history station ID is valid before trying to fetch.
+- [ ] History csv fails to return and throws ... need to fix that. This is a side effect of GNIS and Vite Conversion
 
 #### Project Priority 2
 
@@ -91,6 +93,7 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] This will take multiple calls to various endpoints, the simple version is no longer online/valid
 - [ ] Radar Maps, KML, Box Target to Lat/Lon
   - [ ] leaflet.js
+  - [ ] USGS GNIS geolocation picker API would integrate well with this? Need to lookup that api link again.
 - [ ] Cache Clean 30 days past due
 - [ ] https://opengeo.ncep.noaa.gov/geoserver/www/index.html
 - [ ] setup a local copy of ghcnd, and links, etc.

@@ -170,13 +170,19 @@ async function GetGnisStation(locationString, stateCode, verbose) {
   let gnisData = await GetGnisData(stateCode);
   let searchResults = await SearchGnisLocation(gnisData, locationString);
   let formattedData = await FormatGnisData(searchResults);
+  if (!formattedData || formattedData.length < 1) {
+    if (Log.Error()) console.log("[GNIS] Error: No data found for", locationString);
+    return null;
+  }
 
   if (Log.Verbose() || verbose) console.log("[GNIS] formattedData", formattedData);
 
   let location = formattedData[0];
   let station = {};
 
-  station.id = location.feature_id;
+  // "GNIS ID" ... ".id" is reserved for history station id. oops. // cjm
+  // I may need to check that elsewhere as well.  dag nabit!
+  station.gnisId = location.feature_id;
   station.latitude = parseFloat(location.prim_lat_dec);
   station.longitude = parseFloat(location.prim_long_dec);
   station.state = location.state_name;
