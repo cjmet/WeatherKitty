@@ -28,12 +28,20 @@ https://cjmet.github.io/WeatherKitty/
 
   <details>
 
-  - location can be provided by browser permissions, GeoIP, or GeoAddress.
+  - Location can be provided by browser permissions, GeoIP, or GeoAddress.
   - GeoIP and GeoAddress have limited API Usage, additional usage may require an API Key, License, or Subscription.
   </details>
 
 - Install as a git submodule. I'll make this a node module later.
   `git submodule add https://github.com/cjmet/WeatherKitty.git WeatherKitty`
+  <details>
+  <summary>pulling a submodule inside another repository</summary>
+
+  - pull the parent
+  - git submodule init
+  - git submodule update
+  </details>
+
 - Add WeatherKitty.mjs to your scripts in your html file
 - Insert one of the weather-kitty html elements into your html.
   - Note: You must use both opening and closing tags.
