@@ -597,7 +597,6 @@ async function HistorySearchStationList(list, StationCityOrLat, StateOrLon) {
   let data = [];
 
   // overloads
-  console.log("StationCityOrLat", StationCityOrLat, "StateOrLon", StateOrLon);
   let latitude = parseFloat(StationCityOrLat);
   let longitude = parseFloat(StateOrLon);
   let station = StationCityOrLat ? StationCityOrLat + "" : null;

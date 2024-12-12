@@ -448,7 +448,7 @@ export async function WeatherKitty() {
             return HistorySearchStationList(stationList, locData?.latitude, locData?.longitude);
           });
         }
-        console.log("locData.id:", locData.id);
+        if (Log.Debug()) console.log("locData.id:", locData.id);
         let fileData = await WeatherKittyIsLoading("Get Csv File", () => {
           return HistoryGetCsvFile(locData?.id);
         });
