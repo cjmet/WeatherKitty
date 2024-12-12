@@ -180,7 +180,9 @@ async function GetGnisStation(locationString, stateCode, verbose) {
   let location = formattedData[0];
   let station = {};
 
-  station.id = location.feature_id;
+  // "GNIS ID" ... ".id" is reserved for history station id. oops. // cjm
+  // I may need to check that elsewhere as well.  dag nabit!
+  station.gnisId = location.feature_id;
   station.latitude = parseFloat(location.prim_lat_dec);
   station.longitude = parseFloat(location.prim_long_dec);
   station.state = location.state_name;

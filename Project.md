@@ -79,7 +79,9 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] Working on Vite Build
+- [ ] "GNIS ID" ... ".id" is reserved for history station id. oops. I may need to check that elsewhere as well.
+  - [ ] double check the history station ID is valid before trying to fetch.
+- [ ] History csv fails to return and throws ... need to fix that. This is a side effect of GNIS and Vite Conversion
 
 #### Project Priority 2
 
