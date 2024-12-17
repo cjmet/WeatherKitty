@@ -86,8 +86,26 @@
 
       let result;
 
+      let position;
+      try {
+        position = await new Promise((position, error) => {
+          navigator.geolocation.getCurrentPosition(position, error, {
+            enableHighAccuracy: true,
+          });
+        });
+      } catch (error) {
+        console.log(error);
+        position = { coords: { latitude: 37.7, longitude: -83.4 } };
+      }
+
+      let { latitude, longitude } = position.coords;
+      // [latitude, longitude] = [37.703224, -85.5]; // Elizabethtown, KY.  This makes a good center point.
+      // [latitude, longitude] = [ 37.55, -83.38]; // Jackson, KY
+
+      console.log(position);
+
       var map = L.map("map", {
-        zoom: 9,
+        zoom: 9, // 9 is a good zoom level to see smaller cities and towns
         fullscreenControl: true,
         timeDimension: true,
         timeDimensionControl: true,
@@ -110,54 +128,62 @@
           },
           timeZones: ["Local"],
         },
-        center: [36.827, -83.329],
+        center: [latitude, longitude],
       });
 
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
 
-      var wmsLayer;
       // National Radar Mosaic
       // var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', wmsOptions).addTo(map);
       // var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', { layers: 'TOPO-OSM-WMS' }).addTo(map);
       // https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?service=wms&version=1.3.0&request=GetCapabilities
       // conus_bref_qcd
       //
-      // wmsLayer = L.tileLayer.wms(
-      //   "https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?",
-      //   {
+      // wmsLayer = L.tileLayer
+      //   .wms("https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?", {
       //     layers: "conus_bref_qcd",
       //     format: "image/png",
       //     transparent: true,
-      //   }
-      // );
+      //   })
       //   .addTo(map);
 
-      // station: "KMRX"
-      // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
-      wmsLayer = L.tileLayer.wms("https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?", {
-        layers: "kmrx_sr_bref",
-        format: "image/png",
-        transparent: true,
-        updateTimeDimension: true,
-        attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
-      });
-      // .addTo(map);
-
-      var testTimeLayer = L.timeDimension.layer
-        .wms(wmsLayer, {
+      // station: "KJKL", "KLVX", "KPAH", ... These 3 will cover KY fairly well.
+      let stations = ["KJKL"];
+      // need to work on and see if we can get the time dimension to work with multiple disparate stations
+      let testTimeLayer;
+      for (let station of stations) {
+        station = station.toLocaleLowerCase();
+        // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
+        let wmsLayer = L.tileLayer.wms(`https://opengeo.ncep.noaa.gov/geoserver/${station}/ows?`, {
+          layers: `${station}_sr_bref`,
+          format: "image/png",
+          transparent: true,
           updateTimeDimension: true,
-        })
-        .addTo(map);
+          attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
+        });
+        // .addTo(map);
+
+        // Multiple Time Dimensions are not working yet.  Need to figure out how to merge them.
+        if (!testTimeLayer) {
+          testTimeLayer = L.timeDimension.layer
+            .wms(wmsLayer, {
+              updateTimeDimension: true,
+            })
+            .addTo(map);
+        } else {
+          wmsLayer.addTo(map);
+        }
+      }
 
       // L.circleMarker(<LatLng> latlng, <CircleMarker options> options?)
-      L.circleMarker([36.827, -83.329], { radius: 5, weight: 1, fill: false, color: "red" }).addTo(
-        map
-      );
-
-      const tileSize = wmsLayer.getTileSize();
-      console.log(wmsLayer);
+      L.circleMarker([latitude, longitude], {
+        radius: 5,
+        weight: 1,
+        fill: false,
+        color: "red",
+      }).addTo(map);
 
       // --- -----------------------------------------------------------------------
 
