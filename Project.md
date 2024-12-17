@@ -81,7 +81,6 @@ It sounds so neat and simple, and it so very much isn't.
 
 - [ ] "GNIS ID" ... ".id" is reserved for history station id. oops. I may need to check that elsewhere as well.
   - [ ] double check the history station ID is valid before trying to fetch.
-- [ ] History csv fails to return and throws ... need to fix that. This is a side effect of GNIS and Vite Conversion
 - [ ] station.id, station.idtype, neareststations, for each type of location?
 
 #### Project Priority 2
@@ -96,7 +95,10 @@ It sounds so neat and simple, and it so very much isn't.
   - [ ] leaflet.js
   - [ ] USGS GNIS geolocation picker API would integrate well with this? Need to lookup that api link again.
 - [ ] Cache Clean 30 days past due
-- [ ] https://opengeo.ncep.noaa.gov/geoserver/www/index.html
+- [ ] https://www.weather.gov/gis/cloudgiswebservices
+  - [ ] https://opengeo.ncep.noaa.gov/geoserver/www/index.html
+    - [ ] https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?service=wms&version=1.3.0&request=GetCapabilities
+    - [ ] https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?service=wms&version=1.3.0&request=GetCapabilities
 - [ ] setup a local copy of ghcnd, and links, etc.
 - [ ] Add local ghcnd to the api links rotations
 - [ ] dynamic chart create?
