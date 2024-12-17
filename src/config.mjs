@@ -40,6 +40,7 @@ let config = {
   // RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS_LARGE_loop.gif",
   RadarMapUrl: "https://radar.weather.gov/ridge/standard/CONUS_loop.gif",
   RadarMapCacheTime: 60000 * 10, // 10 minutes
+  LocalRadarCacheTime: 60000 * 1, // new image every 2 minutes, updated every 4 minutes, with a 6 minute delay
   AlertsMapUrl: "https://www.weather.gov/wwamap/png/US.png",
   AlertsMapCacheTime: 60000 * 10, // 10 minutes
 

@@ -12,11 +12,12 @@ https://cjmet.github.io/WeatherKitty/
 
 **CodeKy Notes:**
 
-- See the project.md for CodeKy Specific Info.
+- I created a locked branch for CodeKy.
+- See the CodeKy Branch and the project.md for CodeKy Specific Info.
 - Request an API Key if corsproxy.io is misfiring.
   - It looks like they are actively updating and modifying, so I added an optional cors.sh API key.
   - I'll replace Census with GNIS later. Then perhaps much later add it back in with a server-side api.
-- The demo runs very slowly in LiveServer, I recommend using:
+- The demo runs slowly in LiveServer, I recommend using:
   - https://cjmet.github.io/WeatherKitty/
   - npm run dev
   - npx vite

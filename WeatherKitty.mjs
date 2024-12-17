@@ -243,10 +243,14 @@ export async function WeatherKitty() {
 
     // Insert Local Radar here.
     // https://radar.weather.gov/ridge/standard/KMRX_loop.gif
+    // https://radar.weather.gov/ridge/standard/KMRX_loop.gif?refreshed=1734391602731
+    // browser caching is overriding cache time.   so we need to add ?refreshed=${localRefresh}
+    // new image every 2 minutes, updated every 4 minutes, with a 6 minute delay
     let localRadar = weather?.radarStation;
+    let localRefresh = Math.floor(Date.now() / config.LocalRadarCacheTime);
     if (localRadar) {
-      let url = `https://radar.weather.gov/ridge/standard/${localRadar}_loop.gif`;
-      WeatherMaps("weather-kitty-radar-local", url, config.shortCacheTime - 60000);
+      let url = `https://radar.weather.gov/ridge/standard/${localRadar}_loop.gif?refreshed=${localRefresh}`;
+      WeatherMaps("weather-kitty-radar-local", url, config.LocalRadarCacheTime);
     }
     // /Local Radar
 
