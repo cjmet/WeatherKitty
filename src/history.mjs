@@ -455,7 +455,18 @@ async function HistoryGetCsvFile(stationId) {
   // https://www.ncei.noaa.gov/pub/data/ghcn/daily/by_station/USW00014739.dly
   // https://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/by_station/ACW00011604.csv.gz
   // https://noaa-ghcn-pds.s3.amazonaws.com/csv/by_station/ACW00011604.csv
-  let idString = stationId.toLowerCase().substring(11 - 8);
+
+  // stationid regex 3 letters 8 numbers
+  const stationIdRegex = /^[A-Z]{3}\d{8}$/; // Gemini AI, and looks correct.
+
+  // fail fast
+  if (!stationId || stationId.length != 11 || !stationId.match(stationIdRegex)) {
+    if (Log.Error())
+      console.log(
+        `[HistoricalGetCsvFile] *** ERROR *** : Input Argument Error : Station ID: "${stationId}"`
+      );
+    return null;
+  }
 
   // ERROR BLOCK .gz
   // (same as above) Why does the mobile version die on SSL and CORS errors while desktop works just fine?
