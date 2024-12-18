@@ -79,12 +79,16 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
-- [ ] "GNIS ID" ... ".id" is reserved for history station id. oops. I may need to check that elsewhere as well.
-  - [ ] double check the history station ID is valid before trying to fetch.
-- [ ] station.id, station.idtype, neareststations, for each type of location?
+- [ ] leafet element
+  - [ ] TimeIntervals, match to about an hour.
+  - [ ] Update Command
+  - [ ] Type: bref, conus
 
 #### Project Priority 2
 
+- [ ] update national radar with ?refreshed
+- [ ] "GNIS ID" ... ".id" is reserved for history station id. oops. I may need to check that elsewhere as well.
+- [ ] station.id, station.idtype, neareststations, for each type of location?
 - [ ] Better Explorer
   - [ ] Filter nearby by types of charts/data?
   - [ ] Add Maps?
