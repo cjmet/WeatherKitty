@@ -112,6 +112,7 @@
         timeDimensionControlOptions: {
           autoPlay: true,
           timeSteps: 1,
+          timeSliderDragUpdate: true,
 
           backwardButton: false,
           forwardButton: false,
@@ -131,6 +132,12 @@
         center: [latitude, longitude],
       });
 
+      const timeDimension = new L.TimeDimension({
+        timeInterval: "2024-12-17T19:56:19Z/2024-12-17T20:56:19Z",
+        period: "PT1H",
+      });
+      // timeDimension.addTo(map);
+
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
@@ -141,41 +148,56 @@
       // https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?service=wms&version=1.3.0&request=GetCapabilities
       // conus_bref_qcd
       //
-      // wmsLayer = L.tileLayer
-      //   .wms("https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?", {
-      //     layers: "conus_bref_qcd",
-      //     format: "image/png",
-      //     transparent: true,
-      //   })
-      //   .addTo(map);
-
-      // station: "KJKL", "KLVX", "KPAH", ... These 3 will cover KY fairly well.
-      let stations = ["KJKL"];
-      // need to work on and see if we can get the time dimension to work with multiple disparate stations
-      let testTimeLayer;
-      for (let station of stations) {
-        station = station.toLocaleLowerCase();
-        // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
-        let wmsLayer = L.tileLayer.wms(`https://opengeo.ncep.noaa.gov/geoserver/${station}/ows?`, {
-          layers: `${station}_sr_bref`,
+      let conusWmsLayer = L.tileLayer
+        .wms("https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?", {
+          layers: "conus_bref_qcd",
           format: "image/png",
           transparent: true,
-          updateTimeDimension: true,
           attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
-        });
-        // .addTo(map);
+        })
+        .addTo(map);
 
-        // Multiple Time Dimensions are not working yet.  Need to figure out how to merge them.
-        if (!testTimeLayer) {
-          testTimeLayer = L.timeDimension.layer
-            .wms(wmsLayer, {
-              updateTimeDimension: true,
-            })
-            .addTo(map);
-        } else {
-          wmsLayer.addTo(map);
-        }
-      }
+      // let tmp = new L.TimeDimension.Layer(conusWmsLayer, { timeDimension: timeDimension });
+      // tmp.addTo(map);
+
+      let conusTimeLayer = L.timeDimension.layer.wms(conusWmsLayer, {
+        updateTimeDimension: true,
+      });
+      conusTimeLayer.addTo(map);
+
+      // ---
+
+      // ---
+
+      // ---
+
+      // // station: "KJKL", "KLVX", "KPAH", ..., "KHPX", "KILN". These 3 will cover KY fairly well.
+      // let stations = ["KJKL"];
+      // // need to work on and see if we can get the time dimension to work with multiple disparate stations
+      // let testTimeLayer;
+      // for (let station of stations) {
+      //   station = station.toLocaleLowerCase();
+      //   // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
+      //   let wmsLayer = L.tileLayer.wms(`https://opengeo.ncep.noaa.gov/geoserver/${station}/ows?`, {
+      //     layers: `${station}_sr_bref`,
+      //     format: "image/png",
+      //     transparent: true,
+      //     updateTimeDimension: true,
+      //     attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
+      //   });
+      //   // .addTo(map);
+
+      //   // Multiple Time Dimensions are not working yet.  Need to figure out how to merge them.
+      //   if (!testTimeLayer) {
+      //     testTimeLayer = L.timeDimension.layer
+      //       .wms(wmsLayer, {
+      //         updateTimeDimension: true,
+      //       })
+      //       .addTo(map);
+      //   } else {
+      //     wmsLayer.addTo(map);
+      //   }
+      // }
 
       // L.circleMarker(<LatLng> latlng, <CircleMarker options> options?)
       L.circleMarker([latitude, longitude], {
