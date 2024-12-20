@@ -58,15 +58,21 @@
     </header>
 
     <main id="WeatherKittyMain">
-      <div style="border: red 1px solid; margin: 3px; height: 100%; overflow: auto">
-        <p class="HelpText"><strong>Leaflet</strong> - NWS WMS</p>
+      <div style="border: magenta 1px solid; margin: 3px; height: 100%; overflow: auto">
+        <!-- <p class="HelpText"><strong>Leaflet</strong> - NWS WMS</p> -->
 
         <!-- // ------------------------------------------------------------------------ -->
         <!-- // ------------------------------------------------------------------------ -->
         <!-- // ------------------------------------------------------------------------ -->
         <div
           id="map"
-          style="height: 80vh; width: 80vw; margin: 10vh 10vw; border: black 3px solid"
+          style="
+            position: relative;
+            height: 65vh;
+            width: 85vw;
+            margin: 5vh 5vw;
+            border: blue 1px solid;
+          "
         ></div>
       </div>
     </main>
@@ -82,21 +88,25 @@
     <script type="module">
       import { corsCache } from "../src/fetchCache.mjs";
 
-      // get the nws ridgeII radar map for KJKL
-      // Image is about -4.3degE wide x 3.95degN high
-      // Coordinates are about 4.3 wide x 3.6 high
-      // I'm calculating closer to 4wide and 3.6 high
-      // Hickory, NC is about 35.7343, -81.3445
-      // Jackson, KY is about 37.5536, -83.3102
-      // Franklin Co, IN is about 39.2683, -85.2966
+      let RadarData = {
+        KJKL: { name: "Jackson, KY", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        KMRX: { name: "Knoxville, TN", bottom: 34.1, left: -85.525, width: 4.25, height: 4.25 },
+        KLVX: { name: "Louisville, KY", bottom: 35.88, left: -88.05, width: 4.25, height: 4.25 },
+        KPAH: { name: "Paducah, KY", bottom: 35.0, left: -90.88, width: 4.25, height: 4.25 },
+        KRLX: { name: "Charleston, WV", bottom: 36.225, left: -83.84, width: 4.25, height: 4.25 },
+        KILN: { name: "Wilmington, OH", bottom: 37.35, left: -85.925, width: 4.25, height: 4.25 },
+        KOHX: { name: "Nashville, TN", bottom: 34.185, left: -88.675, width: 4.25, height: 4.25 },
+        // KHPX: { name: "Fort Campbell, KY", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KVWX: { name: "Evansville, IN", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KIND: { name: "Indianapolis, IN", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KFCX: { name: "Roanoke", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KGSP: { name: "Greenville, SC", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KHTX: { name: "Huntsville, AL", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+        // KNQA: { name: "Memphis, TN", bottom: 35.5, left: -85.45, width: 4.25, height: 4.25 },
+      };
 
-      let width = 4.3;
-      let height = 3.95;
-
-      let localRadar = "KJKL";
-      let bottom = 35.5;
-      let right = -81.0;
-
+      // station: "KJKL", "KLVX", "KPAH", ..., "KHPX", "KILN", "KMRX". These 3 will cover KY fairly well.
+      let localRadar = "KOHX";
       let CacheTime = 1000 * 60 * 30; // 5 minutes
       let localRefresh = new Date().getTime() / CacheTime;
       let radarUrl = `https://radar.weather.gov/ridge/standard/${localRadar}_loop.gif?refreshed=${localRefresh}`;
@@ -114,6 +124,147 @@
         img.style.width = "100%";
         img.style.height = "100%";
         map.appendChild(img);
+
+        // get the nws ridgeII radar map for KJKL
+        // Image is 600x x 550y pixels
+        // Parkersburg, WV is (549, 484); (91.5%, 88.9%); 39.2685, -81.5443
+        // Crossville, TN is (59, 59); (9.83%, 10.73%); 35.946708, -85.027192
+        // Image is about -4.3degE wide x 3.95degN high
+        // Coordinates are about 4.3 wide x 3.6 high
+        // I'm calculating closer to 4wide and 3.6 high
+
+        let bottom = RadarData[localRadar].bottom;
+        let left = RadarData[localRadar].left;
+        let height = RadarData[localRadar].height;
+        let width = RadarData[localRadar].width;
+
+        let locations = [
+          // { name: "Hickory", lat: 35.7343, lon: -81.3445 },
+          // { name: "Jackson", lat: 37.5536, lon: -83.3102 },
+          // { name: "Franklin", lat: 39.2683, lon: -85.2966 },
+          // { name: "Parkersburg", lat: 39.2685, lon: -81.5443 },
+          // { name: "Charleston", lat: 38.3498, lon: -81.6326 },
+          // { name: "Cincinnati", lat: 39.1031, lon: -84.512 },
+          // { name: "Crossville", lat: 35.949, lon: -85.0269 },
+          // { name: "Frankfort", lat: 38.2009, lon: -84.8733 },
+          // { name: "Lexington", lat: 38.0406, lon: -84.5037 },
+          // { name: "Louisville", lat: 38.2527, lon: -85.7585 },
+          // { name: "Nashville", lat: 36.1627, lon: -86.7816 },
+          // { name: "Pikeville", lat: 37.4795, lon: -82.5186 },
+          // { name: "Richmond", lat: 37.7479, lon: -84.2947 },
+          // { name: "Somerset", lat: 37.0834, lon: -84.6093 },
+          // { name: "Wise", lat: 36.9759, lon: -82.5753 },
+          // { name: "Berea", lat: 37.5711, lon: -84.2963 },
+          // { name: "Cumberland", lat: 36.9762, lon: -82.5897 },
+          // { name: "Elizabethtown", lat: 37.7032, lon: -85.8648 },
+          // { name: "Harlan", lat: 36.8434, lon: -83.321 },
+          // { name: "Hazard", lat: 37.2496, lon: -83.1937 },
+          // { name: "London", lat: 37.1289, lon: -84.0833 },
+          // { name: "Middlesboro", lat: 36.6103, lon: -83.716 },
+          // { name: "Morehead", lat: 38.1834, lon: -83.4324 },
+          // { name: "Prestonsburg", lat: 37.6653, lon: -82.7713 },
+          // { name: "Richmond", lat: 37.7479, lon: -84.2947 },
+          // { name: "Williamsburg", lat: 36.7433, lon: -84.1597 },
+          // { name: "Jackson, Oh", lat: 39.0509, lon: -82.6319 },
+          // { name: "Portsmouth, Oh", lat: 38.7317, lon: -82.9977 },
+          // { name: "Ironton, Oh", lat: 38.5367, lon: -82.6827 },
+          // { name: "Ashland, Ky", lat: 38.4784, lon: -82.6389 },
+          // { name: "Huntington, Wv", lat: 38.4192, lon: -82.4452 },
+          // { name: "Charleston, Wv", lat: 38.3498, lon: -81.6326 },
+          // { name: "Beckley, Wv", lat: 37.7782, lon: -81.1882 },
+          // { name: "Bluefield, Wv", lat: 37.2692, lon: -81.2223 },
+          // { name: "Princeton, Wv", lat: 37.3661, lon: -81.0972 },
+          // { name: "Wytheville, Va", lat: 36.9484, lon: -81.0848 },
+          // { name: "Galax, Va", lat: 36.6615, lon: -80.9204 },
+          // { name: "Martinsville, Va", lat: 36.6915, lon: -79.8722 },
+          // { name: "Danville, Va", lat: 36.5859, lon: -79.395 },
+          // { name: "South Boston, Va", lat: 36.6982, lon: -78.9015 },
+          // { name: "Roxboro, Nc", lat: 36.3932, lon: -78.9819 },
+          // { name: "Durham, Nc", lat: 35.994, lon: -78.8986 },
+          // { name: "Raleigh, Nc", lat: 35.7796, lon: -78.6382 },
+          // { name: "Fayetteville, Nc", lat: 35.0527, lon: -78.8784 },
+          // { name: "Lumberton, Nc", lat: 34.6182, lon: -79.0086 },
+          // { name: "Boone, NC", lat: 36.2168, lon: -81.6745 },
+          // { name: "Asheville, NC", lat: 35.5951, lon: -82.5515 },
+          // { name: "Greenville, SC", lat: 34.8526, lon: -82.394 },
+          // { name: "Spartanburg, SC", lat: 34.9496, lon: -81.9321 },
+          // { name: "Charlotte, NC", lat: 35.2271, lon: -80.8431 },
+          // { name: "Columbia, SC", lat: 34.0007, lon: -81.0348 },
+          // { name: "Augusta, GA", lat: 33.4735, lon: -82.0105 },
+          // { name: "Athens, GA", lat: 33.9519, lon: -83.3576 },
+          // { name: "Atlanta, GA", lat: 33.7489, lon: -84.388 },
+          // { name: "Macon, GA", lat: 32.8407, lon: -83.6324 },
+          // { name: "Columbus, GA", lat: 32.4605, lon: -84.9877 },
+          // { name: "Albany, GA", lat: 31.5785, lon: -84.1557 },
+          // { name: "Tallahassee, FL", lat: 30.4383, lon: -84.2807 },
+          // { name: "Panama City, FL", lat: 30.1588, lon: -85.6602 },
+          // { name: "Pensacola, FL", lat: 30.4213, lon: -87.2169 },
+          // { name: "Mobile, AL", lat: 30.6954, lon: -88.0399 },
+          // { name: "Birmingham, AL", lat: 33.5207, lon: -86.8025 },
+          // { name: "Montgomery, AL", lat: 32.3792, lon: -86.3077 },
+          // { name: "Tuscaloosa, AL", lat: 33.2098, lon: -87.5692 },
+          // { name: "Dayton, Oh", lat: 39.7589, lon: -84.1916 },
+          // { name: "Jasper, In", lat: 38.3914, lon: -86.9311 },
+          // { name: "Evansville, In", lat: 37.9716, lon: -87.5711 },
+          // { name: "Owensboro, Ky", lat: 37.7719, lon: -87.1111 },
+          // { name: "Henderson, Ky", lat: 37.8362, lon: -87.5907 },
+          // { name: "Madisonville, Ky", lat: 37.328, lon: -87.4989 },
+          // { name: "Hopkinsville, Ky", lat: 36.8656, lon: -87.4886 },
+          // { name: "Paducah, Ky", lat: 37.0834, lon: -88.6000 },
+          // { name: "Cape Girardeau, Mo", lat: 37.3059, lon: -89.5181 },
+          // { name: "Poplar Bluff, Mo", lat: 36.7569, lon: -90.3929 },
+          // { name: "Jonesboro, Ar", lat: 35.8423, lon: -90.7043 },
+          // { name: "Memphis, Tn", lat: 35.1495, lon: -90.0490 },
+          // { name: "Jackson, Tn", lat: 35.6145, lon: -88.8139 },
+          // { name: "Union City, Tn", lat: 36.4242, lon: -89.0488 },
+          // { name: "Dyersburg, Tn", lat: 36.0345, lon: -89.3856 },
+          // { name: "Blytheville, Ar", lat: 35.9273, lon: -89.9180 },
+          // { name: "Kennett, Mo", lat: 36.2401, lon: -90.0487 },
+          // { name: "Paragould, Ar", lat: 36.0571, lon: -90.5636 },
+          // { name: "Pocahontas, Ar", lat: 36.2615, lon: -90.9715 },
+          // { name: "Morgantown, WV", lat: 39.6295, lon: -79.9559 },
+          // { name: "Philadelphia, Pa", lat: 39.9526, lon: -75.1652 },
+          // { name: "Pittsburgh, Pa", lat: 40.4406, lon: -79.9959 },
+          // { name: "Harrisburg, Pa", lat: 40.2732, lon: -76.8867 },
+          // { name: "Scranton, Pa", lat: 41.408, lon: -75.6624 },
+          // { name: "Allentown, Pa", lat: 40.6084, lon: -75.4902 },
+          // { name: "Reading, Pa", lat: 40.3356, lon: -75.9269 },
+          // { name: "Lancaster, Pa", lat: 40.0379, lon: -76.3055 },
+          // { name: "York, Pa", lat: 39.9626, lon: -76.7277 },
+          // { name: "Hershey, Pa", lat: 40.2859, lon: -76.6502 },
+          // { name: "Lebanon, Pa", lat: 40.3409, lon: -76.4113 },
+          // { name: "Harrisburg, Pa", lat: 40.2732, lon: -76.8867 },
+          // { name: "Carlisle, Pa", lat: 40.201, lon: -77.2003 },
+          // { name: "Chambersburg, Pa", lat: 39.9376, lon: -77.6611 },
+          // { name: "Gettysburg, Pa", lat: 39.8309, lon: -77.2311 },
+          // { name: "Hanover, Pa", lat: 39.8007, lon: -76.9837 },
+          // { name: "Westminster, Md", lat: 39.5754, lon: -76.9958 },
+          // { name: "Frederick, Md", lat: 39.4143, lon: -77.4105 },
+          // { name: "Hagerstown, Md", lat: 39.6418, lon: -77.7203 },
+          // { name: "Mansfield, Oh", lat: 40.7584, lon: -82.5154 },
+          { name: "Danville, Ky", lat: 37.6456, lon: -84.7722 },
+        ];
+
+        for (let location of locations) {
+          let latY, lonX;
+          [latY, lonX] = [location.lat, location.lon];
+          // [latY, lonX] = [bottom + height, left + width];
+
+          // calc target box in Percent
+          let dX = ((100 * (lonX - left)) / width).toFixed(2);
+          let dY = ((100 * (latY - bottom)) / height).toFixed(2);
+          console.log(`dX: ${dX}, dY: ${dY}`);
+
+          // let box = new <div>...</div>
+          let box = document.createElement("div");
+          box.style.position = "absolute";
+          box.style.bottom = `calc(${dY}% - .25em)`;
+          box.style.left = `calc(${dX}% - .25em)`;
+          box.style.width = ".5em";
+          box.style.height = ".5em";
+          box.style.border = "1px solid red";
+          map.appendChild(box);
+        }
       }
     </script>
   </body>

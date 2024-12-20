@@ -79,10 +79,10 @@ It sounds so neat and simple, and it so very much isn't.
 
 ### Project Current Work and Fixes
 
+- [ ] Improved local radar standard element
 - [ ] leafet element
-  - [ ] TimeIntervals, match to about an hour.
   - [ ] Update Command
-  - [ ] Type: bref, conus
+  - [ ] See if we can do transparent OSM over full color weather, and do updates underneath
 
 #### Project Priority 2
 
