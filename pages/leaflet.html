@@ -84,7 +84,9 @@
 
     <main id="WeatherKittyMain">
       <div style="border: red 1px solid; margin: 3px; height: 100%; overflow: auto">
-        <p class="HelpText"><strong>Leaflet</strong> - NWS WMS</p>
+        <p class="HelpText" style="margin-bottom: 0">
+          <strong>Leaflet Alpha Test</strong> <span id="LeafletHeaderOptions"></span>
+        </p>
 
         <!-- // ------------------------------------------------------------------------ -->
         <!-- // ------------------------------------------------------------------------ -->
@@ -117,6 +119,11 @@
       let drawTigerMaps = true;
       let drawTigerLabels = true;
       let tigerRoadColor = "dodgerblue"; // red, crimson, firebrick, dodgerblue
+
+      let element = document.getElementById("LeafletHeaderOptions");
+      element.innerText = `- ${leafletLayer}, ${drawOsmMaps ? "OSM," : ""} ${
+        drawTigerMaps ? "Tiger, " : ""
+      } ${drawTigerLabels ? "Labels, " : ""} ${tigerRoadColor}`;
 
       // /SETTINGS
 
@@ -264,14 +271,6 @@
           weight: 2,
           minZoom: 0,
         });
-
-        // tigerData.push({
-        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Labels/MapServer/",
-        //   layers: [60], // 58, 59, 60, 22
-        //   color: "black",
-        //   weight: 1,
-        //   minZoom: 0,
-        // });
 
         tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
