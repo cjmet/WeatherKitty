@@ -107,9 +107,8 @@ It sounds so neat and simple, and it so very much isn't.
 - [ ] Add local ghcnd to the api links rotations
 - [ ] dynamic chart create?
 - [ ] Reorganize the modules logically so that WeatherKitty.mjs is the only required one.
-- [ ] Hardware Dev Machine
 - [ ] work Styles.css calculated sizes into WeatherKitty.css.
-- [ ] Maybe deploy to readme instead of index?
+- [ ] Fix Crosproxy.io and Census. Somehow.
 - [ ] font, color, padding, less words, detail icon to pull eye, spacing
   - [ ] needs to be applied to media queries
   - [ ] tried icon and ellipses, there just isn't room if it's 100deg 100%precip

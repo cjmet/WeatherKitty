@@ -82,10 +82,12 @@
     <script type="module">
       import "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/+esm";
       import "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/+esm";
+      import "https://unpkg.com/esri-leaflet@3.0.14/dist/esri-leaflet.js";
+      import "https://unpkg.com/esri-leaflet-vector@4.2.6/dist/esri-leaflet-vector.js";
 
-      // SETTINGS // cjm
-
-      let leafletLayer = "bref"; // conus or sr_bref aka bref.
+      // SETTINGS
+      let leafletLayer = "conus"; // conus or sr_bref aka bref. // cjm
+      let devmode = false;
 
       // /SETTINGS
 
@@ -132,9 +134,91 @@
         center: [latitude, longitude],
       });
 
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
+      // exploring arcgis
+      // cjm
+      if (devmode) {
+        // L.esri
+        //   .featureLayer({
+        //     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0",
+        //   })
+        //   .addTo(map);
+
+        // L.esri.Vector.vectorTileLayer(
+        //   "https://vectortileservices3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_Mountains_Parcels_VTL/VectorTileServer"
+        // ).addTo(map);
+
+        // exploring tiger data
+        let tigerData = [];
+
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [0], // 0, 1
+          color: "black",
+          weight: 2,
+          minZoom: 0,
+        });
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [1], // 0, 1
+          color: "grey",
+          weight: 1,
+          minZoom: 8,
+        });
+        // tigerData.push({
+        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Labels/MapServer/",
+        //   layers: [60], // 58, 59, 60, 22
+        // });
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
+          layers: [0], // 0, 3, 4, ...
+          color: "green",
+          weight: 4,
+          minZoom: 7,
+        });
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
+          layers: [3],
+          color: "green",
+          weight: 3,
+          minZoom: 9,
+        });
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
+          layers: [4],
+          color: "green",
+          weight: 2,
+          minZoom: 11,
+        });
+        tigerData.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
+          layers: [7],
+          color: "green",
+          weight: 1,
+          minZoom: 13,
+        });
+
+        for (let data of tigerData) {
+          for (let layer of data.layers) {
+            L.esri
+              .featureLayer({
+                url: `${data.url}/${layer}`,
+                weight: data.weight, // default 3
+                color: data.color,
+                fillOpacity: 0,
+                minZoom: data.minZoom,
+              })
+              .addTo(map);
+          }
+        }
+
+        // L.esri.Vector.vectorTileLayer({
+        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer",
+        // }).addTo(map);
+
+        // L.esri.tiledMapLayer({
+        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer",
+        // });
+      }
 
       leafletLayer = leafletLayer.toLowerCase();
       let wmsLayer;
@@ -147,58 +231,25 @@
       // ---
 
       // CONUS
-      if (leafletLayer === "conus") {
-        let testTimeLayer;
-        wmsLayer = L.tileLayer
-          .wms("https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?", {
-            layers: "conus_bref_qcd",
-            format: "image/png",
-            transparent: true,
-            opacity: 0.5,
-            attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
-          })
-          .addTo(map);
+      // disable while we work on other parts of the map
+      // disable when in devmode so we don't get blocked from hitting the api too often.
+      if (!devmode) {
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(map);
 
-        testTimeLayer = await L.timeDimension.layer
-          .wms(wmsLayer, {
-            updateTimeDimension: true,
-            // updateTimeDimensionMode: "intersect", // replace, union, intersect, extremes.  intersect is the default.
-          })
-          .addTo(map);
+        if (leafletLayer === "conus") {
+          let testTimeLayer;
 
-        // currentTime as "YYYY-MM-DDTHH:MM:SSZ" without fractional seconds.
-        let currentTime = new Date().toISOString().split(".")[0] + "Z";
-        let minusOneHour = new Date(Date.now() - 60 * 60 * 1000).toISOString().split(".")[0] + "Z";
-        let timeInterval = `${minusOneHour}/${currentTime}`;
-        console.log(timeInterval);
-        let timePeriod = "PT1S";
-
-        let timeDimension = L.timeDimension({
-          timeInterval: timeInterval,
-          period: timePeriod,
-        });
-
-        testTimeLayer.setAvailableTimes(timeDimension.getAvailableTimes());
-      } else if (leafletLayer.includes("bref")) {
-        // SR_BREF
-        // station: "KJKL", "KLVX", "KPAH", ..., "KHPX", "KILN", "KMRX". These 3 will cover KY fairly well.
-        // ok so this works, but we need to find a way to merge the layers now, so that they don't overwrite each other in the wrong way.
-        let stations = ["KJKL"];
-        let testTimeLayer;
-        for (let station of stations) {
-          station = station.toLocaleLowerCase();
-          // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
-          let wmsLayer = L.tileLayer
-            .wms(`https://opengeo.ncep.noaa.gov/geoserver/${station}/ows?`, {
-              layers: `${station}_sr_bref`,
+          wmsLayer = L.tileLayer
+            .wms("https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?", {
+              layers: "conus_bref_qcd",
               format: "image/png",
               transparent: true,
-              opacity: 0.5,
+              // opacity: 0.5,
               attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
             })
             .addTo(map);
-
-          // Multiple Time Dimensions are not working yet.  Need to figure out how to merge them.
 
           testTimeLayer = await L.timeDimension.layer
             .wms(wmsLayer, {
@@ -220,9 +271,63 @@
             period: timePeriod,
           });
 
-          testTimeLayer.setAvailableTimes(timeDimension.getAvailableTimes());
+          if (wmsLayer) testTimeLayer.setAvailableTimes(timeDimension.getAvailableTimes());
+        } else if (leafletLayer.includes("bref")) {
+          // SR_BREF
+          // station: "KJKL", "KLVX", "KPAH", ..., "KHPX", "KILN", "KMRX". These 3 will cover KY fairly well.
+          // ok so this works, but we need to find a way to merge the layers now, so that they don't overwrite each other in the wrong way.
+          let stations = ["KJKL"];
+          let testTimeLayer;
+          for (let station of stations) {
+            station = station.toLocaleLowerCase();
+            // href="https://opengeo.ncep.noaa.gov/geoserver/kmrx/ows?
+            let wmsLayer = L.tileLayer
+              .wms(`https://opengeo.ncep.noaa.gov/geoserver/${station}/ows?`, {
+                layers: `${station}_sr_bref`,
+                format: "image/png",
+                transparent: true,
+                // opacity: 0.5,
+                attribution: '| <a href="https://www.noaa.gov/">NOAA</a>',
+              })
+              .addTo(map);
+
+            // Multiple Time Dimensions are not working yet.  Need to figure out how to merge them.
+
+            testTimeLayer = await L.timeDimension.layer
+              .wms(wmsLayer, {
+                updateTimeDimension: true,
+                // updateTimeDimensionMode: "intersect", // replace, union, intersect, extremes.  intersect is the default.
+              })
+              .addTo(map);
+
+            // currentTime as "YYYY-MM-DDTHH:MM:SSZ" without fractional seconds.
+            let currentTime = new Date().toISOString().split(".")[0] + "Z";
+            let minusOneHour =
+              new Date(Date.now() - 60 * 60 * 1000).toISOString().split(".")[0] + "Z";
+            let timeInterval = `${minusOneHour}/${currentTime}`;
+            console.log(timeInterval);
+            let timePeriod = "PT1S";
+
+            let timeDimension = L.timeDimension({
+              timeInterval: timeInterval,
+              period: timePeriod,
+            });
+
+            testTimeLayer.setAvailableTimes(timeDimension.getAvailableTimes());
+          }
         }
       }
+
+      // Open Street Maps
+      if (!devmode)
+        var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          format: "image/png",
+          transparent: true,
+          opacity: 0.33,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        })
+          .addTo(map)
+          .bringToFront();
 
       // L.circleMarker(<LatLng> latlng, <CircleMarker options> options?)
       L.circleMarker([latitude, longitude], {
