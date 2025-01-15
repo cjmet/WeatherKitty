@@ -20,6 +20,21 @@
         background-color: rgba(0, 0, 0, 0);
         box-shadow: none;
       }
+
+      .label {
+        font-weight: 700;
+        text-transform: uppercase;
+        text-align: center;
+        margin-top: -1em;
+      }
+
+      .label div {
+        position: relative;
+        left: -50%;
+        /* // -.5em for two words, +.33em for single word */
+        /* top: -0.5em; */
+        text-shadow: 0px 2px 1px rgba(255, 255, 255, 0.85);
+      }
     </style>
   </head>
 
@@ -90,15 +105,17 @@
     <!-- // ------------------------------------------------------------------------ -->
 
     <script type="module">
+      const never = false;
       import "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/+esm";
       import "https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/+esm";
       import "https://unpkg.com/esri-leaflet@3.0.14/dist/esri-leaflet.js";
       import "https://unpkg.com/esri-leaflet-vector@4.2.6/dist/esri-leaflet-vector.js";
 
       // SETTINGS
-      let leafletLayer = ""; // conus, bref, or sr_bref. // cjm
-      let osmMaps = false;
-      let tigerMaps = false;
+      let leafletLayer = "conus"; // conus, bref, or sr_bref. // cjm
+      let drawOsmMaps = never;
+      let drawTigerMaps = true;
+      let drawTigerLabels = true;
       let tigerRoadColor = "dodgerblue"; // red, crimson, firebrick, dodgerblue
 
       // /SETTINGS
@@ -128,7 +145,7 @@
 
       var map = L.map("map", {
         // cjm
-        zoom: 10, // 9 is a good zoom level to see smaller cities and towns
+        zoom: 9, // 9 is a good zoom level to see smaller cities and towns
         // fillColor: white,
         fullscreenControl: true,
         timeDimension: true,
@@ -153,55 +170,73 @@
 
       // exploring arcgis
       // cjm
+      if (drawTigerLabels) {
+        let tigerLabels = [];
 
-      const tigerLabels = L.esri
-        .featureLayer({
-          // 58 State County, 59 State, 60 County,
-          // url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Labels/MapServer/60",
+        // 58 State County, 59 State, 60 County,
+        // url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Labels/MapServer/60",
 
-          // 0 State, 1 County
-          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0",
+        // 0 State, 1 County
+        // url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0",
+        tigerLabels.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [1], // 0, 1
+          minZoom: 8,
+          maxZoom: 99,
+        });
+        tigerLabels.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [0], // 0, 1
+          minZoom: 5,
+          maxZoom: 7,
+        });
 
-          weight: 1, // default 3
-          // color: data.color,
-          fillOpacity: 0,
-        })
-        .addTo(map);
+        for (let layerData of tigerLabels) {
+          let mapLayer = L.esri
+            .featureLayer({
+              url: `${layerData.url}${layerData.layers[0]}`,
+              weight: 0, // default 3
+              fillOpacity: 0,
+              minZoom: layerData.minZoom,
+              maxZoom: layerData.maxZoom,
+            })
+            .addTo(map);
 
-      const labels = {};
+          const layerLabels = {};
 
-      tigerLabels.on("createfeature", function (e) {
-        console.log(e);
-        const id = e.feature.id;
-        const feature = tigerLabels.getFeature(id);
-        const center = [e.feature.properties.CENTLAT, e.feature.properties.CENTLON];
-        const label = L.marker(center, {
-          minZoom: 13,
-          maxZoom: 18,
-          icon: L.divIcon({
-            iconSize: null,
-            className: "my-label",
-            html: "<div>" + e.feature.properties.NAME + "</div>",
-          }),
-        }).addTo(map);
-        labels[id] = label;
-      });
+          mapLayer.on("createfeature", function (e) {
+            // console.log(e);
+            const id = e.feature.id;
+            const feature = mapLayer.getFeature(id);
+            const center = [e.feature.properties.CENTLAT, e.feature.properties.CENTLON];
+            const label = L.marker(center, {
+              icon: L.divIcon({
+                iconSize: null,
+                className: "label",
+                // NAME or BASENAME
+                html: "<div>" + e.feature.properties.BASENAME + "</div>",
+              }),
+            }).addTo(map);
+            layerLabels[id] = label;
+          });
 
-      tigerLabels.on("addfeature", function (e) {
-        const label = labels[e.feature.id];
-        if (label) {
-          label.addTo(map);
+          mapLayer.on("addfeature", function (e) {
+            const label = layerLabels[e.feature.id];
+            if (label) {
+              label.addTo(map);
+            }
+          });
+
+          mapLayer.on("removefeature", function (e) {
+            const label = layerLabels[e.feature.id];
+            if (label) {
+              map.removeLayer(label);
+            }
+          });
         }
-      });
+      }
 
-      tigerLabels.on("removefeature", function (e) {
-        const label = labels[e.feature.id];
-        if (label) {
-          map.removeLayer(label);
-        }
-      });
-
-      if (tigerMaps) {
+      if (drawTigerMaps) {
         // L.esri
         //   .featureLayer({
         //     url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads_Styled/FeatureServer/0",
@@ -213,22 +248,22 @@
         // ).addTo(map);
 
         // exploring tiger data
-        let tigerData = [];
+        let tigerMaps = [];
 
-        // tigerData.push({
-        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
-        //   layers: [1], // 0, 1
-        //   color: "lightgrey",
-        //   weight: 1,
-        //   minZoom: 8,
-        // });
-        // tigerData.push({
-        //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
-        //   layers: [0], // 0, 1
-        //   color: "black",
-        //   weight: 2,
-        //   minZoom: 0,
-        // });
+        tigerMaps.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [1], // 0, 1
+          color: "lightgrey",
+          weight: 1,
+          minZoom: 8,
+        });
+        tigerMaps.push({
+          url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
+          layers: [0], // 0, 1
+          color: "black",
+          weight: 2,
+          minZoom: 0,
+        });
 
         // tigerData.push({
         //   url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Labels/MapServer/",
@@ -238,28 +273,28 @@
         //   minZoom: 0,
         // });
 
-        tigerData.push({
+        tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
           layers: [0], // 0, 3, 4, 7, ...
           color: tigerRoadColor,
           weight: 4,
           minZoom: 7,
         });
-        tigerData.push({
+        tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
           layers: [3],
           color: tigerRoadColor,
           weight: 3,
           minZoom: 9,
         });
-        tigerData.push({
+        tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
           layers: [4],
           color: tigerRoadColor,
           weight: 2,
           minZoom: 11,
         });
-        tigerData.push({
+        tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
           layers: [7],
           color: tigerRoadColor,
@@ -267,7 +302,7 @@
           minZoom: 13,
         });
 
-        for (let data of tigerData) {
+        for (let data of tigerMaps) {
           for (let layer of data.layers) {
             L.esri
               .featureLayer({
@@ -385,7 +420,7 @@
       }
 
       // Open Street Maps
-      if (osmMaps)
+      if (drawOsmMaps)
         var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           format: "image/png",
           transparent: true,
