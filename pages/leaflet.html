@@ -118,8 +118,8 @@
       import "https://unpkg.com/esri-leaflet@3.0.14/dist/esri-leaflet.js";
       import "https://unpkg.com/esri-leaflet-vector@4.2.6/dist/esri-leaflet-vector.js";
 
-      // SETTINGS
-      let leafletLayer = "conus"; // conus, bref, or sr_bref. // cjm
+      // SETTINGS // cjm
+      let leafletLayer = "conus"; // conus, bref, or sr_bref.
       let drawOsmMaps = never;
       let drawTigerMaps = true;
       let drawTigerLabels = true;
@@ -156,7 +156,6 @@
       console.log(position);
 
       var map = L.map("map", {
-        // cjm
         zoom: 9, // 9 is a good zoom level to see smaller cities and towns
         // fillColor: white,
         fullscreenControl: true,
@@ -181,7 +180,6 @@
       });
 
       // exploring arcgis
-      // cjm
       if (drawTigerLabels) {
         let tigerLabels = [];
 
@@ -216,8 +214,9 @@
 
           const layerLabels = {};
 
+          // cjm
           mapLayer.on("createfeature", function (e) {
-            // console.log(e);
+            if (e.feature.properties.FUNCSTAT != "A") return; // Some cities are classified as counties.
             const id = e.feature.id;
             const feature = mapLayer.getFeature(id);
             const center = [e.feature.properties.CENTLAT, e.feature.properties.CENTLON];
@@ -228,7 +227,10 @@
                 // NAME or BASENAME
                 html: "<div>" + e.feature.properties.BASENAME + "</div>",
               }),
-            }).addTo(map);
+            });
+            let currentZoom = map.getZoom();
+            if (currentZoom <= layerData.maxZoom && currentZoom >= layerData.minZoom)
+              label.addTo(map);
             layerLabels[id] = label;
           });
 
@@ -268,6 +270,7 @@
           color: "lightgrey",
           weight: 1,
           minZoom: 8,
+          maxZoom: 99,
         });
         tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/",
@@ -275,6 +278,7 @@
           color: "black",
           weight: 2,
           minZoom: 0,
+          maxZoom: 99,
         });
 
         tigerMaps.push({
@@ -283,6 +287,7 @@
           color: tigerRoadColor,
           weight: 4,
           minZoom: 7,
+          maxZoom: 99,
         });
         tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
@@ -290,6 +295,7 @@
           color: tigerRoadColor,
           weight: 3,
           minZoom: 9,
+          maxZoom: 99,
         });
         tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
@@ -297,18 +303,20 @@
           color: tigerRoadColor,
           weight: 2,
           minZoom: 11,
+          maxZoom: 99,
         });
         tigerMaps.push({
           url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/",
           layers: [7],
           color: tigerRoadColor,
           weight: 1,
-          minZoom: 13,
+          minZoom: 14,
+          maxZoom: 99,
         });
 
         for (let data of tigerMaps) {
           for (let layer of data.layers) {
-            L.esri
+            let mapLayer = L.esri
               .featureLayer({
                 url: `${data.url}/${layer}`,
                 weight: data.weight, // default 3
