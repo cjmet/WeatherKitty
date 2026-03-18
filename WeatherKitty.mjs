@@ -102,14 +102,14 @@ async function WeatherWidgetInit(path) {
   result = FindAndReplaceTags(
     "weather-kitty-current",
     WeatherKittyCurrentBlock(),
-    "WeatherKittyBlock"
+    "WeatherKittyBlock",
   );
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
     "weather-kitty-status",
     WeatherKittyStatusBlock,
-    "WeatherKittyStatus"
+    "WeatherKittyStatus",
   );
   widgets = [...widgets, ...result];
 
@@ -122,14 +122,14 @@ async function WeatherWidgetInit(path) {
   result = FindAndReplaceTags(
     "weather-kitty-forecast",
     WeatherKittyForecastBlock(),
-    "WeatherKittyBlock"
+    "WeatherKittyBlock",
   );
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
     "weather-kitty-geoaddress",
     WeatherKittyGeoAddressBlock(),
-    "WeatherKittyGeoAddress"
+    "WeatherKittyGeoAddress",
   );
   widgets = [...widgets, ...result];
   if (result.length > 0) geoAddressFound = true;
@@ -138,28 +138,28 @@ async function WeatherWidgetInit(path) {
   result = FindAndReplaceTags(
     "weather-kitty-map-forecast",
     WeatherKittyMapForecastBlock,
-    "WeatherKittyMapForecast"
+    "WeatherKittyMapForecast",
   );
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
     "weather-kitty-radar-national",
     WeatherKittyMapRadarBlock,
-    "WeatherKittyMapRadar"
+    "WeatherKittyMapRadar",
   );
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
     "weather-kitty-map-alerts",
     WeatherKittyMapAlertsBlock,
-    "WeatherKittyMapAlerts"
+    "WeatherKittyMapAlerts",
   );
   widgets = [...widgets, ...result];
 
   result = FindAndReplaceTags(
     "weather-kitty-radar-local",
     WeatherKittyMapLocalRadarBlock,
-    "WeatherKittyMapLocalRadar"
+    "WeatherKittyMapLocalRadar",
   );
   widgets = [...widgets, ...result];
 
@@ -236,7 +236,7 @@ export async function WeatherKitty() {
           pointData,
           observationStations,
           observationData,
-          forecastData
+          forecastData,
         );
       });
     }
@@ -566,12 +566,12 @@ function InsertGeoAddressElement(widget) {
   let results = FindAndReplaceTags(
     "weather-kitty-geoaddress",
     WeatherKittyGeoAddressBlock(),
-    "WeatherKittyGeoAddress"
+    "WeatherKittyGeoAddress",
   );
   if (!results || results.length <= 0) {
     if (Log.Error())
       console.log(
-        "[InsertGeoAddressElement] *** ERROR ***: GeoAddress Element Could Not Be Created"
+        "[InsertGeoAddressElement] *** ERROR ***: GeoAddress Element Could Not Be Created",
       );
   }
 }
@@ -661,7 +661,8 @@ async function SetLoadingIndicatorMessage(kvpMap) {
       if (span) span.style.display = "none";
       let label = widget.getElementsByTagName("label")[0];
       if (label) {
-        if (message) label.innerHTML = `${message} &nbsp; `; // LOADING MESSAGE
+        if (message)
+          label.innerHTML = `${message} &nbsp; `; // LOADING MESSAGE
         else label.innerHTML = "Loading ... &nbsp; ";
         label.style.display = "block";
       }
@@ -701,63 +702,57 @@ async function WeatherMaps(elementName, Url, CacheTime) {
   WeatherKittyIsLoading(elementName.replace("weather-kitty-", ""), async () => {
     let maps = document.getElementsByTagName(elementName);
     if (maps.length <= 0) return;
-    let response = await corsCache(Url, null, CacheTime);
-    if (response != null && response.ok) {
-      let blob = await response.blob();
-      let url = URL.createObjectURL(blob);
-      for (let map of maps) {
-        let img = map.getElementsByTagName("img")[0];
-        img.src = url;
+    // I was caching the image data, but this caused CORS issues, so now we're just setting the image value directly.
+    for (let map of maps) {
+      let img = map.getElementsByTagName("img")[0];
+      img.src = Url;
 
-        // cj - I really probably shouldn't do this ... but it's my map so live with it.
-        if (elementName === "weather-kitty-radar-local") {
-          let boxTarget = map.getElementsByClassName("wk-BoxTarget")[0];
-          if (boxTarget) {
-            if (Url.includes("KMRX")) {
-              boxTarget.style.display = "block";
-              boxTarget.style.left = "calc(52% - var(--box-size) / 2)";
-              boxTarget.style.bottom = "calc(63.66% - var(--box-size) / 2)";
-            } else if (Url.includes("KJKL")) {
-              boxTarget.style.display = "block";
-              boxTarget.style.left = "calc(51% - var(--box-size) / 2)";
-              boxTarget.style.bottom = "calc(31% - var(--box-size) / 2)";
-            } else boxTarget.style.display = "none";
-          }
+      // cj - I really probably shouldn't do this ... but it's my map so live with it.
+      if (elementName === "weather-kitty-radar-local") {
+        let boxTarget = map.getElementsByClassName("wk-BoxTarget")[0];
+        if (boxTarget) {
+          if (Url.includes("KMRX")) {
+            boxTarget.style.display = "block";
+            boxTarget.style.left = "calc(52% - var(--box-size) / 2)";
+            boxTarget.style.bottom = "calc(63.66% - var(--box-size) / 2)";
+          } else if (Url.includes("KJKL")) {
+            boxTarget.style.display = "block";
+            boxTarget.style.left = "calc(51% - var(--box-size) / 2)";
+            boxTarget.style.bottom = "calc(31% - var(--box-size) / 2)";
+          } else boxTarget.style.display = "none";
         }
-
-        // --------------------------------------------------------------
-        // Thruple Events
-        img.removeEventListener("touchstart", () => {
-          img.removeEventListener("click", AIshowFullscreenImage);
-        });
-        img.removeEventListener("touchend", () => {
-          setTimeout(() => {
-            img.addEventListener("click", AIshowFullscreenImage);
-          }, 1);
-        });
-        img.removeEventListener("click", AIshowFullscreenImage);
-        // /Thruple Events
-        // --------------------------------------------------------------
-
-        // --------------------------------------------------------------
-        // Thruple Events
-
-        img.addEventListener("touchstart", () => {
-          // touchstart over-rides mousedown
-          img.removeEventListener("click", AIshowFullscreenImage);
-        });
-        img.addEventListener("touchend", () => {
-          // touchend adds mousedown back in
-          setTimeout(() => {
-            img.addEventListener("click", AIshowFullscreenImage);
-          }, 1);
-        });
-        img.addEventListener("click", AIshowFullscreenImage); // Mouse-Only Click
-        // /Thruple Events
-        // --------------------------------------------------------------
       }
-    } else {
-      console.log("[WeatherMaps] *** ERROR ***: No Map Data Available");
+
+      // --------------------------------------------------------------
+      // Thruple Events
+      img.removeEventListener("touchstart", () => {
+        img.removeEventListener("click", AIshowFullscreenImage);
+      });
+      img.removeEventListener("touchend", () => {
+        setTimeout(() => {
+          img.addEventListener("click", AIshowFullscreenImage);
+        }, 1);
+      });
+      img.removeEventListener("click", AIshowFullscreenImage);
+      // /Thruple Events
+      // --------------------------------------------------------------
+
+      // --------------------------------------------------------------
+      // Thruple Events
+
+      img.addEventListener("touchstart", () => {
+        // touchstart over-rides mousedown
+        img.removeEventListener("click", AIshowFullscreenImage);
+      });
+      img.addEventListener("touchend", () => {
+        // touchend adds mousedown back in
+        setTimeout(() => {
+          img.addEventListener("click", AIshowFullscreenImage);
+        }, 1);
+      });
+      img.addEventListener("click", AIshowFullscreenImage); // Mouse-Only Click
+      // /Thruple Events
+      // --------------------------------------------------------------
     }
   });
 }
@@ -803,7 +798,7 @@ async function ForecastMatrix(data) {
             ${precip}
         </weather-kitty-week-summary>
         <weather-kitty-week-forecast> ${BadHyphen(
-          period.shortForecast
+          period.shortForecast,
         )} </weather-kitty-week-forecast>
       </weather-kitty-week-card>
       `;
@@ -858,7 +853,7 @@ export async function WeatherCharts(chartData, locationName) {
         chart?.timestamps,
         null,
         chart?.history,
-        locationName
+        locationName,
       );
     }
   });
@@ -872,7 +867,7 @@ export async function CreateChart(
   timestamps,
   aspect, // aspect ratio, 0 or null for auto
   isHistory, // history = true for history charts and history date format
-  locationName
+  locationName,
 ) {
   WeatherKittyIsLoading(`${key}`, async () => {
     if (values == null || values.length == 0 || values[0].value === undefined) {
@@ -1773,7 +1768,7 @@ async function WeatherKittyGetNearbyStations(latitude, longitude, radius, count)
     if (!response || !response?.ok || response?.status !== 200) {
       if (Log.Error())
         console.log(
-          `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`
+          `[HistoricalGetStation] *** ERROR *** : Network Error : No Data,  ${response?.ok} ${response?.status}, ${response?.statusText}`,
         );
       return null;
     }
@@ -1785,14 +1780,14 @@ async function WeatherKittyGetNearbyStations(latitude, longitude, radius, count)
       if (lines?.length <= 0 || lines[0].length <= 12) {
         if (Log.Error())
           console.log(
-            `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`
+            `[HistoricalGetStation] *** ERROR*** : No Data,  ${response?.status}, ${response?.statusText}`,
           );
         return null;
       }
     } else {
       if (Log.Error())
         console.log(
-          `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`
+          `[HistoricalGetStation] *** ERROR*** : HTTP-Error,  ${response?.status}, ${response?.statusText}`,
         );
       return null;
     }
@@ -1815,7 +1810,7 @@ async function WeatherKittyGetNearbyStations(latitude, longitude, radius, count)
         latitude,
         longitude,
         parseFloat(location.lat),
-        parseFloat(location.lon)
+        parseFloat(location.lon),
       );
       location.distance = distance;
       data.push(location);
