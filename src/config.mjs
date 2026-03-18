@@ -96,7 +96,7 @@ let config = {
   SanityChecks: function () {
     if (config.ChartMaxPointsDefault === "Calc" || config.ChartMaxPointsDefault === "calc")
       config.ChartMaxPointsDefault = Math.floor(
-        config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault["default"]
+        config.CHARTMAXWIDTH / config.ChartPixelsPerPointDefault["default"],
       );
     if (config.shortCacheTime < 60000) config.shortCacheTime = 60000;
     if (config.longCacheTime < 60000) config.longCacheTime = 60000;
@@ -145,14 +145,14 @@ let WeatherKittyWidgetBlock = `<weather-kitty-tooltip >
 let WeatherKittyChartBlock = `<chartSpan> Select a Chart </chartSpan><scrollDiv><canvasBounds><canvas></canvas></canvasBounds></scrollDiv>`;
 
 // src="https://www.wpc.ncep.noaa.gov/noaa/noaad1.gif?1728599137"
-let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast - API Key Required" />`;
+let WeatherKittyMapForecastBlock = `<img alt="NWS Forecast - Loading ..." />`;
 
-let WeatherKittyMapRadarBlock = `<img alt="NWS Radar - API Key Required" />`;
+let WeatherKittyMapRadarBlock = `<img alt="NWS Radar - Loading ... " />`;
 
-let WeatherKittyMapAlertsBlock = `<img alt="US Weather Alerts Map - API Key Required" />`;
+let WeatherKittyMapAlertsBlock = `<img alt="US Weather Alerts Map - Loading ... " />`;
 
 let WeatherKittyMapLocalRadarBlock = `
-<img alt="Local Radar - API Key Required" />
+<img alt="Local Radar - Loading ... " />
 <div class="wk-BoxTarget"/>
 `;
 
